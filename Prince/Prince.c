@@ -4,8 +4,8 @@
 #define RHO_L 998.2
 #define SIGMA 0.0728
 #define C1 1.0
-#define H0 10.0e-3
-#define HF 10.0e-6
+#define H0 10.0e-4   /*zmenit pripadne na 10.0e-3*/
+#define HF 10.0e-8   /*zmenit pripadne na 10.0e-6*/
 #define INTEGRACNI_LIMIT 1000
 
 static gsl_integration_workspace* workspace = NULL;
@@ -65,7 +65,7 @@ DEFINE_PB_BREAK_UP_RATE_FREQ(break_up_freq_prince, cell, thread, d_1)
 
     /* MEZE */
     real a = 0.2*d_1;
-    real b = 1.0;
+    real b = d_1;
 
     real result, error;
 
@@ -91,4 +91,11 @@ real IntegrovanaFce(real ksi, void* parametry)
     real f2 = exp(-1.18/pow(ksi,2./3.)*SIGMA/(RHO_L*(pars->d_1)*pow(pars->eps,2./3.)));
 
     return 0.07*pow(3.1415,4.)/pow(ksi,4.)*f1*f2;
+}
+
+
+DEFINE_PB_BREAK_UP_RATE_PDF(break_up_pdf_par, cell, thread, d_1, d_2)
+{
+
+    return 1.0;
 }
