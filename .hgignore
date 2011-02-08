@@ -1,0 +1,5 @@
+relre:/obj/
+relre:/bin/
+relre:\.layout$
+relre:\.depend$
+glob:include/
