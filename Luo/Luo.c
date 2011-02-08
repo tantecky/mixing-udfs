@@ -86,7 +86,7 @@ DEFINE_PB_BREAK_UP_RATE_FREQ(break_up_freq_luo, cell, thread, d_1)
 
     if(status != GSL_SUCCESS)
     {
-        printf("UDF integrace se nezdarila\nChyba: %s\n", gsl_strerror(status));
+        Message("UDF integrace se nezdarila\nChyba: %s\n", gsl_strerror(status));
     }
 
     return 0.5*0.9238*pow(eps, 1./3.)*pow(d_1, -2./3.)*(1 - alpha)*result;
@@ -121,7 +121,7 @@ real IntegraceF(real f, void* parametry)
 
     if(status != GSL_SUCCESS)
     {
-        printf("UDF integrace se nezdarila\nChyba: %s\n", gsl_strerror(status));
+        Message("UDF integrace se nezdarila\nChyba: %s\n", gsl_strerror(status));
     }
 
     return result;
