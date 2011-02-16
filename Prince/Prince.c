@@ -1,18 +1,24 @@
 #include "Prince.h"
 
 /* NASTAVENI KONSTANT ZDE!!! */
+#define INTEGRACNI_CHYBA 1e-7
 #define RHO_L 998.2
 #define SIGMA 0.0728
 #define C1 1.0
 #define H0 10.0e-4   /*zmenit pripadne na 10.0e-3*/
 #define HF 10.0e-8   /*zmenit pripadne na 10.0e-6*/
 #define INTEGRACNI_LIMIT 1000
+/*#define DEBUG_VYPIS*/ /*vypisovat hodnoty do souboru DEBUG_VYPIS - jinak zakometovat!!!*/
 
 static gsl_integration_workspace* workspace = NULL;
 
+#ifdef DEBUG_VYPIS
+static FILE* debug_soubor = NULL;
+#endif
+
 DEFINE_EXECUTE_AT_EXIT(uvolneni_integratoru)
 {
-#if !PARALLEL || RP_NODE
+#if !RP_HOST
     if(workspace != NULL)
     {
         gsl_integration_workspace_free(workspace);
@@ -23,7 +29,7 @@ DEFINE_EXECUTE_AT_EXIT(uvolneni_integratoru)
 
 DEFINE_EXECUTE_ON_LOADING(inicializace_integratoru, libname)
 {
-#if !PARALLEL || RP_NODE
+#if !RP_HOST
     if(workspace == NULL)
         workspace = gsl_integration_workspace_alloc(INTEGRACNI_LIMIT);
 
@@ -34,6 +40,16 @@ DEFINE_EXECUTE_ON_LOADING(inicializace_integratoru, libname)
     else
     {
         Message("Nepodarilo se alokovat integracni knihovnu\n");
+    }
+#endif
+
+#ifdef DEBUG_VYPIS
+    debug_soubor = fopen("DEBUG_VYPIS", "w");
+
+    if(debug_soubor == NULL)
+    {
+        Message("Nepodarilo se vytvorit soubor DEBUG_VYPIS\n");
+        abort();
     }
 #endif
 
@@ -72,12 +88,16 @@ DEFINE_PB_BREAK_UP_RATE_FREQ(break_up_freq_prince, cell, thread, d_1)
     /* popis metody:
         http://www.gnu.org/software/gsl/manual/html_node/QAGS-adaptive-integration-with-singularities.html
     */
-    int status = gsl_integration_qags(&fce, a, b, 0, 1e-7, INTEGRACNI_LIMIT, workspace, &result, &error);
+    int status = gsl_integration_qags(&fce, a, b, INTEGRACNI_CHYBA, 0, INTEGRACNI_LIMIT, workspace, &result, &error);
 
     if(status != GSL_SUCCESS)
     {
         Message("UDF integrace se nezdarila\nChyba: %s\n", gsl_strerror(status));
     }
+
+#ifdef DEBUG_VYPIS
+
+#endif
 
     return C1*result;
 

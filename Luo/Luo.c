@@ -15,7 +15,7 @@ static gsl_integration_workspace* workspace2 = NULL;
 
 DEFINE_EXECUTE_AT_EXIT(uvolneni_integratoru)
 {
-#if !PARALLEL || RP_NODE
+#if !RP_HOST
     if(workspace != NULL)
     {
         gsl_integration_workspace_free(workspace);
@@ -34,7 +34,7 @@ DEFINE_EXECUTE_AT_EXIT(uvolneni_integratoru)
 
 DEFINE_EXECUTE_ON_LOADING(inicializace_integratoru, libname)
 {
-#if !PARALLEL || RP_NODE
+#if !RP_HOST
     if(workspace == NULL)
         workspace = gsl_integration_workspace_alloc(INTEGRACNI_LIMIT);
 
@@ -82,7 +82,7 @@ DEFINE_PB_BREAK_UP_RATE_FREQ(break_up_freq_luo, cell, thread, d_1)
     real a = 0;
     real b = 1;
 
-    int status = gsl_integration_qags(&fce, a, b, 0, INTEGRACNI_CHYBA, INTEGRACNI_LIMIT, workspace, &result, &error);
+    int status = gsl_integration_qags(&fce, a, b, INTEGRACNI_CHYBA, 0, INTEGRACNI_LIMIT, workspace, &result, &error);
 
     if(status != GSL_SUCCESS)
     {

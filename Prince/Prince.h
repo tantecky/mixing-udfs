@@ -13,6 +13,12 @@
 #error "UDF vyzaduje double precision mode"
 #endif
 
+#ifdef DEBUG_VYPIS
+#if PARALLEL
+#error "DEBUG_VYPIS vyzaduje serial resic"
+#endif
+#endif
+
 typedef struct ParametryFce
 {
     real eps;
