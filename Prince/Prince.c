@@ -1,7 +1,8 @@
 #include "Prince.h"
 
 /* NASTAVENI KONSTANT ZDE!!! */
-#define INTEGRACNI_CHYBA 1e-7
+#define INTEGRACNI_CHYBA_ABS 1e-7
+#define INTEGRACNI_CHYBA_REL 0.0
 #define RHO_L 998.2
 #define SIGMA 0.0728
 #define C1 1.0
@@ -25,6 +26,10 @@ DEFINE_EXECUTE_AT_EXIT(uvolneni_integratoru)
         workspace = NULL;
     }
 #endif
+
+#ifdef DEBUG_VYPIS
+    fclose(debug_soubor);
+#endif
 }
 
 DEFINE_EXECUTE_ON_LOADING(inicializace_integratoru, libname)
@@ -40,6 +45,7 @@ DEFINE_EXECUTE_ON_LOADING(inicializace_integratoru, libname)
     else
     {
         Message("Nepodarilo se alokovat integracni knihovnu\n");
+        abort();
     }
 #endif
 
@@ -51,6 +57,8 @@ DEFINE_EXECUTE_ON_LOADING(inicializace_integratoru, libname)
         Message("Nepodarilo se vytvorit soubor DEBUG_VYPIS\n");
         abort();
     }
+
+    fprintf(debug_soubor,"eps\t\talpha\t\td_1\t\tresult\t\tIntError\n");
 #endif
 
 }
@@ -88,7 +96,7 @@ DEFINE_PB_BREAK_UP_RATE_FREQ(break_up_freq_prince, cell, thread, d_1)
     /* popis metody:
         http://www.gnu.org/software/gsl/manual/html_node/QAGS-adaptive-integration-with-singularities.html
     */
-    int status = gsl_integration_qags(&fce, a, b, INTEGRACNI_CHYBA, 0, INTEGRACNI_LIMIT, workspace, &result, &error);
+    int status = gsl_integration_qags(&fce, a, b, INTEGRACNI_CHYBA_ABS , INTEGRACNI_CHYBA_REL, INTEGRACNI_LIMIT, workspace, &result, &error);
 
     if(status != GSL_SUCCESS)
     {
@@ -96,7 +104,7 @@ DEFINE_PB_BREAK_UP_RATE_FREQ(break_up_freq_prince, cell, thread, d_1)
     }
 
 #ifdef DEBUG_VYPIS
-
+    fprintf(debug_soubor,"%f\t\t%f\t\t%f\t\t%f\t\t%f\n", pars->eps, pars->alpha, d_1, result, error);
 #endif
 
     return C1*result;
