@@ -101,6 +101,7 @@ DEFINE_PB_BREAK_UP_RATE_FREQ(break_up_freq_prince, cell, thread, d_1)
     if(status != GSL_SUCCESS)
     {
         Message("UDF integrace se nezdarila\nChyba: %s\n", gsl_strerror(status));
+        abort();
     }
 
 #ifdef DEBUG_VYPIS

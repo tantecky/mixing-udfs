@@ -1,7 +1,8 @@
 #include "Luo.h"
 
 #define INTEGRACNI_LIMIT 1000
-#define INTEGRACNI_CHYBA 1e-7
+#define INTEGRACNI_CHYBA_ABS 1e-7
+#define INTEGRACNI_CHYBA_REL 0.0
 /*fyzikalni konstanty*/
 #define SIGMA 0.0728
 #define RHO_L 998.2
@@ -82,11 +83,12 @@ DEFINE_PB_BREAK_UP_RATE_FREQ(break_up_freq_luo, cell, thread, d_1)
     real a = 0;
     real b = 1;
 
-    int status = gsl_integration_qags(&fce, a, b, INTEGRACNI_CHYBA, 0, INTEGRACNI_LIMIT, workspace, &result, &error);
+    int status = gsl_integration_qags(&fce, a, b, INTEGRACNI_CHYBA_ABS, INTEGRACNI_CHYBA_REL, INTEGRACNI_LIMIT, workspace, &result, &error);
 
     if(status != GSL_SUCCESS)
     {
         Message("UDF integrace se nezdarila\nChyba: %s\n", gsl_strerror(status));
+        abort();
     }
 
     return 0.5*0.9238*pow(eps, 1./3.)*pow(d_1, -2./3.)*(1 - alpha)*result;
@@ -117,12 +119,23 @@ real IntegraceF(real f, void* parametry)
     real ksimin = 11.4*eta/pars->d_1;
 
 
-    int status = gsl_integration_qags(&fce, ksimin, b, 0, INTEGRACNI_CHYBA, INTEGRACNI_LIMIT, workspace2, &result, &error);
+    int status = gsl_integration_qags(&fce, ksimin, b, 0, INTEGRACNI_CHYBA_ABS, INTEGRACNI_CHYBA_REL, workspace2, &result, &error);
 
     if(status != GSL_SUCCESS)
     {
         Message("UDF integrace se nezdarila\nChyba: %s\n", gsl_strerror(status));
+        abort();
     }
 
     return result;
+}
+
+DEFINE_PB_BREAK_UP_RATE_PDF(break_up_pdf_par, cell, thread, d_1, d_2)
+{
+    real eps = C_D(cell, THREAD_SUPER_THREAD(thread));
+    real alpha = C_VOF(cell, thread);
+
+    ParametryFce pars = {eps, alpha, d_1, 0.};
+
+    return 1.0;
 }
