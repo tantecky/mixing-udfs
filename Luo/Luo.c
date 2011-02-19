@@ -49,6 +49,7 @@ DEFINE_EXECUTE_ON_LOADING(inicializace_integratoru, libname)
     else
     {
         Message("Nepodarilo se alokovat integracni knihovnu\n");
+        abort();
     }
 #endif
 }
@@ -91,14 +92,14 @@ DEFINE_PB_BREAK_UP_RATE_FREQ(break_up_freq_luo, cell, thread, d_1)
         abort();
     }
 
-    return 0.5*0.9238*pow(eps, 1./3.)*pow(d_1, -2./3.)*(1 - alpha)*result;
+    return 0.5*result;
 }
 
 real IntegraceKsi(real ksi, void* parametry)
 {
     ParametryFce* pars = (ParametryFce*)parametry;
 
-    return pow((1 + ksi), 2)*pow(ksi, -11./3.)\
+    return 0.9238*pow(pars->eps, 1./3.)*pow(pars->d_1, -2./3.)*(1 - pars->alpha)*pow((1 + ksi), 2)*pow(ksi, -11./3.)\
            *exp(-12*pars->cf*SIGMA*pow(pars->eps, -2./3.)*pow(pars->d_1, -5./3.)*pow(ksi, -11./3.)*(1./RHO_L));
 
 }
@@ -119,7 +120,7 @@ real IntegraceF(real f, void* parametry)
     real ksimin = 11.4*eta/pars->d_1;
 
 
-    int status = gsl_integration_qags(&fce, ksimin, b, 0, INTEGRACNI_CHYBA_ABS, INTEGRACNI_CHYBA_REL, workspace2, &result, &error);
+    int status = gsl_integration_qags(&fce, ksimin, b, INTEGRACNI_CHYBA_ABS, INTEGRACNI_CHYBA_REL, INTEGRACNI_LIMIT, workspace2, &result, &error);
 
     if(status != GSL_SUCCESS)
     {
@@ -135,7 +136,43 @@ DEFINE_PB_BREAK_UP_RATE_PDF(break_up_pdf_par, cell, thread, d_1, d_2)
     real eps = C_D(cell, THREAD_SUPER_THREAD(thread));
     real alpha = C_VOF(cell, thread);
 
-    ParametryFce pars = {eps, alpha, d_1, 0.};
+    ParametryFce pars = {eps, alpha, d_1, 0.}; /*0 je cfd ktere se bude menit behem integrace*/
 
-    return 1.0;
+    gsl_function fce;
+    fce.function = &IntegraceF;
+    fce.params = &pars;
+
+    real result, error;
+    real a = 0;
+    real b = 1;
+
+    int status = gsl_integration_qags(&fce, a, b, INTEGRACNI_CHYBA_ABS, INTEGRACNI_CHYBA_REL, INTEGRACNI_LIMIT, workspace, &result, &error);
+
+    if(status != GSL_SUCCESS)
+    {
+        Message("UDF integrace se nezdarila\nChyba: %s\n", gsl_strerror(status));
+        abort();
+    }
+
+    /*jmenovatel*/
+
+    real betaDen = 0.5*result;
+
+    pars.cf = pow(d_2, 3.)*pow(d_1, -3.);
+    fce.function = &IntegraceKsi;
+
+    b = 1;
+    real eta = pow(pow(MJU_L/RHO_L, 3)/eps, 1./4.);
+    real ksimin = 11.4*eta/d_1;
+
+    status = gsl_integration_qags(&fce, ksimin, b, INTEGRACNI_CHYBA_ABS, INTEGRACNI_CHYBA_REL, INTEGRACNI_LIMIT, workspace2, &result, &error);
+
+    if(status != GSL_SUCCESS)
+    {
+        Message("UDF integrace se nezdarila\nChyba: %s\n", gsl_strerror(status));
+        abort();
+    }
+
+
+    return result/betaDen;
 }
