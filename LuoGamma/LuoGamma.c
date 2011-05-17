@@ -1,5 +1,9 @@
 #include "LuoGamma.h"
 
+#define INTEGRACNI_LIMIT 1000
+#define INTEGRACNI_CHYBA_ABS 0.0
+#define INTEGRACNI_CHYBA_REL 1e-3
+
 /*fyzikalni konstanty*/
 #define SIGMA 0.0728
 #define RHO_L 998.2
@@ -7,6 +11,38 @@
 #define RHO_G 1.225
 #define MJU_L 0.001003 /*dynamicka viskozita*/
 
+
+static gsl_integration_workspace* workspace = NULL;
+
+DEFINE_EXECUTE_AT_EXIT(uvolneni_integratoru)
+{
+#if !RP_HOST
+    if(workspace != NULL)
+    {
+        gsl_integration_workspace_free(workspace);
+
+        workspace = NULL;
+    }
+#endif
+}
+
+DEFINE_EXECUTE_ON_LOADING(inicializace_integratoru, libname)
+{
+#if !RP_HOST
+    if(workspace == NULL)
+        workspace = gsl_integration_workspace_alloc(INTEGRACNI_LIMIT);
+
+    if(workspace != NULL)
+    {
+        Message("Integracni knihovna alokovana\n");
+    }
+    else
+    {
+        Message("Nepodarilo se alokovat integracni knihovnu\n");
+        abort();
+    }
+#endif
+}
 
 
 DEFINE_PB_COALESCENCE_RATE(aggregation_kernel_luo,cell,thread,d_1,d_2)
@@ -24,9 +60,49 @@ DEFINE_PB_COALESCENCE_RATE(aggregation_kernel_luo,cell,thread,d_1,d_2)
     return omega*Pag;
 }
 
+real IntegraceF(real f, void* parametry)
+{
+    ParametryFce* pars = (ParametryFce*)parametry;
+
+    real cf = pow(f, 2./3.) + pow(1. - f, 2./3.) - 1.;
+    real beta = 2.0466;
+    real k1 = 0.9238;
+
+    real b = 12.*cf*SIGMA*pow(pars->eps, -2./3.)*pow(pars->d_1, -5./3.)/(beta*RHO_L);
+    real eta = pow(pow(MJU_L/RHO_L, 3.)/pars->eps, 1./4.);
+    real ksimin = 11.4*eta/pars->d_1;
+    real tm = b*pow(ksimin/pars->d_1, -11./3.);
+
+    real g = -3.*k1*beta*(1-pars->alpha)/(11.*pow(b,8./11.))*pow(pars->eps/pow(pars->d_1,2.),1./3.)*(gsl_sf_gamma_inc(8./11., tm) - gsl_sf_gamma_inc(8./11., b)\
+    + 2.*pow(b,3./11.)*(gsl_sf_gamma_inc(5./11., tm) - gsl_sf_gamma_inc(5./11., b)) + pow(b,6./11.)*(gsl_sf_gamma_inc(2./11., tm) - gsl_sf_gamma_inc(2./11., b)));
+
+    return g;
+}
+
 DEFINE_PB_BREAK_UP_RATE_FREQ(break_up_freq_luo, cell, thread, d_1)
 {
-    return 1.0;
+    real eps = C_D(cell, THREAD_SUPER_THREAD(thread));
+    real alpha = C_VOF(cell, thread);
+
+    ParametryFce pars = {eps, alpha, d_1};
+
+    gsl_function fce;
+    fce.function = &IntegraceF;
+    fce.params = &pars;
+
+    real result, error;
+    real a = 0;
+    real b = 1;
+
+    int status = gsl_integration_qags(&fce, a, b, INTEGRACNI_CHYBA_ABS, INTEGRACNI_CHYBA_REL, INTEGRACNI_LIMIT, workspace, &result, &error);
+
+    if(status != GSL_SUCCESS)
+    {
+        Message("UDF integrace se nezdarila\nChyba: %s\n", gsl_strerror(status));
+        abort();
+    }
+
+    return 0.5*result;
 }
 
 
@@ -35,18 +111,97 @@ DEFINE_PB_BREAK_UP_RATE_PDF(break_up_pdf_par, cell, thread, d_1, d_2)
     real eps = C_D(cell, THREAD_SUPER_THREAD(thread));
     real alpha = C_VOF(cell, thread);
 
-    real cf = pow(d_2, 2.0)*pow(d_1, -2.0) + pow(1 - pow(d_2, 3.0)*pow(d_1, -3.0), 2./3.) - 1.;
-    real beta1 = 8.0*gsl_sf_gamma(1./3.)*alpha/(5.0*M_PI);
-    real k1 = 15.0*pow(M_PI, 1./3.)*sqrt(beta1)/(8. * pow(2., 2./3.)*gsl_sf_gamma(1./3.));
+    ParametryFce pars = {eps, alpha, d_1};
 
-    real b = 12.*cf*SIGMA*pow(eps, -2./3.)*pow(d_2, -5./3.)/(beta1*MJU_L);
-    real tm = b*pow(MJU_L/d_2, -11./3.);
+    gsl_function fce;
+    fce.function = &IntegraceF;
+    fce.params = &pars;
 
-    real g = (gsl_sf_gamma_inc(2./11., tm) - gsl_sf_gamma_inc(2./11., b));
-
+    real result, error;
 
 
+    int status = gsl_integration_qags(&fce, 0, 1, INTEGRACNI_CHYBA_ABS, INTEGRACNI_CHYBA_REL, INTEGRACNI_LIMIT, workspace, &result, &error);
 
-    return g;
+    if(status != GSL_SUCCESS)
+    {
+        Message("UDF integrace se nezdarila\nChyba: %s\n", gsl_strerror(status));
+        abort();
+    }
 
+    real f = pow(d_2,3.)/pow(d_1,3.);
+    real cf = pow(f, 2./3.) + pow(1. - f, 2./3.) - 1.;
+    real beta = 2.0466;
+    real k1 = 0.9238;
+
+    real b = 12.*cf*SIGMA*pow(eps, -2./3.)*pow(d_1, -5./3.)/(beta*RHO_L);
+    real eta = pow(pow(MJU_L/RHO_L, 3.)/eps, 1./4.);
+    real ksimin = 11.4*eta/d_1;
+    real tm = b*pow(ksimin/d_1, -11./3.);
+
+    real g = -3.*k1*beta*(1-alpha)/(11.*pow(b,8./11.))*pow(eps/pow(d_1,2.),1./3.)*(gsl_sf_gamma_inc(8./11., tm) - gsl_sf_gamma_inc(8./11., b)\
+    + 2.*pow(b,3./11.)*(gsl_sf_gamma_inc(5./11., tm) - gsl_sf_gamma_inc(5./11., b)) + pow(b,6./11.)*(gsl_sf_gamma_inc(2./11., tm) - gsl_sf_gamma_inc(2./11., b)));
+
+    return g/result/0.5;
+
+}
+
+DEFINE_EXCHANGE_PROPERTY(schiller_modified,cell,mix_thread,s_col,f_col)
+{
+    Thread *thread_l, *thread_g;
+    real x_vel_l, y_vel_l, z_vel_l, x_vel_g, y_vel_g, z_vel_g, slip_x, slip_y, slip_z, rho_l, rho_g, alpha_l, alpha_g, mu_l, mu_t_l, d_g, abs_v, rey_p, rey_p_mod, c_D, f, tau_g, K_gl;
+
+#define C 0.3
+
+    /* find the threads for the liquid (primary) */
+    /* and gas (secondary phases)                */
+
+    thread_l = THREAD_SUB_THREAD(mix_thread, s_col); /*liquid phase*/
+    thread_g = THREAD_SUB_THREAD(mix_thread, f_col); /*gas phase*/
+
+    /*find phase velocities and properties*/
+
+    x_vel_l = C_U(cell, thread_l);
+    y_vel_l = C_V(cell, thread_l);
+    z_vel_l = C_W(cell, thread_l);
+
+    x_vel_g = C_U(cell, thread_g);
+    y_vel_g = C_V(cell, thread_g);
+    z_vel_g = C_W(cell, thread_g);
+
+    slip_x = x_vel_l - x_vel_g;
+    slip_y = y_vel_l - y_vel_g;
+    slip_z = z_vel_l - z_vel_g;
+
+    rho_l = C_R(cell, thread_l);
+    rho_g = C_R(cell, thread_g);
+
+    alpha_l = C_VOF(cell, thread_l);
+    alpha_g = C_VOF(cell, thread_g);
+
+    mu_l = C_MU_L(cell, thread_l);
+    mu_t_l = C_MU_T(cell, thread_l);
+
+    d_g = C_PHASE_DIAMETER(cell,thread_g);
+
+    /*compute slip*/
+    abs_v = sqrt(slip_x*slip_x + slip_y*slip_y + slip_z*slip_z);
+
+    /*compute Reynold's number*/
+    rey_p = rho_l*abs_v*d_g/mu_l + 1e-5;
+    /*modified Reynold's number - used only in the drag coefficient correlation!!!*/
+    rey_p_mod = rho_l*abs_v*d_g/(mu_l+C*mu_t_l) + 1e-5;
+
+    /*compute drag and return drag exchange coeff K_gl*/
+    if(rey_p_mod <= 1000.)
+        c_D = 24.*(1.+0.15*pow(rey_p_mod,0.687))/rey_p_mod;
+    else
+        c_D = 0.44;
+
+    f = c_D*rey_p/24.;
+
+    tau_g = rho_g*pow(d_g,2.)/(18.*mu_l);
+
+    K_gl = alpha_l*alpha_g*rho_g*f/tau_g;
+
+    return K_gl;
 }
