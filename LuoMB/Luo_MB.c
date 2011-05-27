@@ -1,8 +1,7 @@
 #include "Luo_MB.h"
 
-#define INTEGRACNI_LIMIT 1000
 #define INTEGRACNI_CHYBA_ABS 0
-#define INTEGRACNI_CHYBA_REL 1e-3
+#define INTEGRACNI_CHYBA_REL 1e-2
 /*fyzikalni konstanty*/
 #define SIGMA 0.0728
 #define C 0.3
@@ -11,38 +10,6 @@
 #define RHO_G 1.225
 #define MJU_L 0.001003 /*dynamicka viskozita*/
 
-
-static gsl_integration_workspace* workspace = NULL;
-
-DEFINE_EXECUTE_AT_EXIT(uvolneni_integratoru)
-{
-#if !RP_HOST
-    if(workspace != NULL)
-    {
-        gsl_integration_workspace_free(workspace);
-
-        workspace = NULL;
-    }
-#endif
-}
-
-DEFINE_EXECUTE_ON_LOADING(inicializace_integratoru, libname)
-{
-#if !RP_HOST
-    if(workspace == NULL)
-        workspace = gsl_integration_workspace_alloc(INTEGRACNI_LIMIT);
-
-    if(workspace != NULL)
-    {
-        Message("Integracni knihovna alokovana\n");
-    }
-    else
-    {
-        Message("Nepodarilo se alokovat integracni knihovnu\n");
-        abort();
-    }
-#endif
-}
 
 DEFINE_PB_COALESCENCE_RATE(aggregation_kernel_luo,cell,thread,d_1,d_2)
 {
@@ -84,8 +51,9 @@ DEFINE_PB_BREAK_UP_RATE_PDF(break_up_pdf_par, cell, thread, d_1, d_2)
     fce.function = &DstarInt;
     fce.params = &pars;
     real result, error;
+    size_t order;
 
-    int status = gsl_integration_qags(&fce, Dstarmin, Dstarmax, INTEGRACNI_CHYBA_ABS, INTEGRACNI_CHYBA_REL, INTEGRACNI_LIMIT, workspace, &result, &error);
+    int status = gsl_integration_qng(&fce, Dstarmin, Dstarmax, INTEGRACNI_CHYBA_ABS, INTEGRACNI_CHYBA_REL, &result, &error, &order);
 
     if(status != GSL_SUCCESS)
     {
