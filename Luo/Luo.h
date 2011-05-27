@@ -17,7 +17,7 @@ typedef struct ParametryFce
     real eps;
     real alpha;
     real d_1;
-    real cf;
+    real f;
 
 } ParametryFce;
 

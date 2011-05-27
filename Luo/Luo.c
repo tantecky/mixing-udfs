@@ -100,14 +100,14 @@ real IntegraceKsi(real ksi, void* parametry)
     ParametryFce* pars = (ParametryFce*)parametry;
 
     return 0.9238*pow(pars->eps, 1./3.)*pow(pars->d_1, -2./3.)*(1 - pars->alpha)*pow((1 + ksi), 2)*pow(ksi, -11./3.)\
-           *exp(-12*pars->cf*SIGMA*pow(pars->eps, -2./3.)*pow(pars->d_1, -5./3.)*pow(ksi, -11./3.)*(1./RHO_L));
+           *exp(-12*(pow(pars->f, 2./3.) + pow(1 - pars->f, 2./3.) - 1)*SIGMA*pow(pars->eps, -2./3.)*pow(pars->d_1, -5./3.)*pow(ksi, -11./3.)*(1./RHO_L));
 
 }
 
 real IntegraceF(real f, void* parametry)
 {
     ParametryFce* pars = (ParametryFce*)parametry;
-    pars->cf = pow(f, 2./3.) + pow(1 - f, 2./3.) - 1;
+    pars->f = f;
 
     gsl_function fce;
     fce.function = &IntegraceKsi;
@@ -158,7 +158,7 @@ DEFINE_PB_BREAK_UP_RATE_PDF(break_up_pdf_par, cell, thread, d_1, d_2)
 
     real betaDen = 0.5*result;
 
-    pars.cf = pow(d_2, 3.)*pow(d_1, -3.);
+    pars.f = pow(d_2, 3.)*pow(d_1, -3.);
     fce.function = &IntegraceKsi;
 
     b = 1;
