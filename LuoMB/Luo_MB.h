@@ -14,11 +14,9 @@
 
 typedef struct ParametryFce
 {
-    real eps;
-    real d_1;
-
+    real lambda;
 } ParametryFce;
 
-real IntegraceKsi(real, void*);
+real DstarInt(real, void*);
 
 #endif
