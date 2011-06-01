@@ -1,7 +1,5 @@
 #include "Luo_MB.h"
 
-#define INTEGRACNI_CHYBA_ABS 0
-#define INTEGRACNI_CHYBA_REL 1e-2
 /*fyzikalni konstanty*/
 #define SIGMA 0.0728
 #define C 0.3
@@ -47,21 +45,10 @@ DEFINE_PB_BREAK_UP_RATE_PDF(break_up_pdf_par, cell, thread, d_1, d_2)
 
     ParametryFce pars = {lambda};
 
-    gsl_function fce;
-    fce.function = &DstarInt;
-    fce.params = &pars;
-    real result, error;
-    size_t order;
+    real jmen = gk15(&DstarInt, Dstarmin, Dstarmax, &pars);
 
-    int status = gsl_integration_qng(&fce, Dstarmin, Dstarmax, INTEGRACNI_CHYBA_ABS, INTEGRACNI_CHYBA_REL, &result, &error, &order);
 
-    if(status != GSL_SUCCESS)
-    {
-        Message("UDF integrace se nezdarila\nChyba: %s\n", gsl_strerror(status));
-        abort();
-    }
-
-    return cit/result;
+    return cit/jmen;
 }
 
 real DstarInt(real Dstar, void* parametry)

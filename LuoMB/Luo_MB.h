@@ -4,8 +4,7 @@
 #include "udf.h"
 #include "sg_pb.h"
 #include "sg_mphase.h"
-#include <gsl/gsl_integration.h>
-#include <gsl/gsl_errno.h>
+#include "gk15.h"
 
 /* GSL use real precision */
 #if RP_DOUBLE == 0

@@ -54,6 +54,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="Luo_MB.h" />
+		<Unit filename="gk15.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="gk15.h" />
 		<Extensions>
 			<envvars />
 			<code_completion />
