@@ -46,10 +46,6 @@
 			<Add directory="../include/multiport/mpi_wrapper/src" />
 			<Add directory="../include/tgrid/src" />
 		</Compiler>
-		<Linker>
-			<Add option="-lgsl" />
-			<Add option="-lgslcblas" />
-		</Linker>
 		<Unit filename="Luo_MB.c">
 			<Option compilerVar="CC" />
 		</Unit>

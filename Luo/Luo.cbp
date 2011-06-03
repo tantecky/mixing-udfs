@@ -46,14 +46,14 @@
 			<Add directory="../include/multiport/mpi_wrapper/src" />
 			<Add directory="../include/tgrid/src" />
 		</Compiler>
-		<Linker>
-			<Add option="-lgsl" />
-			<Add option="-lgslcblas" />
-		</Linker>
 		<Unit filename="Luo.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="Luo.h" />
+		<Unit filename="gk15.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="gk15.h" />
 		<Extensions>
 			<envvars />
 			<code_completion />

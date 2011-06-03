@@ -1,8 +1,5 @@
 #include "Luo.h"
 
-#define INTEGRACNI_LIMIT 1000
-#define INTEGRACNI_CHYBA_ABS 1e-7
-#define INTEGRACNI_CHYBA_REL 0.0
 /*fyzikalni konstanty*/
 #define SIGMA 0.0728
 #define RHO_L 998.2
@@ -10,49 +7,6 @@
 #define RHO_G 1.225
 #define MJU_L 0.001003 /*dynamicka viskozita*/
 
-
-static gsl_integration_workspace* workspace = NULL;
-static gsl_integration_workspace* workspace2 = NULL;
-
-DEFINE_EXECUTE_AT_EXIT(uvolneni_integratoru)
-{
-#if !RP_HOST
-    if(workspace != NULL)
-    {
-        gsl_integration_workspace_free(workspace);
-
-        workspace = NULL;
-    }
-
-    if(workspace2 != NULL)
-    {
-        gsl_integration_workspace_free(workspace2);
-
-        workspace2 = NULL;
-    }
-#endif
-}
-
-DEFINE_EXECUTE_ON_LOADING(inicializace_integratoru, libname)
-{
-#if !RP_HOST
-    if(workspace == NULL)
-        workspace = gsl_integration_workspace_alloc(INTEGRACNI_LIMIT);
-
-    if(workspace2 == NULL)
-        workspace2 = gsl_integration_workspace_alloc(INTEGRACNI_LIMIT);
-
-    if(workspace != NULL && workspace2 != NULL)
-    {
-        Message("Integracni knihovna alokovana\n");
-    }
-    else
-    {
-        Message("Nepodarilo se alokovat integracni knihovnu\n");
-        abort();
-    }
-#endif
-}
 
 DEFINE_PB_COALESCENCE_RATE(aggregation_kernel_luo,cell,thread,d_1,d_2)
 {
@@ -76,21 +30,10 @@ DEFINE_PB_BREAK_UP_RATE_FREQ(break_up_freq_luo, cell, thread, d_1)
 
     ParametryFce pars = {eps, alpha, d_1, 0.}; /*0 je cfd ktere se bude menit behem integrace*/
 
-    gsl_function fce;
-    fce.function = &IntegraceF;
-    fce.params = &pars;
-
-    real result, error;
     real a = 0;
     real b = 1;
 
-    int status = gsl_integration_qags(&fce, a, b, INTEGRACNI_CHYBA_ABS, INTEGRACNI_CHYBA_REL, INTEGRACNI_LIMIT, workspace, &result, &error);
-
-    if(status != GSL_SUCCESS)
-    {
-        Message("UDF integrace se nezdarila\nChyba: %s\n", gsl_strerror(status));
-        abort();
-    }
+    real result = gk15(&IntegraceF, a, b, &pars);
 
     return 0.5*result;
 }
@@ -109,24 +52,11 @@ real IntegraceF(real f, void* parametry)
     ParametryFce* pars = (ParametryFce*)parametry;
     pars->f = f;
 
-    gsl_function fce;
-    fce.function = &IntegraceKsi;
-    fce.params = pars;
-
-    real result, error;
-
     real b = 1;
     real eta = pow(pow(MJU_L/RHO_L, 3)/pars->eps, 1./4.);
     real ksimin = 11.4*eta/pars->d_1;
 
-
-    int status = gsl_integration_qags(&fce, ksimin, b, INTEGRACNI_CHYBA_ABS, INTEGRACNI_CHYBA_REL, INTEGRACNI_LIMIT, workspace2, &result, &error);
-
-    if(status != GSL_SUCCESS)
-    {
-        Message("UDF integrace se nezdarila\nChyba: %s\n", gsl_strerror(status));
-        abort();
-    }
+    real result = gk15(&IntegraceKsi, ksimin, b, pars);
 
     return result;
 }
@@ -138,41 +68,23 @@ DEFINE_PB_BREAK_UP_RATE_PDF(break_up_pdf_par, cell, thread, d_1, d_2)
 
     ParametryFce pars = {eps, alpha, d_1, 0.}; /*0 je cfd ktere se bude menit behem integrace*/
 
-    gsl_function fce;
-    fce.function = &IntegraceF;
-    fce.params = &pars;
 
-    real result, error;
     real a = 0;
     real b = 1;
 
-    int status = gsl_integration_qags(&fce, a, b, INTEGRACNI_CHYBA_ABS, INTEGRACNI_CHYBA_REL, INTEGRACNI_LIMIT, workspace, &result, &error);
-
-    if(status != GSL_SUCCESS)
-    {
-        Message("UDF integrace se nezdarila\nChyba: %s\n", gsl_strerror(status));
-        abort();
-    }
+    real result = gk15(&IntegraceF, a, b,  &pars);
 
     /*jmenovatel*/
 
     real betaDen = 0.5*result;
 
     pars.f = pow(d_2, 3.)*pow(d_1, -3.);
-    fce.function = &IntegraceKsi;
 
     b = 1;
     real eta = pow(pow(MJU_L/RHO_L, 3)/eps, 1./4.);
     real ksimin = 11.4*eta/d_1;
 
-    status = gsl_integration_qags(&fce, ksimin, b, INTEGRACNI_CHYBA_ABS, INTEGRACNI_CHYBA_REL, INTEGRACNI_LIMIT, workspace2, &result, &error);
-
-    if(status != GSL_SUCCESS)
-    {
-        Message("UDF integrace se nezdarila\nChyba: %s\n", gsl_strerror(status));
-        abort();
-    }
-
+    result = gk15(&IntegraceKsi, ksimin, b, &pars);
 
     return result/betaDen;
 }
