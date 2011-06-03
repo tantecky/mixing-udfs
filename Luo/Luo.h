@@ -5,6 +5,8 @@
 #include "sg_pb.h"
 #include "sg_mphase.h"
 #include "gk15.h"
+#include <errno.h>
+#include <error.h>
 
 /* GSL use real precision */
 #if RP_DOUBLE == 0
@@ -22,5 +24,15 @@ typedef struct ParametryFce
 
 real IntegraceKsi(real, void*);
 real IntegraceF(real, void*);
+
+#ifdef DEBUG
+#define CHECK_ERRNO \
+if(errno != 0) \
+{ \
+   error(EXIT_FAILURE, errno, "\nFile: %s:%i\nError", __FILE__, __LINE__); \
+}
+#else
+#define CHECK_ERRNO
+#endif
 
 #endif

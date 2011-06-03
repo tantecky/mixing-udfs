@@ -8,6 +8,8 @@
 #define RHO_G 1.225
 #define MJU_L 0.001003 /*dynamicka viskozita*/
 
+/*if DEBUG is defined than CHECK_ERRNO takes effect*/
+#define DEBUG
 
 DEFINE_PB_COALESCENCE_RATE(aggregation_kernel_luo,cell,thread,d_1,d_2)
 {
@@ -21,14 +23,22 @@ DEFINE_PB_COALESCENCE_RATE(aggregation_kernel_luo,cell,thread,d_1,d_2)
     real We = RHO_L*d_1*u_12*u_12*(1./SIGMA);
     real Pag = exp(-C1*sqrt(0.75*(1+x_12*x_12)*(1+x_12*x_12*x_12))*pow(RHO_G/RHO_L + 0.5, -1./2.)*pow(1+x_12, -3.)*sqrt(We));
 
-    return omega*Pag;
+    real res =  omega*Pag;
+
+    CHECK_ERRNO
+
+    return res;
 }
 
 DEFINE_PB_BREAK_UP_RATE_FREQ(break_up_freq_martinez_bazan, cell, thread, d_1)
 {
     real eps = C_D(cell, THREAD_SUPER_THREAD(thread));
 
-    return 0.25*sqrt(8.2*pow(eps*d_1,2./3.)-12.*SIGMA/RHO_L/d_1)/d_1;
+    real res =  0.25*sqrt(8.2*pow(eps*d_1,2./3.)-12.*SIGMA/RHO_L/d_1)/d_1;
+
+    CHECK_ERRNO
+
+    return res;
 }
 
 DEFINE_PB_BREAK_UP_RATE_PDF(break_up_pdf_par, cell, thread, d_1, d_2)
@@ -42,17 +52,25 @@ DEFINE_PB_BREAK_UP_RATE_PDF(break_up_pdf_par, cell, thread, d_1, d_2)
     real Dstarmin = dmin/d_1;
     real Dstarmax = dmax/d_1;
 
+    CHECK_ERRNO
+
     if(Dstarmin > Dstarmax)
         return 0.0;
 
+    /*1-pow(Dstar,3.) muze byt zaporny!!*/
     real cit = (pow(Dstar,2./3.)-pow(lambda,5./3.))*(pow(1-pow(Dstar,3.),2./9.)-pow(lambda,5./3.));
+
+    CHECK_ERRNO
 
     ParametryFce pars = {lambda};
 
     real jmen = gk15(&DstarInt, Dstarmin, Dstarmax, &pars);
 
+    real res = cit/jmen;
 
-    return cit/jmen;
+    CHECK_ERRNO
+
+    return res;
 }
 
 real DstarInt(real Dstar, void* parametry)
@@ -118,6 +136,8 @@ DEFINE_EXCHANGE_PROPERTY(schiller_modified,cell,mix_thread,s_col,f_col)
     tau_g = rho_g*pow(d_g,2.)/(18.*mu_l);
 
     K_gl = alpha_l*alpha_g*rho_g*f/tau_g;
+
+    CHECK_ERRNO
 
     return K_gl;
 }
