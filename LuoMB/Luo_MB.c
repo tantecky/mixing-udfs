@@ -41,6 +41,10 @@ DEFINE_PB_BREAK_UP_RATE_PDF(break_up_pdf_par, cell, thread, d_1, d_2)
     real dmax = d_1*pow(1-pow(dmin/d_1,3.),1./3.);
     real Dstarmin = dmin/d_1;
     real Dstarmax = dmax/d_1;
+
+    if(Dstarmin > Dstarmax)
+        return 0.0;
+
     real cit = (pow(Dstar,2./3.)-pow(lambda,5./3.))*(pow(1-pow(Dstar,3.),2./9.)-pow(lambda,5./3.));
 
     ParametryFce pars = {lambda};
