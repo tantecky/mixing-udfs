@@ -1,3 +1,5 @@
+/*if ERRNO_CHECKING is defined than CHECK_ERRNO takes effect also pow, sqrt, pow are using ERRNO checking*/
+#define ERRNO_CHECKING
 #include "Luo.h"
 
 /*fyzikalni konstanty*/
@@ -6,9 +8,6 @@
 #define C1 1.
 #define RHO_G 1.225
 #define MJU_L 0.001003 /*dynamicka viskozita*/
-
-/*if DEBUG is defined than CHECK_ERRNO takes effect*/
-#define DEBUG
 
 DEFINE_PB_COALESCENCE_RATE(aggregation_kernel_luo,cell,thread,d_1,d_2)
 {
