@@ -31,7 +31,7 @@ double exps(double a, const char* file, int line)
 {
     double res = exp(a);
 
-    if(errno != 0)
+    if(errno ==  EDOM || errno == ERANGE)
     {
         error(EXIT_FAILURE, errno, "\nFile: %s:%i\nError in exp() exponent: %f\nError", file, line, a);
     }
@@ -43,7 +43,7 @@ double sqrts(double a, const char* file, int line)
 {
     double res = sqrt(a);
 
-    if(errno != 0)
+    if(errno ==  EDOM || errno == ERANGE)
     {
         error(EXIT_FAILURE, errno, "\nFile: %s:%i\nError in sqrt() base: %f\nError", file, line, a);
     }
@@ -55,7 +55,7 @@ double pows(double a, double b, const char* file, int line)
 {
     double res = pow(a, b);
 
-    if(errno != 0)
+    if(errno ==  EDOM || errno == ERANGE)
     {
         error(EXIT_FAILURE, errno, "\nFile: %s:%i\nError in pow() base: %f exponent: %f\nError", file, line, a, b);
     }
@@ -68,7 +68,7 @@ double pows(double a, double b, const char* file, int line)
 #define pow(a, b) pows(a, b, __FILE__, __LINE__)
 
 #define CHECK_ERRNO \
-if(errno != 0) \
+if(errno ==  EDOM || errno == ERANGE) \
 { \
    error(EXIT_FAILURE, errno, "\nFile: %s:%i\nError", __FILE__, __LINE__); \
 }
