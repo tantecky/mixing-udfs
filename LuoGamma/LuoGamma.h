@@ -34,7 +34,7 @@ double exps(double a, const char* file, int line)
 
     if(errno ==  EDOM || errno == ERANGE)
     {
-        error(EXIT_FAILURE, errno, "\nFile: %s:%i\nError in exp() exponent: %f\nError", file, line, a);
+        error(EXIT_FAILURE, errno, "\nFile: %s:%i\nError in exp() exponent: %e\nError", file, line, a);
     }
 
     return res;
@@ -46,7 +46,7 @@ double sqrts(double a, const char* file, int line)
 
     if(errno ==  EDOM || errno == ERANGE)
     {
-        error(EXIT_FAILURE, errno, "\nFile: %s:%i\nError in sqrt() base: %f\nError", file, line, a);
+        error(EXIT_FAILURE, errno, "\nFile: %s:%i\nError in sqrt() base: %e\nError", file, line, a);
     }
 
     return res;
@@ -58,7 +58,7 @@ double pows(double a, double b, const char* file, int line)
 
     if(errno ==  EDOM || errno == ERANGE)
     {
-        error(EXIT_FAILURE, errno, "\nFile: %s:%i\nError in pow() base: %f exponent: %f\nError", file, line, a, b);
+        error(EXIT_FAILURE, errno, "\nFile: %s:%i\nError in pow() base: %e exponent: %e\nError", file, line, a, b);
     }
 
     return res;
