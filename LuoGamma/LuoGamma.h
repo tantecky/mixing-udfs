@@ -65,13 +65,13 @@ double pows(double a, double b, const char* file, int line)
     return res;
 }
 
-double gammas(double a, double b, const char* file, int line)
+double gammas(double a, double b)
 {
     double res = gsl_sf_gamma_inc(a, b);
 
     if(errno ==  EDOM || errno == ERANGE)
     {
-        error(EXIT_FAILURE, errno, "\nFile: %s:%i\nError in gsl_sf_gamma_inc() returned: %e Arg1: %e Arg2: %e\nError", file, line, res, a, b);
+        errno = 0; /* GSL handles its errrors */
     }
 
     return res;
@@ -80,7 +80,7 @@ double gammas(double a, double b, const char* file, int line)
 #define exp(a) exps(a, __FILE__, __LINE__)
 #define sqrt(a) sqrts(a, __FILE__, __LINE__)
 #define pow(a, b) pows(a, b, __FILE__, __LINE__)
-#define gsl_sf_gamma_inc(a, b) gammas(a, b, __FILE__, __LINE__)
+#define gsl_sf_gamma_inc(a, b) gammas(a, b)
 
 #define CHECK_ERRNO \
 if(errno ==  EDOM || errno == ERANGE) \
