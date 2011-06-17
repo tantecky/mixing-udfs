@@ -34,7 +34,6 @@
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
-			<Add option="-ansi" />
 			<Add option="-fpic" />
 			<Add option="-DRP_CONFIG_3DDP" />
 			<Add directory="../include/src" />

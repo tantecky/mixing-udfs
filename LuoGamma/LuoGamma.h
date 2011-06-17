@@ -8,6 +8,7 @@
 #include <gsl/gsl_sf_gamma.h>
 #include "gk15.h"
 #include <errno.h>
+#include <math.h>
 #include <error.h>
 
 
@@ -65,13 +66,16 @@ double pows(double a, double b, const char* file, int line)
     return res;
 }
 
-double gammas(double a, double b)
+double gammas(double a, double b, const char* file, int line)
 {
     double res = gsl_sf_gamma_inc(a, b);
 
     if(errno ==  EDOM || errno == ERANGE)
     {
-        errno = 0; /* GSL handles its errrors */
+        if(isfinite(res))
+            errno = 0; /* GSL handles its errrors */
+        else
+            error(EXIT_FAILURE, errno, "\nFile: %s:%i\nError in gsl_sf_gamma_inc() returned: %e arg1: %e arg2: %e\nError", file, line, res, a, b);
     }
 
     return res;
@@ -80,7 +84,7 @@ double gammas(double a, double b)
 #define exp(a) exps(a, __FILE__, __LINE__)
 #define sqrt(a) sqrts(a, __FILE__, __LINE__)
 #define pow(a, b) pows(a, b, __FILE__, __LINE__)
-#define gsl_sf_gamma_inc(a, b) gammas(a, b)
+#define gsl_sf_gamma_inc(a, b) gammas(a, b, __FILE__, __LINE__)
 
 #define CHECK_ERRNO \
 if(errno ==  EDOM || errno == ERANGE) \

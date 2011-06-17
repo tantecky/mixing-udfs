@@ -12,12 +12,12 @@
 
 DEFINE_PB_COALESCENCE_RATE(aggregation_kernel_luo,cell,thread,d_1,d_2)
 {
-    real x[ND_ND];
+    /*real x[ND_ND];
     C_CENTROID(x, cell, thread);
     real y = x[1];
 
     if(y > 0.3)
-        return 0.0;
+        return 0.0;*/
 
     real eps = C_D(cell, THREAD_SUPER_THREAD(thread));
 
@@ -116,12 +116,12 @@ real IntegraceF(real f, void* parametry)
 
 DEFINE_PB_BREAK_UP_RATE_FREQ(break_up_freq_luo, cell, thread, d_1)
 {
-    real x[ND_ND];
+    /*real x[ND_ND];
     C_CENTROID(x, cell, thread);
     real y = x[1];
 
     if(y > 0.3)
-        return 0.0;
+        return 0.0;*/
 
 
     real eps = C_D(cell, THREAD_SUPER_THREAD(thread));
@@ -142,12 +142,12 @@ DEFINE_PB_BREAK_UP_RATE_FREQ(break_up_freq_luo, cell, thread, d_1)
 
 DEFINE_PB_BREAK_UP_RATE_PDF(break_up_pdf_par, cell, thread, d_1, d_2)
 {
-    real x[ND_ND];
+    /*real x[ND_ND];
     C_CENTROID(x, cell, thread);
     real y = x[1];
 
     if(y > 0.3)
-        return 0.0;
+        return 0.0;*/
 
     if(d_2 > d_1)
         d_2 = d_1;
@@ -222,11 +222,11 @@ DEFINE_PB_BREAK_UP_RATE_PDF(break_up_pdf_par, cell, thread, d_1, d_2)
 
     real g8 = gsl_sf_gamma_inc(2./11., tm);
 
-   /*if(isnan(g8))
-    {
-        g8 = 0.0;
-        errno = 0;
-    }*/
+    /*if(isnan(g8))
+     {
+         g8 = 0.0;
+         errno = 0;
+     }*/
 
     CHECK_ERRNO
 
