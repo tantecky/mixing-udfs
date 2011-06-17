@@ -2,6 +2,7 @@
 #define LUO_H_INCLUDED
 
 #include "udf.h"
+#include "metric.h"
 #include "sg_pb.h"
 #include "sg_mphase.h"
 #include <gsl/gsl_sf_gamma.h>
@@ -34,7 +35,7 @@ double exps(double a, const char* file, int line)
 
     if(errno ==  EDOM || errno == ERANGE)
     {
-        error(EXIT_FAILURE, errno, "\nFile: %s:%i\nError in exp() exponent: %e\nError", file, line, a);
+        error(EXIT_FAILURE, errno, "\nFile: %s:%i\nError in exp() returned: %e exponent: %e\nError", file, line, res, a);
     }
 
     return res;
@@ -46,7 +47,7 @@ double sqrts(double a, const char* file, int line)
 
     if(errno ==  EDOM || errno == ERANGE)
     {
-        error(EXIT_FAILURE, errno, "\nFile: %s:%i\nError in sqrt() base: %e\nError", file, line, a);
+        error(EXIT_FAILURE, errno, "\nFile: %s:%i\nError in sqrt() returned: %e base: %e\nError", file, line, res, a);
     }
 
     return res;
@@ -58,7 +59,19 @@ double pows(double a, double b, const char* file, int line)
 
     if(errno ==  EDOM || errno == ERANGE)
     {
-        error(EXIT_FAILURE, errno, "\nFile: %s:%i\nError in pow() base: %e exponent: %e\nError", file, line, a, b);
+        error(EXIT_FAILURE, errno, "\nFile: %s:%i\nError in pow() returned: %e base: %e exponent: %e\nError", file, line, res, a, b);
+    }
+
+    return res;
+}
+
+double gammas(double a, double b, const char* file, int line)
+{
+    double res = gsl_sf_gamma_inc(a, b);
+
+    if(errno ==  EDOM || errno == ERANGE)
+    {
+        error(EXIT_FAILURE, errno, "\nFile: %s:%i\nError in gsl_sf_gamma_inc() returned: %e Arg1: %e Arg2: %e\nError", file, line, res, a, b);
     }
 
     return res;
@@ -67,6 +80,7 @@ double pows(double a, double b, const char* file, int line)
 #define exp(a) exps(a, __FILE__, __LINE__)
 #define sqrt(a) sqrts(a, __FILE__, __LINE__)
 #define pow(a, b) pows(a, b, __FILE__, __LINE__)
+#define gsl_sf_gamma_inc(a, b) gammas(a, b, __FILE__, __LINE__)
 
 #define CHECK_ERRNO \
 if(errno ==  EDOM || errno == ERANGE) \

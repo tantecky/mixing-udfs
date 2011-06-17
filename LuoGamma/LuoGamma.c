@@ -12,6 +12,13 @@
 
 DEFINE_PB_COALESCENCE_RATE(aggregation_kernel_luo,cell,thread,d_1,d_2)
 {
+    real x[ND_ND];
+    C_CENTROID(x, cell, thread);
+    real y = x[1];
+
+    if(y > 0.3)
+        return 0.0;
+
     real eps = C_D(cell, THREAD_SUPER_THREAD(thread));
 
     real u_1 = 1.43*pow(eps*d_1,1./3.);
@@ -46,8 +53,61 @@ real IntegraceF(real f, void* parametry)
 
     CHECK_ERRNO
 
-    real g = -3.*k1*beta*(1-pars->alpha)/(11.*pow(b,8./11.))*pow(pars->eps/pow(pars->d_1,2.),1./3.)*(gsl_sf_gamma_inc(8./11., tm) - gsl_sf_gamma_inc(8./11., b)\
-             + 2.*pow(b,3./11.)*(gsl_sf_gamma_inc(5./11., tm) - gsl_sf_gamma_inc(5./11., b)) + pow(b,6./11.)*(gsl_sf_gamma_inc(2./11., tm) - gsl_sf_gamma_inc(2./11., b)));
+    real g1 = -3.*k1*beta*(1-pars->alpha)/(11.*pow(b,8./11.))*pow(pars->eps/pow(pars->d_1,2.),1./3.);
+
+    CHECK_ERRNO
+
+    real g2 = gsl_sf_gamma_inc(8./11., tm);
+
+    /*if(isnan(g2))
+    {
+        g2 = 0.0;
+        errno = 0;
+    }*/
+
+    CHECK_ERRNO
+
+    real g3 = gsl_sf_gamma_inc(8./11., b);
+
+    CHECK_ERRNO
+
+    real g4 = 2.*pow(b,3./11.);
+
+    CHECK_ERRNO
+
+    real g5 = gsl_sf_gamma_inc(5./11., tm);
+
+    /*if(isnan(g5))
+    {
+        g5 = 0.0;
+        errno = 0;
+    }*/
+
+    CHECK_ERRNO
+
+    real g6 = gsl_sf_gamma_inc(5./11., b);
+
+    CHECK_ERRNO
+
+    real g7 = pow(b,6./11.);
+
+    CHECK_ERRNO
+
+    real g8 = gsl_sf_gamma_inc(2./11., tm);
+
+    /*if(isnan(g8))
+    {
+        g8 = 0.0;
+        errno = 0;
+    }*/
+
+    CHECK_ERRNO
+
+    real g9 = gsl_sf_gamma_inc(2./11., b);
+
+    CHECK_ERRNO
+
+    real g = g1*(g2-g3+g4*(g5-g6)+g7*(g8-g9));
 
     CHECK_ERRNO
 
@@ -56,6 +116,14 @@ real IntegraceF(real f, void* parametry)
 
 DEFINE_PB_BREAK_UP_RATE_FREQ(break_up_freq_luo, cell, thread, d_1)
 {
+    real x[ND_ND];
+    C_CENTROID(x, cell, thread);
+    real y = x[1];
+
+    if(y > 0.3)
+        return 0.0;
+
+
     real eps = C_D(cell, THREAD_SUPER_THREAD(thread));
     real alpha = C_VOF(cell, thread);
 
@@ -74,6 +142,16 @@ DEFINE_PB_BREAK_UP_RATE_FREQ(break_up_freq_luo, cell, thread, d_1)
 
 DEFINE_PB_BREAK_UP_RATE_PDF(break_up_pdf_par, cell, thread, d_1, d_2)
 {
+    real x[ND_ND];
+    C_CENTROID(x, cell, thread);
+    real y = x[1];
+
+    if(y > 0.3)
+        return 0.0;
+
+    if(d_2 > d_1)
+        d_2 = d_1;
+
     real eps = C_D(cell, THREAD_SUPER_THREAD(thread));
     real alpha = C_VOF(cell, thread);
 
@@ -98,12 +176,65 @@ DEFINE_PB_BREAK_UP_RATE_PDF(break_up_pdf_par, cell, thread, d_1, d_2)
     b = 12.*cf*SIGMA*pow(eps, -2./3.)*pow(d_1, -5./3.)/(beta*RHO_L);
     real eta = pow(pow(MJU_L/RHO_L, 3.)/eps, 1./4.);
     real ksimin = 11.4*eta/d_1;
-    real tm = b*pow(ksimin/d_1, -11./3.);
+    real tm = b*pow(ksimin, -11./3.);
 
     CHECK_ERRNO
 
-    real g = -3.*k1*beta*(1-alpha)/(11.*pow(b,8./11.))*pow(eps/pow(d_1,2.),1./3.)*(gsl_sf_gamma_inc(8./11., tm) - gsl_sf_gamma_inc(8./11., b)\
-             + 2.*pow(b,3./11.)*(gsl_sf_gamma_inc(5./11., tm) - gsl_sf_gamma_inc(5./11., b)) + pow(b,6./11.)*(gsl_sf_gamma_inc(2./11., tm) - gsl_sf_gamma_inc(2./11., b)));
+    real g1 = -3.*k1*beta*(1-alpha)/(11.*pow(b,8./11.))*pow(eps/pow(d_1,2.),1./3.);
+
+    CHECK_ERRNO
+
+    real g2 = gsl_sf_gamma_inc(8./11., tm);
+
+    /*if(isnan(g2))
+    {
+        g2 = 0.0;
+        errno = 0;
+    }*/
+
+    CHECK_ERRNO
+
+    real g3 = gsl_sf_gamma_inc(8./11., b);
+
+    CHECK_ERRNO
+
+    real g4 = 2.*pow(b,3./11.);
+
+    CHECK_ERRNO
+
+    real g5 = gsl_sf_gamma_inc(5./11., tm);
+
+    /*if(isnan(g5))
+    {
+        g5 = 0.0;
+        errno = 0;
+    }*/
+
+    CHECK_ERRNO
+
+    real g6 = gsl_sf_gamma_inc(5./11., b);
+
+    CHECK_ERRNO
+
+    real g7 = pow(b,6./11.);
+
+    CHECK_ERRNO
+
+    real g8 = gsl_sf_gamma_inc(2./11., tm);
+
+   /*if(isnan(g8))
+    {
+        g8 = 0.0;
+        errno = 0;
+    }*/
+
+    CHECK_ERRNO
+
+    real g9 = gsl_sf_gamma_inc(2./11., b);
+
+    CHECK_ERRNO
+
+    real g = g1*(g2-g3+g4*(g5-g6)+g7*(g8-g9));
 
     CHECK_ERRNO
 
