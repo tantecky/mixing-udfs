@@ -12,7 +12,7 @@
 
 DEFINE_EXECUTE_ON_LOADING(on_load, libname)
 {
-    Message("Builded: %s %s\n", __DATE__, __TIME__);
+    Message("\nBuilded: %s %s\n", __DATE__, __TIME__);
 }
 
 DEFINE_PB_COALESCENCE_RATE(aggregation_kernel_luo,cell,thread,d_1,d_2)

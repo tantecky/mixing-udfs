@@ -1,6 +1,17 @@
 #ifndef GK_H_INCLUDED
 #define GK_H_INCLUDED
 
+#include <errno.h>
+#include <math.h>
+#include <error.h>
+#include <stdlib.h>
+
+#define CHECK_ERRNO \
+if(errno ==  EDOM || errno == ERANGE) \
+{ \
+   error(EXIT_FAILURE, errno, "\nFile: %s:%i\nError", __FILE__, __LINE__); \
+}
+
 static const double nodes[7] =
 {
     0.991455371120813,
