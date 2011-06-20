@@ -10,6 +10,11 @@
 #define MJU_L 0.001003 /*dynamicka viskozita*/
 #define C 0.3
 
+DEFINE_EXECUTE_ON_LOADING(on_load, libname)
+{
+    Message("Builded: %s %s\n", __DATE__, __TIME__);
+}
+
 DEFINE_PB_COALESCENCE_RATE(aggregation_kernel_luo,cell,thread,d_1,d_2)
 {
     /*real x[ND_ND];
@@ -58,54 +63,16 @@ real IntegraceF(real f, void* parametry)
     CHECK_ERRNO
 
     real g2 = gsl_sf_gamma_inc(8./11., tm);
-
-    /*if(isnan(g2))
-    {
-        g2 = 0.0;
-        errno = 0;
-    }*/
-
-    CHECK_ERRNO
-
     real g3 = gsl_sf_gamma_inc(8./11., b);
-
-    CHECK_ERRNO
-
     real g4 = 2.*pow(b,3./11.);
 
     CHECK_ERRNO
 
     real g5 = gsl_sf_gamma_inc(5./11., tm);
-
-    /*if(isnan(g5))
-    {
-        g5 = 0.0;
-        errno = 0;
-    }*/
-
-    CHECK_ERRNO
-
     real g6 = gsl_sf_gamma_inc(5./11., b);
-
-    CHECK_ERRNO
-
     real g7 = pow(b,6./11.);
-
-    CHECK_ERRNO
-
     real g8 = gsl_sf_gamma_inc(2./11., tm);
-
-    /*if(isnan(g8))
-    {
-        g8 = 0.0;
-        errno = 0;
-    }*/
-
-    CHECK_ERRNO
-
     real g9 = gsl_sf_gamma_inc(2./11., b);
-
-    CHECK_ERRNO
 
     real g = g1*(g2-g3+g4*(g5-g6)+g7*(g8-g9));
 
@@ -185,54 +152,13 @@ DEFINE_PB_BREAK_UP_RATE_PDF(break_up_pdf_par, cell, thread, d_1, d_2)
     CHECK_ERRNO
 
     real g2 = gsl_sf_gamma_inc(8./11., tm);
-
-    /*if(isnan(g2))
-    {
-        g2 = 0.0;
-        errno = 0;
-    }*/
-
-    CHECK_ERRNO
-
     real g3 = gsl_sf_gamma_inc(8./11., b);
-
-    CHECK_ERRNO
-
     real g4 = 2.*pow(b,3./11.);
-
-    CHECK_ERRNO
-
     real g5 = gsl_sf_gamma_inc(5./11., tm);
-
-    /*if(isnan(g5))
-    {
-        g5 = 0.0;
-        errno = 0;
-    }*/
-
-    CHECK_ERRNO
-
     real g6 = gsl_sf_gamma_inc(5./11., b);
-
-    CHECK_ERRNO
-
     real g7 = pow(b,6./11.);
-
-    CHECK_ERRNO
-
     real g8 = gsl_sf_gamma_inc(2./11., tm);
-
-    /*if(isnan(g8))
-     {
-         g8 = 0.0;
-         errno = 0;
-     }*/
-
-    CHECK_ERRNO
-
     real g9 = gsl_sf_gamma_inc(2./11., b);
-
-    CHECK_ERRNO
 
     real g = g1*(g2-g3+g4*(g5-g6)+g7*(g8-g9));
 
