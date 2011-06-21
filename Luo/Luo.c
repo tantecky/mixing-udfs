@@ -36,13 +36,13 @@ DEFINE_PB_BREAK_UP_RATE_FREQ(break_up_freq_luo, cell, thread, d_1)
     ParametryFce pars = {eps, alpha, d_1, 0.}; /*0 je cfd ktere se bude menit behem integrace*/
 
     real a = 0;
-    real b = 1;
+    real b = 0.5;
 
     real result = gk15(&IntegraceF, a, b, &pars);
 
     CHECK_ERRNO
 
-    return 0.5*result;
+    return result;
 }
 
 real IntegraceKsi(real ksi, void* parametry)
@@ -79,9 +79,8 @@ DEFINE_PB_BREAK_UP_RATE_PDF(break_up_pdf_par, cell, thread, d_1, d_2)
 
     ParametryFce pars = {eps, alpha, d_1, 0.}; /*0 je cfd ktere se bude menit behem integrace*/
 
-
     real a = 0;
-    real b = 1;
+    real b = 0.5;
 
     real result = gk15(&IntegraceF, a, b,  &pars);
 
@@ -89,7 +88,7 @@ DEFINE_PB_BREAK_UP_RATE_PDF(break_up_pdf_par, cell, thread, d_1, d_2)
 
     /*jmenovatel*/
 
-    real betaDen = 0.5*result;
+    real betaDen = result;
 
     pars.f = pow(d_2, 3.)*pow(d_1, -3.);
 
