@@ -10,14 +10,10 @@ double gk15( double (*fce)(double, void*), double a, double b, void* pars)
     int i;
     for(i = 0; i < 7; i++)
     {
-        CHECK_ERRNO
         integral += weights[i]*((*fce)(trans1*nodes[i] + trans2, pars) + (*fce)(trans1*(-nodes[i]) + trans2, pars));
-        CHECK_ERRNO
     }
 
     integral += weights[7]*(*fce)(trans2, pars);
-
-    CHECK_ERRNO
 
     return trans1*integral;
 }
