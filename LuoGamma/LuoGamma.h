@@ -7,9 +7,7 @@
 #include "sg_mphase.h"
 #include <gsl/gsl_sf_gamma.h>
 #include "gk15.h"
-#include <errno.h>
 #include <math.h>
-#include <error.h>
 
 
 /* UDF use real precision */
@@ -34,9 +32,10 @@ double exps(double a, const char* file, int line)
 {
     double res = exp(a);
 
-    if(errno ==  EDOM || errno == ERANGE)
+    if(!isfinite(res))
     {
-        error(EXIT_FAILURE, errno, "\nFile: %s:%i\nError in exp() returned: %e exponent: %e\nError", file, line, res, a);
+        fprintf(stderr, "\nFile: %s:%i\nError in exp() returned: %e exponent: %e\n", file, line, res, a);
+        abort();
     }
 
     return res;
@@ -46,9 +45,10 @@ double sqrts(double a, const char* file, int line)
 {
     double res = sqrt(a);
 
-    if(errno ==  EDOM || errno == ERANGE)
+    if(!isfinite(res))
     {
-        error(EXIT_FAILURE, errno, "\nFile: %s:%i\nError in sqrt() returned: %e base: %e\nError", file, line, res, a);
+        fprintf(stderr, "\nFile: %s:%i\nError in sqrt() returned: %e base: %e\n", file, line, res, a);
+        abort();
     }
 
     return res;
@@ -58,9 +58,10 @@ double pows(double a, double b, const char* file, int line)
 {
     double res = pow(a, b);
 
-    if(errno ==  EDOM || errno == ERANGE)
+    if(!isfinite(res))
     {
-        error(EXIT_FAILURE, errno, "\nFile: %s:%i\nError in pow() returned: %e base: %e exponent: %e\nError", file, line, res, a, b);
+        fprintf(stderr, "\nFile: %s:%i\nError in pow() returned: %e base: %e exponent: %e\n", file, line, res, a, b);
+        abort();
     }
 
     return res;
@@ -70,12 +71,11 @@ double gammas(double a, double b, const char* file, int line)
 {
     double res = gsl_sf_gamma_inc(a, b);
 
-    if(errno ==  EDOM || errno == ERANGE)
+    if(!isfinite(res))
     {
-        if(isfinite(res))
-            errno = 0; /* GSL handles its errrors */
-        else
-            error(EXIT_FAILURE, errno, "\nFile: %s:%i\nError in gsl_sf_gamma_inc() returned: %e arg1: %e arg2: %e\nError", file, line, res, a, b);
+
+        fprintf(stderr, "\nFile: %s:%i\nError in gsl_sf_gamma_inc() returned: %e arg1: %e arg2: %e\n", file, line, res, a, b);
+        abort();
     }
 
     return res;
@@ -86,13 +86,13 @@ double gammas(double a, double b, const char* file, int line)
 #define pow(a, b) pows(a, b, __FILE__, __LINE__)
 #define gsl_sf_gamma_inc(a, b) gammas(a, b, __FILE__, __LINE__)
 
-#define CHECK_ERRNO \
-if(errno ==  EDOM || errno == ERANGE) \
-{ \
-   error(EXIT_FAILURE, errno, "\nFile: %s:%i\nError", __FILE__, __LINE__); \
-}
+#define CHECK_ERRNO(result) \
+if(!isfinite(result)) \
+   fprintf(stderr, "\nDetected: %e on %s:%i\n",  result, __FILE__, __LINE__); \
+   abort(); \
+   (void)0
 #else
-#define CHECK_ERRNO
+#define CHECK_ERRNO (void)0
 #endif
 
 #endif

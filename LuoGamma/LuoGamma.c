@@ -34,11 +34,11 @@ DEFINE_PB_COALESCENCE_RATE(aggregation_kernel_luo,cell,thread,d_1,d_2)
     real We = RHO_L*d_1*u_12*u_12*(1./SIGMA);
     real Pag = exp(-C1*sqrt(0.75*(1+x_12*x_12)*(1+x_12*x_12*x_12))*pow(RHO_G/RHO_L + 0.5, -1./2.)*pow(1+x_12, -3.)*sqrt(We));
 
-    CHECK_ERRNO
+    CHECK_ERRNO(Pag);
 
     real result = omega*Pag;
 
-    CHECK_ERRNO
+    CHECK_ERRNO(result);
 
     return result;
 }
@@ -53,23 +53,23 @@ real IntegraceF(real f, void* parametry)
 
     real b = 12.*cf*SIGMA*pow(pars->eps, -2./3.)*pow(pars->d_1, -5./3.)/(beta*RHO_L);
 
-    CHECK_ERRNO
+    CHECK_ERRNO(b);
 
     real g1 = -3.*k1*beta*(1-pars->alpha)/(11.*pow(b,8./11.))*pow(pars->eps/pow(pars->d_1,2.),1./3.);
 
-    CHECK_ERRNO
+    CHECK_ERRNO(g1);
 
     real g3 = gsl_sf_gamma_inc(8./11., b);
     real g4 = 2.*pow(b,3./11.);
 
-    CHECK_ERRNO
+    CHECK_ERRNO(g4);
 
     real g6 = gsl_sf_gamma_inc(5./11., b);
     real g7 = pow(b,6./11.);
     real g9 = gsl_sf_gamma_inc(2./11., b);
     real g = g1*(0.-g3+g4*(0.-g6)+g7*(0.-g9));
 
-    CHECK_ERRNO
+    CHECK_ERRNO(g);
 
     return g;
 }
@@ -95,7 +95,7 @@ DEFINE_PB_BREAK_UP_RATE_FREQ(break_up_freq_luo, cell, thread, d_1)
 
     result = gk15(&IntegraceF, a, b, &pars);
 
-    CHECK_ERRNO
+    CHECK_ERRNO(result);
 
     return result;
 }
@@ -109,8 +109,8 @@ DEFINE_PB_BREAK_UP_RATE_PDF(break_up_pdf_par, cell, thread, d_1, d_2)
     if(y > 0.3)
         return 0.0;*/
 
-    if(d_2 > d_1)
-        d_2 = d_1;
+    if(d_2 > 0.99*d_1)
+        d_2 = 0.985*d_1;
 
     real eps = C_D(cell, THREAD_SUPER_THREAD(thread));
     real alpha = C_VOF(cell, thread);
@@ -124,25 +124,23 @@ DEFINE_PB_BREAK_UP_RATE_PDF(break_up_pdf_par, cell, thread, d_1, d_2)
 
     result = gk15(&IntegraceF, a, b, &pars);
 
-    if(!isfinite(result))
-        return 0.;
+    CHECK_ERRNO(result);
 
-    CHECK_ERRNO
 
     real f = pow(d_2,3.)/pow(d_1,3.);
     real cf = pow(f, 2./3.) + pow(1. - f, 2./3.) - 1.;
     real beta = 2.0466;
     real k1 = 0.9238;
 
-    CHECK_ERRNO
+    CHECK_ERRNO(cf);
 
     b = 12.*cf*SIGMA*pow(eps, -2./3.)*pow(d_1, -5./3.)/(beta*RHO_L);
 
-    CHECK_ERRNO
+    CHECK_ERRNO(b);
 
     real g1 = -3.*k1*beta*(1-alpha)/(11.*pow(b,8./11.))*pow(eps/pow(d_1,2.),1./3.);
 
-    CHECK_ERRNO
+    CHECK_ERRNO(g1);
 
     real g3 = gsl_sf_gamma_inc(8./11., b);
     real g4 = 2.*pow(b,3./11.);
@@ -150,12 +148,14 @@ DEFINE_PB_BREAK_UP_RATE_PDF(break_up_pdf_par, cell, thread, d_1, d_2)
     real g7 = pow(b,6./11.);
     real g9 = gsl_sf_gamma_inc(2./11., b);
     real g = g1*(0.-g3+g4*(0.-g6)+g7*(0.-g9));
+    real V = 3.1415*pow(d_1,3.)/6.;
 
-    CHECK_ERRNO
+    CHECK_ERRNO(g);
+    CHECK_ERRNO(V);
 
-    real res = g/result;
+    real res = g/(V*result);
 
-    CHECK_ERRNO
+    CHECK_ERRNO(res);
 
     return res;
 
@@ -212,7 +212,7 @@ DEFINE_EXCHANGE_PROPERTY(schiller_modified,cell,mix_thread,s_col,f_col)
     else
         c_D = 0.44;
 
-    CHECK_ERRNO
+    CHECK_ERRNO(c_D);
 
     f = c_D*rey_p/24.;
 
@@ -220,7 +220,7 @@ DEFINE_EXCHANGE_PROPERTY(schiller_modified,cell,mix_thread,s_col,f_col)
 
     K_gl = alpha_l*alpha_g*rho_g*f/tau_g;
 
-    CHECK_ERRNO
+    CHECK_ERRNO(K_gl);
 
     return K_gl;
 }
