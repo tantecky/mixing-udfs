@@ -126,9 +126,6 @@ DEFINE_PB_BREAK_UP_RATE_PDF(break_up_pdf_par, cell, thread, d_1, d_2)
 
     CHECK_ERRNO(result);
 
-    if(result == 0.0)
-        return 0.0;
-
     real f = pow(d_2,3.)/pow(d_1,3.);
     real cf = pow(f, 2./3.) + pow(1. - f, 2./3.) - 1.;
     real beta = 2.0466;
@@ -155,10 +152,10 @@ DEFINE_PB_BREAK_UP_RATE_PDF(break_up_pdf_par, cell, thread, d_1, d_2)
     CHECK_ERRNO(g);
     CHECK_ERRNO(V);
 
-    if(V == 0.0)
-        return 0.0;
-
     real res = g/(V*result);
+
+    if(!isfinite(res))
+        return 0.0;
 
     CHECK_ERRNO(res);
 
