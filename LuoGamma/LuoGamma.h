@@ -87,9 +87,9 @@ double gammas(double a, double b, const char* file, int line)
 #define gsl_sf_gamma_inc(a, b) gammas(a, b, __FILE__, __LINE__)
 
 #define CHECK_ERRNO(result) \
-if(!isfinite(result)) \
+if(!isfinite(result)) { \
    fprintf(stderr, "\nDetected: %e on %s:%i\n",  result, __FILE__, __LINE__); \
-   abort(); \
+   abort(); } \
    (void)0
 #else
 #define CHECK_ERRNO (void)0
