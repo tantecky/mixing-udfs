@@ -126,6 +126,8 @@ DEFINE_PB_BREAK_UP_RATE_PDF(break_up_pdf_par, cell, thread, d_1, d_2)
 
     CHECK_ERRNO(result);
 
+    if(result == 0.0)
+        return 0.0;
 
     real f = pow(d_2,3.)/pow(d_1,3.);
     real cf = pow(f, 2./3.) + pow(1. - f, 2./3.) - 1.;
@@ -148,10 +150,13 @@ DEFINE_PB_BREAK_UP_RATE_PDF(break_up_pdf_par, cell, thread, d_1, d_2)
     real g7 = pow(b,6./11.);
     real g9 = gsl_sf_gamma_inc(2./11., b);
     real g = g1*(0.-g3+g4*(0.-g6)+g7*(0.-g9));
-    real V = 3.1415*pow(d_1,3.)/6.;
+    real V = M_PI*pow(d_1,3.)/6.;
 
     CHECK_ERRNO(g);
     CHECK_ERRNO(V);
+
+    if(V == 0.0)
+        return 0.0;
 
     real res = g/(V*result);
 
@@ -224,3 +229,4 @@ DEFINE_EXCHANGE_PROPERTY(schiller_modified,cell,mix_thread,s_col,f_col)
 
     return K_gl;
 }
+
