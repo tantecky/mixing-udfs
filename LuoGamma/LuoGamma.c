@@ -59,14 +59,14 @@ real IntegraceF(real f, void* parametry)
 
     CHECK_ERRNO(g1);
 
-    real g3 = gsl_sf_gamma_inc(8./11., b);
+    real g3 = gamma_inc(8./11., b, 2);
     real g4 = 2.*pow(b,3./11.);
 
     CHECK_ERRNO(g4);
 
-    real g6 = gsl_sf_gamma_inc(5./11., b);
+    real g6 = gamma_inc(5./11., b, 1);
     real g7 = pow(b,6./11.);
-    real g9 = gsl_sf_gamma_inc(2./11., b);
+    real g9 = gamma_inc(2./11., b, 0);
     real g = g1*(0.-g3+g4*(0.-g6)+g7*(0.-g9));
 
     CHECK_ERRNO(g);
@@ -141,11 +141,11 @@ DEFINE_PB_BREAK_UP_RATE_PDF(break_up_pdf_par, cell, thread, d_1, d_2)
 
     CHECK_ERRNO(g1);
 
-    real g3 = gsl_sf_gamma_inc(8./11., b);
+    real g3 = gamma_inc(8./11., b, 2);
     real g4 = 2.*pow(b,3./11.);
-    real g6 = gsl_sf_gamma_inc(5./11., b);
+    real g6 = gamma_inc(5./11., b, 1);
     real g7 = pow(b,6./11.);
-    real g9 = gsl_sf_gamma_inc(2./11., b);
+    real g9 = gamma_inc(2./11., b, 0);
     real g = g1*(0.-g3+g4*(0.-g6)+g7*(0.-g9));
     real V = M_PI*pow(d_1,3.)/6.;
 

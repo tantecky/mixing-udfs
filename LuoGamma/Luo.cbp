@@ -45,14 +45,14 @@
 			<Add directory="../include/multiport/mpi_wrapper/src" />
 			<Add directory="../include/tgrid/src" />
 		</Compiler>
-		<Linker>
-			<Add option="-lgsl" />
-			<Add option="-lgslcblas" />
-		</Linker>
 		<Unit filename="LuoGamma.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="LuoGamma.h" />
+		<Unit filename="gamma_inc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="gamma_inc.h" />
 		<Unit filename="gk15.c">
 			<Option compilerVar="CC" />
 		</Unit>

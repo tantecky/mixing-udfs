@@ -5,8 +5,8 @@
 #include "metric.h"
 #include "sg_pb.h"
 #include "sg_mphase.h"
-#include <gsl/gsl_sf_gamma.h>
 #include "gk15.h"
+#include "gamma_inc.h"
 #include <math.h>
 
 
@@ -67,9 +67,9 @@ double pows(double a, double b, const char* file, int line)
     return res;
 }
 
-double gammas(double a, double b, const char* file, int line)
+double gammas(double a, double b, int index, const char* file, int line)
 {
-    double res = gsl_sf_gamma_inc(a, b);
+    double res = gamma_inc(a, b, index);
 
     if(!isfinite(res))
     {
@@ -84,11 +84,11 @@ double gammas(double a, double b, const char* file, int line)
 #define exp(a) exps(a, __FILE__, __LINE__)
 #define sqrt(a) sqrts(a, __FILE__, __LINE__)
 #define pow(a, b) pows(a, b, __FILE__, __LINE__)
-#define gsl_sf_gamma_inc(a, b) gammas(a, b, __FILE__, __LINE__)
+#define gsl_sf_gamma_inc(a, b, c) gammas(a, b, c, __FILE__, __LINE__)
 
 #define CHECK_ERRNO(result) \
 if(!isfinite(result)) { \
-   fprintf(stderr, "\nDetected: %e on %s:%i\n",  result, __FILE__, __LINE__); \
+   fprintf(stderr, "\nDetected: %e in %s:%i\n",  result, __FILE__, __LINE__); \
    abort(); } \
    (void)0
 #else
