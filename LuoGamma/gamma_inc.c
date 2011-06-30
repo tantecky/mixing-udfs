@@ -25,7 +25,7 @@ inline static double gamma_inc_D(const double a, const double x, const int index
  */
 static double gamma_inc_F_CF(const double a, const double x)
 {
-    const int    nmax  =  5000;
+    const int    nmax  =  100; /* default 5000 */
     const double small =  DBL_EPSILON*DBL_EPSILON*DBL_EPSILON;
 
     double hn = 1.0;           /* convergent */
@@ -63,7 +63,7 @@ static double gamma_inc_F_CF(const double a, const double x)
         }
     }
 
-    fprintf(stderr, "\nReached maximum number of iterations in %s:%i\n",  __FILE__, __LINE__);
+    fprintf(stderr, "\nReached maximum number of iterations a:%e x:%e in %s:%i\n",  a, x, __FILE__, __LINE__);
     abort();
 
 }
@@ -108,7 +108,7 @@ inline static double gamma_inc_Q_CF(const double a, const double x, const int in
  */
 static double gamma_inc_P_series(const double a, const double x, const int index)
 {
-    const int nmax = 10000;
+    const int nmax = 100; /* default 10000 */
 
     double res = gamma_inc_D(a, x, index);
 
@@ -149,13 +149,13 @@ static double gamma_inc_P_series(const double a, const double x, const int index
         }
     }
 
-    fprintf(stderr, "\nReached maximum number of iterations in %s:%i\n",  __FILE__, __LINE__);
+    fprintf(stderr, "\nReached maximum number of iterations a:%e x:%e in %s:%i\n",  a, x, __FILE__, __LINE__);
     abort();
 }
 
+/* valid range x > 0 && x < 1e6 && a > 0 && a < 10 */
 double gamma_inc(const double a, const double x, const int index)
 {
-    /*check a, x */
     const double gamma_a = gamma_lookup[index]; /*gamma(a)*/
 
     if(x <= 7.) /* magic constant :-) */
