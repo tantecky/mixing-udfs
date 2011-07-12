@@ -1,13 +1,11 @@
-#ifndef LUO_H_INCLUDED
-#define LUO_H_INCLUDED
-
+#ifndef LEHR_H_INCLUDED
+#define LEHR_H_INCLUDED
 
 #include <udf.h>
 #include <metric.h>
 #include <sg_pb.h>
 #include <sg_mphase.h>
 #include <math.h>
-
 
 /* UDF use real precision */
 #if RP_DOUBLE == 0

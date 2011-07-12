@@ -10,7 +10,6 @@
 #define MJU_L 0.001003 /*dynamicka viskozita*/
 #define C 0.3
 
-
 DEFINE_EXECUTE_ON_LOADING(on_load, libname)
 {
     Message("\nBuilded: %s %s\n", __DATE__, __TIME__);
@@ -37,7 +36,7 @@ DEFINE_PB_COALESCENCE_RATE(aggregation_kernel_luo,cell,thread,d_1,d_2)
     return result;
 }
 
-DEFINE_PB_BREAK_UP_RATE_FREQ(break_up_freq_luo, cell, thread, d_1)
+DEFINE_PB_BREAK_UP_RATE_FREQ(break_up_freq_lehr, cell, thread, d_1)
 {
     real eps = C_D(cell, THREAD_SUPER_THREAD(thread));
     real g = 0.5*pow(d_1, 5./3.)*pow(eps, 19./15.)*pow(RHO_L, 7./5.)/pow(SIGMA, 7./5.)*exp(-sqrt(2.)*pow(SIGMA, 9./5.)*pow(d_1, -3.)*pow(RHO_L, -9./5.)*pow(eps, -6./5.));
@@ -47,11 +46,11 @@ DEFINE_PB_BREAK_UP_RATE_FREQ(break_up_freq_luo, cell, thread, d_1)
     return g;
 }
 
-inline double betav(double eps, double ai, double aj)
+inline double betav(double eps, double d_1, double d_2)
 {
-    double pdf1 = 6./pow(M_PI, 3./2.)/pow(ai, 3.);
-    double pdf2 = exp(-9./4.*pow(log(pow(2.,2./5.)*ai*pow(RHO_L, 3./5.)*pow(eps, 2./5.)/pow(SIGMA, 3./5.)), 2.));
-    double pdf3 = 1 + erf(3./2.*log(pow(2.,1./15.)*aj*pow(RHO_L, 3./5.)*pow(eps, 2./5.)/pow(SIGMA, 3./5.)));
+    double pdf1 = 6./pow(M_PI, 3./2.)/pow(d_2, 3.);
+    double pdf2 = exp(-9./4.*pow(log(pow(2.,2./5.)*d_2*pow(RHO_L, 3./5.)*pow(eps, 2./5.)/pow(SIGMA, 3./5.)), 2.));
+    double pdf3 = 1 + erf(3./2.*log(pow(2.,1./15.)*d_1*pow(RHO_L, 3./5.)*pow(eps, 2./5.)/pow(SIGMA, 3./5.)));
 
     CHECK_ERRNO(pdf1);
     CHECK_ERRNO(pdf2);
@@ -64,18 +63,16 @@ inline double betav(double eps, double ai, double aj)
     return res;
 }
 
-DEFINE_PB_BREAK_UP_RATE_PDF(break_up_pdf_par, cell, thread, d_1, d_2)
+DEFINE_PB_BREAK_UP_RATE_PDF(break_up_pdf_lehr, cell, thread, d_1, d_2)
 {
     real eps = C_D(cell, THREAD_SUPER_THREAD(thread));
-    real ai = d_2;
-    real aj = d_1;
 
-    real f = pow(ai, 3.)/pow(aj, 3.);
+    real f = pow(d_2, 3.)/pow(d_1, 3.);
 
     if(0. <= f && f <= 0.5)
-        return betav(eps, ai, aj);
+        return betav(eps, d_1, d_2);
     else if(0.5 < f && f <= 1.)
-        return betav(eps, pow(aj, 3.)-pow(ai, 3.), pow(aj, 3.));
+        return betav(eps, d_1, pow(pow(d_1, 3.)-pow(d_2, 3.), 1./3.));
     else
     {
         fprintf(stderr, "\nFile: %s:%i\nError: f is %e\n", __FILE__, __LINE__, f);
