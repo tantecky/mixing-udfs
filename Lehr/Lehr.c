@@ -71,8 +71,10 @@ DEFINE_PB_BREAK_UP_RATE_PDF(break_up_pdf_lehr, cell, thread, d_1, d_2)
 
     if(0. <= f && f <= 0.5)
         return betav(eps, d_1, d_2);
-    else if(0.5 < f && f <= 1.)
+    else if(0.5 < f && f < 1.)
         return betav(eps, d_1, pow(pow(d_1, 3.)-pow(d_2, 3.), 1./3.));
+    else if(f >= 1.)
+        return 0.;
     else
     {
         fprintf(stderr, "\nFile: %s:%i\nError: f is %e\n", __FILE__, __LINE__, f);
