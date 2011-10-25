@@ -1,34 +1,28 @@
 #include <iostream>
+#include <cstdlib>
 
-using namespace std;
+#include "ExpData.hpp"
 
-
-double suma(double a, double b)
-{
-    return a + b;
-}
 
 int main()
 {
-   // cout << "Hello world!" << endl;
-
-    double neco = suma(5, 6);
-
-    //neco = neco + 2;
-    neco += 2;
-
-    bool logic = false;
-
-    if(logic == true)
+    try
     {
-        cout << "ahoj";
+        std::vector<ExpData> dataSet;
+
+        ExpData::LoadExpData("borovice_buk 5_15_25 vzduch.csv", dataSet);
+
+        for(std::vector<ExpData>::const_iterator it = dataSet.begin(); it != dataSet.end(); ++it)
+        {
+            std::cout << *it;
+        }
     }
-    else
+    catch(std::exception& e)
     {
-        cout << "cau";
+        std::cerr << e.what() << std::endl;
+
+        return EXIT_FAILURE;
     }
 
-
-
-    return 0;
+    return EXIT_SUCCESS;
 }

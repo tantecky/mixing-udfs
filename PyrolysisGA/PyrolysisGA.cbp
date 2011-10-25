@@ -37,6 +37,8 @@
 			<Add library="/usr/lib/libeo.a" />
 			<Add library="/usr/lib/libeoutils.a" />
 		</Linker>
+		<Unit filename="ExpData.cpp" />
+		<Unit filename="ExpData.hpp" />
 		<Unit filename="main.cpp" />
 		<Extensions>
 			<envvars />
