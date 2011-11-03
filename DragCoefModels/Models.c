@@ -33,6 +33,11 @@ if(!isfinite(result)) { \
 #define CHECK_COEF(result) (void)0
 #endif
 
+DEFINE_EXECUTE_ON_LOADING(on_load, libname)
+{
+    Message("\nBuilded: %s %s\n", __DATE__, __TIME__);
+}
+
 DEFINE_EXCHANGE_PROPERTY(Pinelli_CD, cell, mix_thread, s_col, f_col)
 {
     /*cd0 is Schiller-Nauman's drag coefficinet*/
@@ -124,6 +129,9 @@ DEFINE_EXCHANGE_PROPERTY(Khopkar_CD, cell, mix_thread, s_col, f_col)
     real vol_l = C_VOF(cell, thread_l);
 
     real k_s_l = (1. - vol_l)*vol_l*RHO_S*fdrag/taup;
+
+    if(isnan(k_s_l))
+        return 0.0;
 
     CHECK_COEF(k_s_l);
 
