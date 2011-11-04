@@ -11,9 +11,6 @@ real slip = sqrt(slip_x*slip_x + slip_y*slip_y + slip_z*slip_z);
 /*relative Reynolds number for the primary phase*/
 real reyp = RHO_L*slip*DIAMETER/MU_L;
 
-/* compute particle relaxation time */
-real taup = RHO_S*DIAMETER*DIAMETER/18./MU_L;
-
 /*drag coefficient*/
 real cd0;
 

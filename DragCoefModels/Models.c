@@ -1,12 +1,11 @@
 /*
-Several drag models for suspension
+Several drag models for solid-liquid drag force
     - Pinelli
     - Brucato
     - Khopkar
 
 Author: Tomáš Antecký (21. 10. 2011)
 Develop for GCC according to gnu90 standard
-Based on André Bakker code
 */
 
 #include <math.h>
@@ -15,7 +14,6 @@ Based on André Bakker code
 #include <sg.h>
 
 #define DIAMETER 1.02e-3 /*diameter of solid particle*/
-#define RHO_S 1136.02 /*density of solid phase*/
 #define RHO_L 1011.44 /*density of liquid phase*/
 #define MU_L 5e-3 /*dynamic viscosity of liquid phase*/
 #define NU_L (MU_L/RHO_L) /*kinematic viscosity of liquid phase*/
@@ -58,13 +56,10 @@ DEFINE_EXCHANGE_PROPERTY(Pinelli_CD, cell, mix_thread, s_col, f_col)
     /*if (reyp<0.001)
         reyp=0.001;*/
 
-    /*drag force*/
-    real fdrag = cd*reyp/24.;
+    /*volumetric fraction of solid phase*/
+    real vol_s = C_VOF(cell, thread_s);
 
-    /*volumetric fraction of liquid phase*/
-    real vol_l = C_VOF(cell, thread_l);
-
-    real k_s_l = (1. - vol_l)*vol_l*RHO_S*fdrag/taup;
+    real k_s_l = (3./4.)*vol_s/DIAMETER*cd*RHO_L*slip;
 
     CHECK_COEF(k_s_l);
 
@@ -90,13 +85,10 @@ DEFINE_EXCHANGE_PROPERTY(Brucato_CD, cell, mix_thread, s_col, f_col)
     /*if (reyp<0.001)
         reyp=0.001;*/
 
-    /*drag force*/
-    real fdrag = cd*reyp/24.;
+    /*volumetric fraction of solid phase*/
+    real vol_s = C_VOF(cell, thread_s);
 
-    /*volumetric fraction of liquid phase*/
-    real vol_l = C_VOF(cell, thread_l);
-
-    real k_s_l = (1. - vol_l)*vol_l*RHO_S*fdrag/taup;
+    real k_s_l = (3./4.)*vol_s/DIAMETER*cd*RHO_L*slip;
 
     CHECK_COEF(k_s_l);
 
@@ -122,13 +114,10 @@ DEFINE_EXCHANGE_PROPERTY(Khopkar_CD, cell, mix_thread, s_col, f_col)
     /*if (reyp<0.001)
         reyp=0.001;*/
 
-    /*drag force*/
-    real fdrag = cd*reyp/24.;
+    /*volumetric fraction of solid phase*/
+    real vol_s = C_VOF(cell, thread_s);
 
-    /*volumetric fraction of liquid phase*/
-    real vol_l = C_VOF(cell, thread_l);
-
-    real k_s_l = (1. - vol_l)*vol_l*RHO_S*fdrag/taup;
+    real k_s_l = (3./4.)*vol_s/DIAMETER*cd*RHO_L*slip;
 
     if(isnan(k_s_l))
         return 0.0;
