@@ -1,5 +1,7 @@
-Thread* thread_l = THREAD_SUB_THREAD(mix_thread, s_col); /*liquid phase - primary*/
-Thread* thread_s = THREAD_SUB_THREAD(mix_thread, f_col); /*solid phase - secondary*/
+/*liquid phase - primary*/
+Thread* thread_l = THREAD_SUB_THREAD(mix_thread, s_col);
+/*solid phase - secondary*/
+Thread* thread_s = THREAD_SUB_THREAD(mix_thread, f_col);
 
 real slip_x = C_U(cell, thread_l) - C_U(cell, thread_s);
 real slip_y = C_V(cell, thread_l) - C_V(cell, thread_s);
