@@ -1,5 +1,5 @@
 /*
-Several drag models for solid-liquid drag force
+Several drag coefficient models for solid-liquid interphase drag force
     - Pinelli
     - Brucato
     - Khopkar
@@ -61,6 +61,9 @@ DEFINE_EXCHANGE_PROPERTY(Pinelli_CD, cell, mix_thread, s_col, f_col)
 
     real k_s_l = (3./4.)*vol_s/DIAMETER*cd*RHO_L*slip;
 
+    if(isnan(k_s_l))
+        return 0.0;
+
     CHECK_COEF(k_s_l);
 
     return k_s_l;
@@ -89,6 +92,9 @@ DEFINE_EXCHANGE_PROPERTY(Brucato_CD, cell, mix_thread, s_col, f_col)
     real vol_s = C_VOF(cell, thread_s);
 
     real k_s_l = (3./4.)*vol_s/DIAMETER*cd*RHO_L*slip;
+
+    if(isnan(k_s_l))
+        return 0.0;
 
     CHECK_COEF(k_s_l);
 
