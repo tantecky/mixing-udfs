@@ -1,5 +1,6 @@
 /*
 Several drag coefficient models for solid-liquid interphase drag force
+    -
     - Pinelli
     - Brucato
     - Khopkar
@@ -23,7 +24,7 @@ Develop for GCC according to gnu90 standard
 
 #ifdef DEBUG_COEF
 #define CHECK_COEF(result) \
-if(!isfinite(result)) { \
+if(!isfinite(result) || result < 0.0) { \
    fprintf(stderr, "\nDetected: %e in %s:%i\n", result, __FUNCTION__, __LINE__); \
    abort(); } \
    (void)0
@@ -34,6 +35,25 @@ if(!isfinite(result)) { \
 DEFINE_EXECUTE_ON_LOADING(on_load, libname)
 {
     Message("\nBuilded: %s %s\n", __DATE__, __TIME__);
+}
+
+DEFINE_EXCHANGE_PROPERTY(SchillerNauman_CD, cell, mix_thread, s_col, f_col)
+{
+    /*cd0 is Schiller-Nauman's drag coefficinet*/
+#include "SchillerNauman.h"
+
+    /*volumetric fraction of solid phase*/
+    real vol_s = C_VOF(cell, thread_s);
+
+    real k_s_l = (3./4.)*vol_s/DIAMETER*cd0*RHO_L*slip;
+
+    if(isnan(k_s_l))
+        return 0.0;
+
+    CHECK_COEF(k_s_l);
+
+    return k_s_l;
+
 }
 
 DEFINE_EXCHANGE_PROPERTY(Pinelli_CD, cell, mix_thread, s_col, f_col)
