@@ -32,6 +32,8 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
+		<Unit filename="DataFile.cpp" />
+		<Unit filename="DataFile.hpp" />
 		<Unit filename="main.cpp" />
 		<Extensions>
 			<envvars />
