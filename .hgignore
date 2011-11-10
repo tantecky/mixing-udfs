@@ -5,3 +5,4 @@ relre:\.depend$
 glob:include/
 syntax: glob
 TecplotAnalyzer/test.png
+TecplotAnalyzer/test2.png
