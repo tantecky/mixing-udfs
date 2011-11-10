@@ -3,3 +3,5 @@ relre:/bin/
 relre:\.layout$
 relre:\.depend$
 glob:include/
+syntax: glob
+TecplotAnalyzer/test.png

@@ -34,6 +34,10 @@
 		</Compiler>
 		<Unit filename="DataFile.cpp" />
 		<Unit filename="DataFile.hpp" />
+		<Unit filename="DataPoint.cpp" />
+		<Unit filename="DataPoint.hpp" />
+		<Unit filename="DataSetInfo.cpp" />
+		<Unit filename="DataSetInfo.hpp" />
 		<Unit filename="main.cpp" />
 		<Extensions>
 			<envvars />
