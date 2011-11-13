@@ -86,17 +86,17 @@ double DataPoint::Khopkar()
 
 std::ostream& operator<<(std::ostream& stream, DataPoint obj)
 {
-    /* return stream <<
-            obj.X() << "," << obj.Y() << "," << obj.Z() << "," <<
-            obj.VelocityLiquidX() << "," << obj.VelocityLiquidY() << "," << obj.VelocityLiquidZ() << "," <<
-            obj.VelocitySolidX() << "," << obj.VelocitySolidY() << "," << obj.VelocitySolidZ() << "," <<
-            obj.Eps() << "," << obj.VOS()
-            << std::endl;*/
+   /* return stream <<
+           obj.X() << "," << obj.Y() << "," << obj.Z() << "," <<
+           obj.VelocityLiquidX() << "," << obj.VelocityLiquidY() << "," << obj.VelocityLiquidZ() << "," <<
+           obj.VelocitySolidX() << "," << obj.VelocitySolidY() << "," << obj.VelocitySolidZ() << "," <<
+           obj.Eps() << "," << obj.VOS()
+           << std::endl;*/
 
     return stream <<
-           obj.Y() << "," << obj.VOS() << "," <<
-           obj.SchillerNauman() << "," << obj.Pinelli() << "," << obj.Brucato() << "," << obj.Khopkar()
-           << std::endl;
+            obj.Y() << "," << obj.VOS() << "," <<
+            obj.SchillerNauman() << "," << obj.Pinelli() << "," << obj.Brucato() << "," << obj.Khopkar()
+            << std::endl;
 
 }
 

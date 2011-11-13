@@ -1,26 +1,46 @@
 #include <iostream>
 #include <cstdlib>
+#include <cstring>
 #include "DataFile.hpp"
 #include "DataPoint.hpp"
 #include "DataSetInfo.hpp"
 
-int main()
+void WriteHelp()
+{
+    std::cout << "Invalid number of arguments" << std::endl;
+    std::cout << "app inputFile outPutFile type=tecplot|post"<< std::endl;
+
+    std::exit(EXIT_FAILURE);
+}
+
+int main(int argc, char* argv[])
 {
     try
     {
+        if(argc != 4)
+        {
+            WriteHelp();
+        }
+
         DataFile dataFile;
 
-        dataFile.LoadDataFile("Tomtom.dat");
+        if(!std::strcmp(argv[3], "post"))
+        {
+            dataFile.LoadCFDPostDataFile(argv[1]);
+            dataFile.WriteCFDPostInfoFile(argv[2]);
+        }
+        else if(!std::strcmp(argv[3], "tecplot"))
+        {
+            dataFile.LoadTecplotDataFile(argv[1]);
+            dataFile.WriteTecplotInfoFile(argv[2]);
+        }
+        else
+        {
+            WriteHelp();
+        }
 
-        dataFile.WriteInfoFile("output.dat");
+        return EXIT_SUCCESS;
 
-        DataFile dataFile2;
-
-        dataFile2.LoadDataFile("Tomtom2.dat");
-
-        dataFile2.WriteInfoFile("output2.dat");
-
-        return 0;
     }
     catch(std::exception& e)
     {
@@ -31,5 +51,6 @@ int main()
         return EXIT_FAILURE;
     }
 
-    return EXIT_SUCCESS;
+
 }
+

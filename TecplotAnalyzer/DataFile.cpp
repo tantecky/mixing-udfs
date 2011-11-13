@@ -1,6 +1,77 @@
 #include "DataFile.hpp"
 
-void DataFile::LoadDataFile(const char* const filename)
+
+void DataFile::LoadCFDPostDataFile(const char* const filename)
+{
+    std::ifstream dataFile;
+
+    dataFile.open(filename, std::ifstream::in);
+
+    if(!dataFile.good())
+    {
+        std::string error("Unable to read file ");
+
+        error += filename;
+        error += " in function ";
+        error += __FUNCTION__;
+        error += " in line ";
+
+        std::stringstream ss;
+        ss << __LINE__;
+        error += ss.str();
+
+        throw std::invalid_argument(error);
+    }
+
+    std::string line;
+    std::string cell;
+    std::stringstream  lineStream;
+    std::istringstream istring;
+
+    double* rowOfDoubles = new double[DataSetInfo::NumberOfColumns];
+
+    while(getline(dataFile, line))
+    {
+        lineStream.clear();
+        lineStream.str(line);
+
+        for(int i = 0; i < DataSetInfo::NumberOfColumns; i++)
+        {
+            if(!getline(lineStream, cell, ','))
+            {
+
+                delete[] rowOfDoubles;
+                throw std::out_of_range("Bad number of rows");
+            }
+
+            istring.clear();
+            istring.str(cell);
+
+            if(!(istring >> rowOfDoubles[i]))
+            {
+                std::string error("Unable convert ");
+                error += cell;
+                error += " to double";
+
+                delete[] rowOfDoubles;
+                throw std::invalid_argument(error);
+            }
+
+        }
+
+        m_DataPoints.push_back(DataPoint(
+                                   rowOfDoubles[DataSetInfo::NameOfXCFDPost], rowOfDoubles[DataSetInfo::NameOfYCFDPost], rowOfDoubles[DataSetInfo::NameOfZCFDPost],
+                                   rowOfDoubles[DataSetInfo::NameOfVelocityLiquidXCFDPost], rowOfDoubles[DataSetInfo::NameOfVelocityLiquidYCFDPost], rowOfDoubles[DataSetInfo::NameOfVelocityLiquidZCFDPost],
+                                   rowOfDoubles[DataSetInfo::NameOfVelocitySolidXCFDPost], rowOfDoubles[DataSetInfo::NameOfVelocitySolidYCFDPost], rowOfDoubles[DataSetInfo::NameOfVelocitySolidZCFDPost],
+                                   rowOfDoubles[DataSetInfo::NameOfEpsCFDPost], rowOfDoubles[DataSetInfo::NameOfVOSCFDPost]
+                               ));
+    }
+
+    delete[] rowOfDoubles;
+    dataFile.close();
+}
+
+void DataFile::LoadTecplotDataFile(const char* const filename)
 {
     std::ifstream dataFile;
 
@@ -92,10 +163,10 @@ void DataFile::LoadDataFile(const char* const filename)
         throw std::invalid_argument(error);
     }
 
-    LoadDigits(filename, dataFile, line);
+    LoadTecplotDigits(filename, dataFile, line);
 }
 
-void DataFile::LoadDigits(const char* const filename, std::ifstream& dataFile, std::string& line)
+void DataFile::LoadTecplotDigits(const char* const filename, std::ifstream& dataFile, std::string& line)
 {
     getline(dataFile, line);
 
@@ -237,7 +308,7 @@ int DataFile::FindVariable(const std::string& var)
     return m_Iter->second;
 }
 
-void DataFile::WriteInfoFile(const char* const filename)
+void DataFile::WriteTecplotInfoFile(const char* const filename)
 {
     std::ofstream outfile;
     outfile.open(filename);
@@ -251,3 +322,19 @@ void DataFile::WriteInfoFile(const char* const filename)
 
     outfile.close();
 }
+
+void DataFile::WriteCFDPostInfoFile(const char* const filename)
+{
+    std::ofstream outfile;
+    outfile.open(filename);
+
+    outfile << std::setprecision(9);
+
+    for(std::vector<DataPoint>::const_iterator it = m_DataPoints.begin(); it != m_DataPoints.end(); ++it)
+    {
+        outfile << *it;
+    }
+
+    outfile.close();
+}
+

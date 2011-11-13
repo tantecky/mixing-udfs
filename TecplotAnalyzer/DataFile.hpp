@@ -22,13 +22,15 @@ private:
     std::map<std::string, int>::const_iterator m_Iter;
     std::vector<DataPoint> m_DataPoints;
 
-    void LoadDigits(const char* const, std::ifstream&, std::string&);
+    void LoadTecplotDigits(const char* const, std::ifstream&, std::string&);
     int FindVariable(const std::string&);
 
 
 public:
-    void LoadDataFile(const char* const);
-    void WriteInfoFile(const char* const);
+    void LoadTecplotDataFile(const char* const);
+    void LoadCFDPostDataFile(const char* const);
+    void WriteTecplotInfoFile(const char* const);
+    void WriteCFDPostInfoFile(const char* const);
 
 };
 
