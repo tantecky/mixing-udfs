@@ -89,6 +89,7 @@ public:
     double Pinelli();
     double Brucato();
     double Khopkar();
+    double VelRelMagnitude();
 
     DataPoint(double x, double y, double z,
               double velLX, double velLY, double velLZ,

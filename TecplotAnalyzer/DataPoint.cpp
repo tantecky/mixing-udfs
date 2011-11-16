@@ -84,19 +84,32 @@ double DataPoint::Khopkar()
     return cd;
 }
 
+double DataPoint::VelRelMagnitude()
+{
+    double slip_x = m_VelocityLiquidX - m_VelocitySolidX;
+    double slip_y = m_VelocityLiquidY - m_VelocitySolidY;
+    double slip_z = m_VelocityLiquidZ - m_VelocitySolidZ;
+
+    /*Euclidean norm of slip velocity*/
+    double slip = sqrt(slip_x*slip_x + slip_y*slip_y + slip_z*slip_z);
+
+    return slip;
+}
+
 std::ostream& operator<<(std::ostream& stream, DataPoint obj)
 {
-   /* return stream <<
-           obj.X() << "," << obj.Y() << "," << obj.Z() << "," <<
-           obj.VelocityLiquidX() << "," << obj.VelocityLiquidY() << "," << obj.VelocityLiquidZ() << "," <<
-           obj.VelocitySolidX() << "," << obj.VelocitySolidY() << "," << obj.VelocitySolidZ() << "," <<
-           obj.Eps() << "," << obj.VOS()
-           << std::endl;*/
+    /* return stream <<
+            obj.X() << "," << obj.Y() << "," << obj.Z() << "," <<
+            obj.VelocityLiquidX() << "," << obj.VelocityLiquidY() << "," << obj.VelocityLiquidZ() << "," <<
+            obj.VelocitySolidX() << "," << obj.VelocitySolidY() << "," << obj.VelocitySolidZ() << "," <<
+            obj.Eps() << "," << obj.VOS()
+            << std::endl;*/
 
     return stream <<
-            obj.Y() << "," << obj.VOS() << "," <<
-            obj.SchillerNauman() << "," << obj.Pinelli() << "," << obj.Brucato() << "," << obj.Khopkar()
-            << std::endl;
+           obj.Y() << "," << obj.VOS() << "," <<
+           obj.SchillerNauman() << "," << obj.Pinelli() << "," << obj.Brucato() << "," << obj.Khopkar()
+           << "," << obj.VelRelMagnitude()
+           << std::endl;
 
 }
 
