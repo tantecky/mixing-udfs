@@ -1,6 +1,6 @@
 /*
 Several drag coefficient models for solid-liquid interphase drag force
-    -
+    - Schiller-Nauman
     - Pinelli
     - Brucato
     - Khopkar
@@ -14,12 +14,12 @@ Develop for GCC according to gnu90 standard
 #include <sg_mphase.h>
 #include <sg.h>
 
-#define DIAMETER 1.02e-3 /*diameter of solid particle*/
-#define RHO_L 1011.44 /*density of liquid phase*/
-#define MU_L 5e-3 /*dynamic viscosity of liquid phase*/
-#define NU_L (MU_L/RHO_L) /*kinematic viscosity of liquid phase*/
+#define DIAMETER 1.02e-3 /*diameter of the solid particle*/
+#define RHO_L 1011.44 /*density of the liquid phase*/
+#define MU_L 5e-3 /*dynamic viscosity of the liquid phase*/
+#define NU_L (MU_L/RHO_L) /*kinematic viscosity of the liquid phase*/
 
-/*checking if exchange coefficient is finite number*/
+/*checking if exchange coefficient is a finite number*/
 #define DEBUG_COEF
 
 #ifdef DEBUG_COEF
@@ -42,7 +42,7 @@ DEFINE_EXCHANGE_PROPERTY(SchillerNauman_CD, cell, mix_thread, s_col, f_col)
     /*cd0 is Schiller-Nauman's drag coefficinet*/
 #include "SchillerNauman.h"
 
-    /*volumetric fraction of solid phase*/
+    /*volumetric fraction of the solid phase*/
     real vol_s = C_VOF(cell, thread_s);
 
     real k_s_l = (3./4.)*vol_s/DIAMETER*cd0*RHO_L*slip;
@@ -76,7 +76,7 @@ DEFINE_EXCHANGE_PROPERTY(Pinelli_CD, cell, mix_thread, s_col, f_col)
     /*if (reyp<0.001)
         reyp=0.001;*/
 
-    /*volumetric fraction of solid phase*/
+    /*volumetric fraction of the solid phase*/
     real vol_s = C_VOF(cell, thread_s);
 
     real k_s_l = (3./4.)*vol_s/DIAMETER*cd*RHO_L*slip;
@@ -108,7 +108,7 @@ DEFINE_EXCHANGE_PROPERTY(Brucato_CD, cell, mix_thread, s_col, f_col)
     /*if (reyp<0.001)
         reyp=0.001;*/
 
-    /*volumetric fraction of solid phase*/
+    /*volumetric fraction of the solid phase*/
     real vol_s = C_VOF(cell, thread_s);
 
     real k_s_l = (3./4.)*vol_s/DIAMETER*cd*RHO_L*slip;
@@ -140,7 +140,7 @@ DEFINE_EXCHANGE_PROPERTY(Khopkar_CD, cell, mix_thread, s_col, f_col)
     /*if (reyp<0.001)
         reyp=0.001;*/
 
-    /*volumetric fraction of solid phase*/
+    /*volumetric fraction of the solid phase*/
     real vol_s = C_VOF(cell, thread_s);
 
     real k_s_l = (3./4.)*vol_s/DIAMETER*cd*RHO_L*slip;
