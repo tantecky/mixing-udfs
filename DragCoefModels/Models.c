@@ -14,13 +14,20 @@ Develop for GCC according to gnu90 standard
 #include <sg_mphase.h>
 #include <sg.h>
 
-#define DIAMETER 1.02e-3 /*diameter of the solid particle*/
-#define RHO_L 1011.44 /*density of the liquid phase*/
-#define MU_L 5e-3 /*dynamic viscosity of the liquid phase*/
+#define DIAMETER (1.02e-3) /*diameter of the solid particle*/
+#define RHO_L (1011.44) /*density of the liquid phase*/
+#define MU_L (5e-3) /*dynamic viscosity of the liquid phase*/
 #define NU_L (MU_L/RHO_L) /*kinematic viscosity of the liquid phase*/
 
 /*checking if exchange coefficient is a finite number*/
 #define DEBUG_COEF
+
+/*if is defined the drag coeffcient is stored in user defined memory*/
+#define USE_UDM
+
+#ifdef USE_UDM
+#define UDM_NUM (0) /*the id of the drag coefficient in UDM*/
+#endif
 
 #ifdef DEBUG_COEF
 #define CHECK_COEF(result) \
@@ -51,6 +58,10 @@ DEFINE_EXCHANGE_PROPERTY(SchillerNauman_CD, cell, mix_thread, s_col, f_col)
         return 0.0;
 
     CHECK_COEF(k_s_l);
+
+#ifdef USE_UDM
+    C_UDMI(cell, mix_thread, UDM_NUM) = cd0;
+#endif
 
     return k_s_l;
 
@@ -86,6 +97,10 @@ DEFINE_EXCHANGE_PROPERTY(Pinelli_CD, cell, mix_thread, s_col, f_col)
 
     CHECK_COEF(k_s_l);
 
+#ifdef USE_UDM
+    C_UDMI(cell, mix_thread, UDM_NUM) = cd;
+#endif
+
     return k_s_l;
 
 }
@@ -117,6 +132,10 @@ DEFINE_EXCHANGE_PROPERTY(Brucato_CD, cell, mix_thread, s_col, f_col)
         return 0.0;
 
     CHECK_COEF(k_s_l);
+
+#ifdef USE_UDM
+    C_UDMI(cell, mix_thread, UDM_NUM) = cd;
+#endif
 
     return k_s_l;
 
@@ -150,6 +169,9 @@ DEFINE_EXCHANGE_PROPERTY(Khopkar_CD, cell, mix_thread, s_col, f_col)
 
     CHECK_COEF(k_s_l);
 
-    return k_s_l;
+#ifdef USE_UDM
+    C_UDMI(cell, mix_thread, UDM_NUM) = cd;
+#endif
 
+    return k_s_l;
 }
