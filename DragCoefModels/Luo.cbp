@@ -35,7 +35,7 @@
 		<Compiler>
 			<Add option="-Winline" />
 			<Add option="-Wall" />
-			<Add option="-fpic -D_lnamd64" />
+			<Add option="-fpic" />
 			<Add option="-DRP_CONFIG_3DDP" />
 			<Add directory="../include/src" />
 			<Add directory="../include/client/src" />

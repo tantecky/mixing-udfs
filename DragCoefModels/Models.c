@@ -188,33 +188,29 @@ DEFINE_EXCHANGE_PROPERTY(Debug_CD, cell, mix_thread, s_col, f_col)
 
 DEFINE_ON_DEMAND(Quality_of_suspension)
 {
-    Domain *d; /* declare domain pointer since it is not passed as an
-argument to the DEFINE macro */
-    real volume;
-    real vol_tot = 0.0;
+    Domain* d;
     Thread *t;
     cell_t c;
     d = Get_Domain(1);
     /* Get the domain using ANSYS FLUENT utility */
     /* Loop over all cell threads in the domain */
+
+    real maxFrac = -1;
+    real frac;
+
     thread_loop_c(t,d)
     {
         /* Compute max, min, volume-averaged temperature */
         /* Loop over all cells */
         begin_c_loop(c,t)
         {
-            volume = C_VOLUME(c,t);
-            /* get cell volume */
-            /* get cell temperature */
+            frac = C_VOF(c, THREAD_SUB_THREAD(t, 1));
 
-            vol_tot += volume;
-
+            if(frac > maxFrac)
+                maxFrac = frac;
         }
         end_c_loop(c,t)
 
-        printf("\n Vtot: %g", vol_tot);
-
-
-
     }
+    Message0("maxFrac: %e", maxFrac);
 }
