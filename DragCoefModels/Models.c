@@ -233,7 +233,7 @@ DEFINE_ON_DEMAND(Quality_of_suspension)
 
     }
 
-    qualityOfSuspension = sqrt(parcSum/totalVolume);
+    qualityOfSuspension = sqrt(parcSum/numOfCells);
 
     Message0("numOfCells: %d\n", numOfCells);
     Message0("avgVolFrac: %f\n", avgVolFrac);
