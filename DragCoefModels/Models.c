@@ -178,7 +178,7 @@ DEFINE_EXCHANGE_PROPERTY(Khopkar_CD, cell, mix_thread, s_col, f_col)
 
 DEFINE_EXCHANGE_PROPERTY(Debug_CD, cell, mix_thread, s_col, f_col)
 {
-    printf("s_col: %d", s_col);
+    printf("s_col: %d\n", s_col);
     printf("f_col: %d", f_col);
     abort();
 
@@ -186,10 +186,33 @@ DEFINE_EXCHANGE_PROPERTY(Debug_CD, cell, mix_thread, s_col, f_col)
 
 }
 
-/*DEFINE_ON_DEMAND(Quality_of_suspension)
+DEFINE_ON_DEMAND(Quality_of_suspension)
 {
-    Thread* thread_s;
-    Thread* mixture_thread = THREAD_SUPER_THREAD(thread_s);
-    thread_s = THREAD_SUB_THREAD(mixture_thread, f_col);
+    Domain* d;
+    Thread *t;
+    cell_t c;
+    d = Get_Domain(1);
+    /* Get the domain using ANSYS FLUENT utility */
+    /* Loop over all cell threads in the domain */
 
-}*/
+    real maxFrac = -1;
+    real frac;
+
+    thread_loop_c(t,d)
+    {
+        /* Compute max, min, volume-averaged temperature */
+        /* Loop over all cells */
+        begin_c_loop(c,t)
+        {
+            frac = C_VOF(c, THREAD_SUB_THREAD(t, 1));
+
+            if(frac > maxFrac)
+                maxFrac = frac;
+        }
+        end_c_loop(c,t)
+
+    }
+
+    printf("maxFrac: %e", maxFrac);
+
+}
