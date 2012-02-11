@@ -216,8 +216,9 @@ DEFINE_ON_DEMAND(Quality_of_suspension)
     avgVolFrac = sumVolFrac / totalVolume;
 
 
-    real maxFrac = -1;
     real frac;
+    real parcSum = 0.0;
+    real qualityOfSuspension;
 
     thread_loop_c(t,d)
     {
@@ -225,15 +226,17 @@ DEFINE_ON_DEMAND(Quality_of_suspension)
         {
             frac = C_VOF(c, THREAD_SUB_THREAD(t, 1));
 
-            if(frac > maxFrac)
-                maxFrac = frac;
+            parcSum += pow(frac - avgVolFrac, 2.0);
+
         }
         end_c_loop(c,t)
 
     }
 
-    Message0("\nmaxFrac: %f\n", maxFrac);
+    qualityOfSuspension = sqrt(parcSum/numOfCells);
+
     Message0("numOfCells: %d\n", numOfCells);
     Message0("avgVolFrac: %f\n", avgVolFrac);
     Message0("totalVolume: %f\n", totalVolume);
+    Message0("qualityOfSuspension: %f\n", qualityOfSuspension);
 }
