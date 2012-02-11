@@ -226,14 +226,14 @@ DEFINE_ON_DEMAND(Quality_of_suspension)
         {
             frac = C_VOF(c, THREAD_SUB_THREAD(t, 1));
 
-            parcSum += C_VOLUME(c,t)*pow(frac - avgVolFrac, 2.0);
+            parcSum += pow(frac - avgVolFrac, 2.0);
 
         }
         end_c_loop(c,t)
 
     }
 
-    qualityOfSuspension = sqrt(parcSum/totalVolume);
+    qualityOfSuspension = sqrt(parcSum/numOfCells);
 
     Message0("numOfCells: %d\n", numOfCells);
     Message0("avgVolFrac: %f\n", avgVolFrac);
