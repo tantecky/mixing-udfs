@@ -198,14 +198,16 @@ DEFINE_ON_DEMAND(Quality_of_suspension)
     real totalVolume = 0.0;
     real sumVolFrac = 0.0;
     real avgVolFrac;
+    real cellVol;
 
     thread_loop_c(t,d)
     {
         begin_c_loop(c,t)
         {
             numOfCells++;
-            totalVolume += C_VOLUME(c,t);
-            sumVolFrac += C_VOF(c, THREAD_SUB_THREAD(t, 1)); /*1 - secondary phase = solid phase*/
+            cellVol = C_VOLUME(c,t);
+            totalVolume += cellVol;
+            sumVolFrac += cellVol*C_VOF(c, THREAD_SUB_THREAD(t, 1)); /*1 - secondary phase = solid phase*/
         }
         end_c_loop(c,t)
 
@@ -233,4 +235,5 @@ DEFINE_ON_DEMAND(Quality_of_suspension)
     Message0("\nmaxFrac: %f\n", maxFrac);
     Message0("numOfCells: %d\n", numOfCells);
     Message0("avgVolFrac: %f\n", avgVolFrac);
+    Message0("totalVolume: %f\n", totalVolume);
 }
