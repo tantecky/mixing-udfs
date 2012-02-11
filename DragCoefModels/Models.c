@@ -190,7 +190,8 @@ DEFINE_ON_DEMAND(Quality_of_suspension)
 {
     Domain *d; /* declare domain pointer since it is not passed as an
 argument to the DEFINE macro */
-    real volume,vol_tot;
+    real volume;
+    real vol_tot = 0.0;
     Thread *t;
     cell_t c;
     d = Get_Domain(1);
