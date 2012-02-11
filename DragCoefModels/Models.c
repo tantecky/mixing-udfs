@@ -175,3 +175,21 @@ DEFINE_EXCHANGE_PROPERTY(Khopkar_CD, cell, mix_thread, s_col, f_col)
 
     return k_s_l;
 }
+
+DEFINE_EXCHANGE_PROPERTY(Debug_CD, cell, mix_thread, s_col, f_col)
+{
+    printf("s_col: %d", s_col);
+    printf("f_col: %d", f_col);
+    abort();
+
+    return 0;
+
+}
+
+/*DEFINE_ON_DEMAND(Quality_of_suspension)
+{
+    Thread* thread_s;
+    Thread* mixture_thread = THREAD_SUPER_THREAD(thread_s);
+    thread_s = THREAD_SUB_THREAD(mixture_thread, f_col);
+
+}*/
