@@ -204,7 +204,6 @@ argument to the DEFINE macro */
         begin_c_loop(c,t)
         {
             volume = C_VOLUME(c,t);
-            temp = C_T(c,t);
             /* get cell volume */
             /* get cell temperature */
 
