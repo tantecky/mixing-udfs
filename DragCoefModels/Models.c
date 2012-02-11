@@ -10,6 +10,7 @@ Develop for GCC according to gnu90 standard
 */
 
 #include <math.h>
+#include <stdint.h>
 #include <udf.h>
 #include <sg_mphase.h>
 #include <sg.h>
@@ -192,16 +193,32 @@ DEFINE_ON_DEMAND(Quality_of_suspension)
     Thread *t;
     cell_t c;
     d = Get_Domain(1);
-    /* Get the domain using ANSYS FLUENT utility */
-    /* Loop over all cell threads in the domain */
+
+    uint_least32_t numOfCells = 0;
+    real totalVolume = 0.0;
+    real sumVolFrac = 0.0;
+    real avgVolFrac;
+
+    thread_loop_c(t,d)
+    {
+        begin_c_loop(c,t)
+        {
+            numOfCells++;
+            totalVolume += C_VOLUME(c,t);
+            sumVolFrac += C_VOF(c, THREAD_SUB_THREAD(t, 1)); /*1 - secondary phase = solid phase*/
+        }
+        end_c_loop(c,t)
+
+    }
+
+    avgVolFrac = sumVolFrac / totalVolume;
+
 
     real maxFrac = -1;
     real frac;
 
     thread_loop_c(t,d)
     {
-        /* Compute max, min, volume-averaged temperature */
-        /* Loop over all cells */
         begin_c_loop(c,t)
         {
             frac = C_VOF(c, THREAD_SUB_THREAD(t, 1));
@@ -212,5 +229,8 @@ DEFINE_ON_DEMAND(Quality_of_suspension)
         end_c_loop(c,t)
 
     }
-    Message0("maxFrac: %e", maxFrac);
+
+    Message0("\nmaxFrac: %f\n", maxFrac);
+    Message0("numOfCells: %d\n", numOfCells);
+    Message0("avgVolFrac: %f\n", avgVolFrac);
 }
