@@ -235,9 +235,20 @@ real QualityOfSuspension()
 DEFINE_EXECUTE_AT_END(Quality_of_suspension)
 {
     Domain* d;
+    Thread* t;
+    cell_t c;
     d = Get_Domain(1);
-    Thread* t = Lookup_Thread(d, 1);
 
-    C_UDMI(1, t, QA_UDM_NUM) = QualityOfSuspension();
+    real qa = QualityOfSuspension();
+
+    thread_loop_c(t,d)
+    {
+        begin_c_loop(c,t)
+        {
+            C_UDMI(c, t, QA_UDM_NUM) = qa;
+        }
+        end_c_loop(c,t)
+
+    }
 }
 #endif
