@@ -252,3 +252,9 @@ DEFINE_EXECUTE_AT_END(Quality_of_suspension)
     }
 }
 #endif
+
+DEFINE_ON_DEMAND(QA_of_suspension)
+{
+    real qa = QualityOfSuspension();
+    Message0("\nqualityOfSuspension: %f\n", qa);
+}
