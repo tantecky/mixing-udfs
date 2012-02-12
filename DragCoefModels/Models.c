@@ -19,6 +19,7 @@ Develop for GCC according to gnu90 standard
 #define RHO_L (1011.44) /*density of the liquid phase*/
 #define MU_L (5e-3) /*dynamic viscosity of the liquid phase*/
 #define NU_L (MU_L/RHO_L) /*kinematic viscosity of the liquid phase*/
+#define SOLID_PHASE_ID (1) /*id of the solid phase*/
 
 /*checking if exchange coefficient is a finite number*/
 #define DEBUG_COEF
@@ -27,7 +28,8 @@ Develop for GCC according to gnu90 standard
 #define USE_UDM
 
 #ifdef USE_UDM
-#define UDM_NUM (0) /*the id of the drag coefficient in UDM*/
+#define CD_UDM_NUM (0) /*the id of the drag coefficient in UDM*/
+#define QA_UDM_NUM (1) /*the id of the quality of suspension in UDM*/
 #endif
 
 #ifdef DEBUG_COEF
@@ -39,6 +41,9 @@ if(!isfinite(result) || result < 0.0) { \
 #else
 #define CHECK_COEF(result) (void)0
 #endif
+
+/*prototypes*/
+real QualityOfSuspension(void);
 
 DEFINE_EXECUTE_ON_LOADING(on_load, libname)
 {
@@ -61,7 +66,7 @@ DEFINE_EXCHANGE_PROPERTY(SchillerNauman_CD, cell, mix_thread, s_col, f_col)
     CHECK_COEF(k_s_l);
 
 #ifdef USE_UDM
-    C_UDMI(cell, mix_thread, UDM_NUM) = cd0;
+    C_UDMI(cell, mix_thread, CD_UDM_NUM) = cd0;
 #endif
 
     return k_s_l;
@@ -99,7 +104,7 @@ DEFINE_EXCHANGE_PROPERTY(Pinelli_CD, cell, mix_thread, s_col, f_col)
     CHECK_COEF(k_s_l);
 
 #ifdef USE_UDM
-    C_UDMI(cell, mix_thread, UDM_NUM) = cd;
+    C_UDMI(cell, mix_thread, CD_UDM_NUM) = cd;
 #endif
 
     return k_s_l;
@@ -135,7 +140,7 @@ DEFINE_EXCHANGE_PROPERTY(Brucato_CD, cell, mix_thread, s_col, f_col)
     CHECK_COEF(k_s_l);
 
 #ifdef USE_UDM
-    C_UDMI(cell, mix_thread, UDM_NUM) = cd;
+    C_UDMI(cell, mix_thread, CD_UDM_NUM) = cd;
 #endif
 
     return k_s_l;
@@ -171,23 +176,13 @@ DEFINE_EXCHANGE_PROPERTY(Khopkar_CD, cell, mix_thread, s_col, f_col)
     CHECK_COEF(k_s_l);
 
 #ifdef USE_UDM
-    C_UDMI(cell, mix_thread, UDM_NUM) = cd;
+    C_UDMI(cell, mix_thread, CD_UDM_NUM) = cd;
 #endif
 
     return k_s_l;
 }
 
-DEFINE_EXCHANGE_PROPERTY(Debug_CD, cell, mix_thread, s_col, f_col)
-{
-    printf("s_col: %d\n", s_col);
-    printf("f_col: %d", f_col);
-    abort();
-
-    return 0;
-
-}
-
-DEFINE_ON_DEMAND(Quality_of_suspension)
+real QualityOfSuspension()
 {
     Domain* d;
     Thread *t;
@@ -207,7 +202,7 @@ DEFINE_ON_DEMAND(Quality_of_suspension)
             numOfCells++;
             cellVol = C_VOLUME(c,t);
             totalVolume += cellVol;
-            sumVolFrac += cellVol*C_VOF(c, THREAD_SUB_THREAD(t, 1)); /*1 - secondary phase = solid phase*/
+            sumVolFrac += cellVol*C_VOF(c, THREAD_SUB_THREAD(t, SOLID_PHASE_ID)); /*1 - secondary phase = solid phase*/
         }
         end_c_loop(c,t)
 
@@ -218,13 +213,12 @@ DEFINE_ON_DEMAND(Quality_of_suspension)
 
     real frac;
     real parcSum = 0.0;
-    real qualityOfSuspension;
 
     thread_loop_c(t,d)
     {
         begin_c_loop(c,t)
         {
-            frac = C_VOF(c, THREAD_SUB_THREAD(t, 1));
+            frac = C_VOF(c, THREAD_SUB_THREAD(t, SOLID_PHASE_ID));
 
             parcSum += pow(frac - avgVolFrac, 2.0);
 
@@ -233,10 +227,17 @@ DEFINE_ON_DEMAND(Quality_of_suspension)
 
     }
 
-    qualityOfSuspension = sqrt(parcSum/numOfCells);
+    return sqrt(parcSum/numOfCells);
 
-    Message0("numOfCells: %d\n", numOfCells);
-    Message0("avgVolFrac: %f\n", avgVolFrac);
-    Message0("totalVolume: %f\n", totalVolume);
-    Message0("qualityOfSuspension: %f\n", qualityOfSuspension);
 }
+
+#ifdef USE_UDM
+DEFINE_EXECUTE_AT_END(Quality_of_suspension)
+{
+    Domain* d;
+    d = Get_Domain(1);
+    Thread* t = Lookup_Thread(d, 1);
+
+    C_UDMI(1, t, QA_UDM_NUM) = QualityOfSuspension();
+}
+#endif
