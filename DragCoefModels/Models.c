@@ -220,14 +220,14 @@ real QualityOfSuspension()
         {
             frac = C_VOF(c, THREAD_SUB_THREAD(t, SOLID_PHASE_ID));
 
-            parcSum += pow(frac/C_VOLUME(c,t) - sumVolFrac/totalVolume, 2.0);
+            parcSum += frac*frac;
 
         }
         end_c_loop(c,t)
 
     }
 
-    return sqrt(parcSum/numOfCells);
+    return sqrt(parcSum/numOfCells - avgVolFrac*avgVolFrac);
 
 }
 
