@@ -232,7 +232,7 @@ real QualityOfSuspension()
             numOfCells++;
             frac = C_VOF(c, THREAD_SUB_THREAD(t, SOLID_PHASE_ID));
 
-            parcSum += pow(frac - avgVolFrac, 2.0);
+            parcSum += pow(frac/avgVolFrac - 1.0, 2.0);
 
         }
         end_c_loop(c,t)
