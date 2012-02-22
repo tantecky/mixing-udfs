@@ -253,7 +253,9 @@ DEFINE_EXECUTE_AT_END(Quality_of_suspension)
 
     real qa = QualityOfSuspension();
 
-    thread_loop_c(t,d)
+    Message0("\nQualityOfSuspension: %f\n", qa);
+
+    /*thread_loop_c(t,d)
     {
         begin_c_loop(c,t)
         {
@@ -261,7 +263,7 @@ DEFINE_EXECUTE_AT_END(Quality_of_suspension)
         }
         end_c_loop(c,t)
 
-    }
+    }*/
 }
 #endif
 
