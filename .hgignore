@@ -1,0 +1,13 @@
+relre:/obj/
+relre:/bin/
+relre:\.layout$
+relre:\.depend$
+glob:include/
+glob:include-v121/
+glob:include-v130/
+syntax: glob
+TecplotAnalyzer/test.png
+TecplotAnalyzer/test2.png
+Testik/Prince.h
+Testik/Prince.c
+Testik/Prince.cbp
