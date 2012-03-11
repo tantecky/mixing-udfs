@@ -44,6 +44,7 @@ if(!isfinite(result) || result < 0.0) { \
 
 /*prototypes*/
 real QualityOfSuspension(void);
+real MeanVolFrac(void);
 
 DEFINE_EXECUTE_ON_LOADING(on_load, libname)
 {
@@ -182,7 +183,7 @@ DEFINE_EXCHANGE_PROPERTY(Khopkar_CD, cell, mix_thread, s_col, f_col)
     return k_s_l;
 }
 
-real QualityOfSuspension()
+real MeanVolFrac(void)
 {
     Domain* d;
     Thread *t;
@@ -192,7 +193,6 @@ real QualityOfSuspension()
     uint_least32_t numOfCells = 0;
     real totalVolume = 0.0;
     real sumVolFrac = 0.0;
-    real avgVolFrac;
     real cellVol;
 
     thread_loop_c(t,d)
@@ -208,8 +208,19 @@ real QualityOfSuspension()
 
     }
 
-    avgVolFrac = sumVolFrac / totalVolume;
+    return (sumVolFrac / totalVolume);
 
+}
+
+real QualityOfSuspension()
+{
+    Domain* d;
+    Thread *t;
+    cell_t c;
+    d = Get_Domain(1);
+
+    uint_least32_t numOfCells = 0;
+    real avgVolFrac = MeanVolFrac();
 
     real frac;
     real parcSum = 0.0;
@@ -218,9 +229,10 @@ real QualityOfSuspension()
     {
         begin_c_loop(c,t)
         {
+            numOfCells++;
             frac = C_VOF(c, THREAD_SUB_THREAD(t, SOLID_PHASE_ID));
 
-            parcSum += pow(frac - avgVolFrac, 2.0);
+            parcSum += pow(frac/avgVolFrac - 1.0, 2.0);
 
         }
         end_c_loop(c,t)
@@ -241,6 +253,8 @@ DEFINE_EXECUTE_AT_END(Quality_of_suspension)
 
     real qa = QualityOfSuspension();
 
+    /*Message0("\nQualityOfSuspension: %f\n", qa);*/
+
     thread_loop_c(t,d)
     {
         begin_c_loop(c,t)
@@ -256,5 +270,8 @@ DEFINE_EXECUTE_AT_END(Quality_of_suspension)
 DEFINE_ON_DEMAND(QA_of_suspension)
 {
     real qa = QualityOfSuspension();
-    Message0("\nqualityOfSuspension: %f\n", qa);
+    real avgVolFrac = MeanVolFrac();
+
+    Message0("\nQualityOfSuspension: %f\n", qa);
+    Message0("\nMeanVolFrac: %f\n", avgVolFrac);
 }
