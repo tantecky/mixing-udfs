@@ -237,7 +237,7 @@ real MeanVolFrac2(void)
             totalVolume += cellVol;
             sumVolFrac += C_VOLUME(c, THREAD_SUB_THREAD(t, SOLID_PHASE_ID)); /*1 - secondary phase = solid phase*/
 
-            frac = C_VOF(c, THREAD_SUB_THREAD(t, SOLID_PHASE_ID));
+            frac = C_VOF(c, t);
 
             if(frac > max)
                 max = frac;
