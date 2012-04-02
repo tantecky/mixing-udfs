@@ -217,6 +217,10 @@ real MeanVolFrac2(void)
     Domain* d;
     Thread *t;
     cell_t c;
+    real min = 1;
+    real max = -1;
+    real frac;
+
     d = Get_Domain(1);
 
     uint_least32_t numOfCells = 0;
@@ -232,8 +236,19 @@ real MeanVolFrac2(void)
             cellVol = C_VOLUME(c,t);
             totalVolume += cellVol;
             sumVolFrac += C_VOLUME(c, THREAD_SUB_THREAD(t, SOLID_PHASE_ID)); /*1 - secondary phase = solid phase*/
+
+            frac = C_VOF(c, THREAD_SUB_THREAD(t, SOLID_PHASE_ID));
+
+            if(frac > max)
+                max = frac;
+
+            if(frac < min)
+                min = frac;
         }
         end_c_loop(c,t)
+        Message0("lulz\n");
+        Message0("Max: %lf\n", max);
+        Message0("Min: %lf\n", min);
 
     }
 
