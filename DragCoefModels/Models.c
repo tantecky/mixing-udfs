@@ -239,6 +239,7 @@ real MeanVolFrac2(void)
             real cellVol = C_VOLUME(c,t);
             totalVolume += cellVol;
             frac = C_VOF(c,pt[SOLID_PHASE_ID]);
+            sumVolFrac +=frac*cellVol;
 
             if(frac > max)
                 max = frac;
@@ -321,6 +322,37 @@ real QualityOfSuspension()
 
 }
 
+real QualityOfSuspension2()
+{
+    Domain* d;
+    Thread *t;
+    cell_t c;
+    d = Get_Domain(1);
+
+    uint_least32_t numOfCells = 0;
+    real avgVolFrac = 0.147;
+
+    real frac;
+    real parcSum = 0.0;
+
+    thread_loop_c(t,d)
+    {
+        begin_c_loop(c,t)
+        {
+            numOfCells++;
+            frac = C_VOF(c, THREAD_SUB_THREAD(t, SOLID_PHASE_ID));
+
+            parcSum += pow(frac/avgVolFrac - 1.0, 2.0);
+
+        }
+        end_c_loop(c,t)
+
+    }
+
+    return sqrt(parcSum/numOfCells);
+
+}
+
 #ifdef USE_UDM
 DEFINE_EXECUTE_AT_END(Quality_of_suspension)
 {
@@ -350,8 +382,11 @@ DEFINE_ON_DEMAND(QA_of_suspension)
     real qa = QualityOfSuspension();
     real avgVolFrac = MeanVolFrac();
     real avgVolFrac2 = MeanVolFrac2();
+    real qa2 = QualityOfSuspension2();
+
 
     Message0("\nQualityOfSuspension: %f\n", qa);
+    Message0("\nQualityOfSuspension: %f\n", qa2);
     Message0("\nMeanVolFrac: %f\n", avgVolFrac);
     Message0("\nMeanVolFrac: %f\n", avgVolFrac2);
 }
