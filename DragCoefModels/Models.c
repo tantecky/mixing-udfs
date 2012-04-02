@@ -216,6 +216,7 @@ real MeanVolFrac2(void)
 {
     Domain* d;
     Thread *t;
+    Thread **pt;
     cell_t c;
     real min = 1;
     real max = -1;
@@ -228,14 +229,44 @@ real MeanVolFrac2(void)
     real sumVolFrac = 0.0;
     real cellVol;
 
-    thread_loop_c(t,d)
+
+    mp_thread_loop_c (t,d,pt)
+    if (FLUID_THREAD_P(t))
+    {
+        cell_t  c;
+        begin_c_loop_int (c,t)
+        {
+            real cellVol = C_VOLUME(c,t);
+            totalVolume += cellVol;
+            frac = C_VOF(c,pt[SOLID_PHASE_ID]);
+
+            if(frac > max)
+                max = frac;
+
+            if(frac < min)
+                min = frac;
+
+
+        }
+        end_c_loop_int (c,t)
+        Message0("lulz\n");
+        Message0("Max: %lf\n", max);
+        Message0("Min: %lf\n", min);
+
+        min = 1;
+        max = -1;
+    }
+
+    return (sumVolFrac / totalVolume);
+
+    /*thread_loop_c(t,d)
     {
         begin_c_loop(c,t)
         {
             numOfCells++;
             cellVol = C_VOLUME(c,t);
             totalVolume += cellVol;
-            sumVolFrac += C_VOLUME(c, THREAD_SUB_THREAD(t, SOLID_PHASE_ID)); /*1 - secondary phase = solid phase*/
+            sumVolFrac += C_VOLUME(c, THREAD_SUB_THREAD(t, SOLID_PHASE_ID));
 
             frac = C_VOF(c, THREAD_SUB_THREAD(t, 2));
 
@@ -253,7 +284,7 @@ real MeanVolFrac2(void)
         min = 1;
         max = -1;
 
-    }
+    }*/
 
     return (sumVolFrac / totalVolume);
 
@@ -324,3 +355,5 @@ DEFINE_ON_DEMAND(QA_of_suspension)
     Message0("\nMeanVolFrac: %f\n", avgVolFrac);
     Message0("\nMeanVolFrac: %f\n", avgVolFrac2);
 }
+
+
