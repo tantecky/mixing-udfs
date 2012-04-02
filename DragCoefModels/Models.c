@@ -222,7 +222,7 @@ real MeanVolFrac2(void)
     real max = -1;
     real frac;
 
-    d = Get_Domain(1);
+    d = Get_Domain(0);
 
     uint_least32_t numOfCells = 0;
     real totalVolume = 0.0;
@@ -285,9 +285,9 @@ real MeanVolFrac2(void)
         min = 1;
         max = -1;
 
-    }*/
+    }
 
-    return (sumVolFrac / totalVolume);
+    return (sumVolFrac / totalVolume);*/
 
 }
 
