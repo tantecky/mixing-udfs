@@ -250,6 +250,9 @@ real MeanVolFrac2(void)
         Message0("Max: %lf\n", max);
         Message0("Min: %lf\n", min);
 
+        min = 1;
+        max = -1;
+
     }
 
     return (sumVolFrac / totalVolume);
