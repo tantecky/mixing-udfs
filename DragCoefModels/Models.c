@@ -91,9 +91,6 @@ DEFINE_EXCHANGE_PROPERTY(Pinelli_CD, cell, mix_thread, s_col, f_col)
 
     real cd = cd0/pow(pinelli, 2.0);
 
-    /*if (reyp<0.001)
-        reyp=0.001;*/
-
     /*volumetric fraction of the solid phase*/
     real vol_s = C_VOF(cell, thread_s);
 
@@ -127,9 +124,6 @@ DEFINE_EXCHANGE_PROPERTY(Brucato_CD, cell, mix_thread, s_col, f_col)
 
     real cd = cd0*(1 + 8.76e-4*pow(DIAMETER/kolscale, 3.0));
 
-    /*if (reyp<0.001)
-        reyp=0.001;*/
-
     /*volumetric fraction of the solid phase*/
     real vol_s = C_VOF(cell, thread_s);
 
@@ -162,9 +156,6 @@ DEFINE_EXCHANGE_PROPERTY(Khopkar_CD, cell, mix_thread, s_col, f_col)
     real kolscale = pow((NU_L*NU_L*NU_L)/eps, 0.25);
 
     real cd = cd0*(1 + 8.76e-5*pow(DIAMETER/kolscale, 3.0));
-
-    /*if (reyp<0.001)
-        reyp=0.001;*/
 
     /*volumetric fraction of the solid phase*/
     real vol_s = C_VOF(cell, thread_s);
@@ -212,85 +203,6 @@ real MeanVolFrac(void)
 
 }
 
-real MeanVolFrac2(void)
-{
-    Domain* d;
-    Thread *t;
-    Thread **pt;
-    cell_t c;
-    real min = 1;
-    real max = -1;
-    real frac;
-
-    d = Get_Domain(0);
-
-    uint_least32_t numOfCells = 0;
-    real totalVolume = 0.0;
-    real sumVolFrac = 0.0;
-    real cellVol;
-
-
-    mp_thread_loop_c (t,d,pt)
-    if (FLUID_THREAD_P(t))
-    {
-        cell_t  c;
-        begin_c_loop_int (c,t)
-        {
-            real cellVol = C_VOLUME(c,t);
-            totalVolume += cellVol;
-            frac = C_VOF(c,pt[SOLID_PHASE_ID]);
-            sumVolFrac +=frac*cellVol;
-
-            if(frac > max)
-                max = frac;
-
-            if(frac < min)
-                min = frac;
-
-
-        }
-        end_c_loop_int (c,t)
-        Message0("lulz\n");
-        Message0("Max: %lf\n", max);
-        Message0("Min: %lf\n", min);
-
-        min = 1;
-        max = -1;
-    }
-
-    return (sumVolFrac / totalVolume);
-
-    /*thread_loop_c(t,d)
-    {
-        begin_c_loop(c,t)
-        {
-            numOfCells++;
-            cellVol = C_VOLUME(c,t);
-            totalVolume += cellVol;
-            sumVolFrac += C_VOLUME(c, THREAD_SUB_THREAD(t, SOLID_PHASE_ID));
-
-            frac = C_VOF(c, THREAD_SUB_THREAD(t, 2));
-
-            if(frac > max)
-                max = frac;
-
-            if(frac < min)
-                min = frac;
-        }
-        end_c_loop(c,t)
-        Message0("lulz\n");
-        Message0("Max: %lf\n", max);
-        Message0("Min: %lf\n", min);
-
-        min = 1;
-        max = -1;
-
-    }
-
-    return (sumVolFrac / totalVolume);*/
-
-}
-
 real QualityOfSuspension()
 {
     Domain* d;
@@ -300,37 +212,6 @@ real QualityOfSuspension()
 
     uint_least32_t numOfCells = 0;
     real avgVolFrac = MeanVolFrac();
-
-    real frac;
-    real parcSum = 0.0;
-
-    thread_loop_c(t,d)
-    {
-        begin_c_loop(c,t)
-        {
-            numOfCells++;
-            frac = C_VOF(c, THREAD_SUB_THREAD(t, SOLID_PHASE_ID));
-
-            parcSum += pow(frac/avgVolFrac - 1.0, 2.0);
-
-        }
-        end_c_loop(c,t)
-
-    }
-
-    return sqrt(parcSum/numOfCells);
-
-}
-
-real QualityOfSuspension2()
-{
-    Domain* d;
-    Thread *t;
-    cell_t c;
-    d = Get_Domain(1);
-
-    uint_least32_t numOfCells = 0;
-    real avgVolFrac = 0.147;
 
     real frac;
     real parcSum = 0.0;
@@ -380,15 +261,6 @@ DEFINE_EXECUTE_AT_END(Quality_of_suspension)
 DEFINE_ON_DEMAND(QA_of_suspension)
 {
     real qa = QualityOfSuspension();
-    real avgVolFrac = MeanVolFrac();
-    real avgVolFrac2 = MeanVolFrac2();
-    real qa2 = QualityOfSuspension2();
-
 
     Message0("\nQualityOfSuspension: %f\n", qa);
-    Message0("\nQualityOfSuspension: %f\n", qa2);
-    Message0("\nMeanVolFrac: %f\n", avgVolFrac);
-    Message0("\nMeanVolFrac: %f\n", avgVolFrac2);
 }
-
-
