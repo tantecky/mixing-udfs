@@ -15,10 +15,12 @@ Develop for GCC according to gnu90 standard
 #include <sg_mphase.h>
 #include <sg.h>
 
+/*physical properties*/
 #define DIAMETER (1.02e-3) /*diameter of the solid particle*/
-#define RHO_L (1011.44) /*density of the liquid phase*/
-#define MU_L (5e-3) /*dynamic viscosity of the liquid phase*/
+#define RHO_L (1024.18) /*density of the liquid phase*/
+#define MU_L (7.6115e-3) /*dynamic viscosity of the liquid phase*/
 #define NU_L (MU_L/RHO_L) /*kinematic viscosity of the liquid phase*/
+
 #define SOLID_PHASE_ID (1) /*id of the solid phase*/
 
 /*checking if exchange coefficient is a finite number*/
