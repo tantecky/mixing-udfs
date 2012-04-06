@@ -13,3 +13,5 @@ Testik/Prince.c
 Testik/Prince.cbp
 Bubble/BubbleSource.o
 Bubble/Bubble.o
+Bubble/Tester
+Bubble/Tester.o
