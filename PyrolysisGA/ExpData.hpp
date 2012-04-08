@@ -7,10 +7,10 @@
 #include <stdexcept>
 #include <sstream>
 #include <iostream>
+#include <cmath>
 
 class ExpData
 {
-
 private:
     static const int NumberOfRows = 4;
 
@@ -18,9 +18,10 @@ private:
     double m_Temp;
     double m_TG;
     double m_HeatFlow;
+    double m_MassFrac;
 
 public:
-    static void LoadExpData(const char* const filename, std::vector<ExpData>& dataSet)
+    static void LoadExpData(const char* const filename, std::vector<ExpData>& dataSet, double initialMass)
     {
         std::ifstream dataFile;
 
@@ -38,6 +39,7 @@ public:
         std::string cell;
         std::stringstream  lineStream;
         std::istringstream istring;
+        double massFrac;
 
         double data[ExpData::NumberOfRows];
 
@@ -65,7 +67,9 @@ public:
 
             }
 
-            dataSet.push_back(ExpData(data[0], data[1], data[2], data[3]));
+            massFrac = (initialMass-(initialMass*std::abs(data[2])/100.0))/initialMass;
+
+            dataSet.push_back(ExpData(data[1], data[0] + 273.15, data[2], data[3], massFrac));
 
         }
 
@@ -94,8 +98,13 @@ public:
         return m_HeatFlow;
     }
 
-    ExpData(double time, double temp, double tg, double heatFlow)
-        : m_Time(time), m_Temp(temp), m_TG(tg), m_HeatFlow(heatFlow)
+    inline const double& MassFrac()
+    {
+        return m_MassFrac;
+    }
+
+    ExpData(double time, double temp, double tg, double heatFlow, double massFrac)
+        : m_Time(time), m_Temp(temp), m_TG(tg), m_HeatFlow(heatFlow), m_MassFrac(massFrac)
     {
 
     }

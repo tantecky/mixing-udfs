@@ -31,7 +31,7 @@
 		<Compiler>
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
-			<Add option="-fopenmp" />
+			<Add option="-Wno-unknown-pragmas" />
 			<Add directory="/usr/include/eo" />
 		</Compiler>
 		<Linker>
@@ -40,6 +40,8 @@
 		</Linker>
 		<Unit filename="ExpData.cpp" />
 		<Unit filename="ExpData.hpp" />
+		<Unit filename="Integrator.hpp" />
+		<Unit filename="ModEq.hpp" />
 		<Unit filename="main.cpp" />
 		<Extensions>
 			<envvars />
