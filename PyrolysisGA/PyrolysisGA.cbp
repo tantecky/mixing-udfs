@@ -40,8 +40,12 @@
 		</Linker>
 		<Unit filename="ExpData.cpp" />
 		<Unit filename="ExpData.hpp" />
+		<Unit filename="Integrator.cpp" />
 		<Unit filename="Integrator.hpp" />
+		<Unit filename="ModEq.cpp" />
 		<Unit filename="ModEq.hpp" />
+		<Unit filename="OptimizationEngine.cpp" />
+		<Unit filename="OptimizationEngine.hpp" />
 		<Unit filename="main.cpp" />
 		<Extensions>
 			<envvars />

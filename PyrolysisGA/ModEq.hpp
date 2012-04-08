@@ -1,6 +1,8 @@
 #ifndef MODEQ_HPP_INCLUDED
 #define MODEQ_HPP_INCLUDED
 
+#include <cmath>
+
 class ModEq
 {
 private:
@@ -9,10 +11,7 @@ private:
     static const double T0 =  17 + 273.15;
 
 public:
-    static double Eq(double t, double y, double A, double E, double NS, double yinf)
-    {
-        return -A*( pow(y-yinf,NS))*exp(-E/(R*(beta*t+T0)));
-    }
+    static double Eq(double t, double y, double A, double E, double NS, double yinf);
 };
 
 
