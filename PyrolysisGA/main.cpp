@@ -12,7 +12,6 @@ int main()
 {
     try
     {
-
         std::vector<ExpData> dataSet;
 
         ExpData::LoadExpData("borovice_buk 5,15,25 dusik.csv", dataSet, 5.0);
@@ -37,7 +36,7 @@ int main()
     }
     catch(std::exception& e)
     {
-        std::cerr << e.what() << std::endl;
+        std::cerr << "Exception: " << e.what() << std::endl;
 
         return EXIT_FAILURE;
     }
