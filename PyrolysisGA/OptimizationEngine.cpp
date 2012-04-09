@@ -10,7 +10,7 @@ const double OptimizationEngine::yinf_initial = 0.231642;
 
 const int OptimizationEngine::SEED = 1337;
 const int OptimizationEngine::POP_SIZE = 100; // Size of population
-const int OptimizationEngine::MAX_GEN = 5e4; // Maximum number of generation before STOP
+const int OptimizationEngine::MAX_GEN = 1e4; // Maximum number of generation before STOP
 
 const double OptimizationEngine::HYPER_CUBE_RATE = 0.5;     // relative weight for hypercube Xover
 const double OptimizationEngine::SEGMENT_RATE = 0.5;  // relative weight for segment Xover
@@ -37,11 +37,12 @@ void OptimizationEngine::Run(std::vector<ExpData>* dataSet)
 
     pop.sort();
 
-    std::cout << "Initial Population" << std::endl;
+    std::cout << "Initial Population:" << std::endl;
+    std::cout << "----------------------------" << std::endl;
     std::cout << pop;
 
-   // eoDetTournamentSelect<Indi> selectOne(30); //deterministic tournament selection
-   // eoProportionalSelect<Indi> selectOne; //roulette wheel selection
+    // eoDetTournamentSelect<Indi> selectOne(30); //deterministic tournament selection
+    // eoProportionalSelect<Indi> selectOne; //roulette wheel selection
     eoStochTournamentSelect<Indi>  selectOne(0.8); //Stochastic Tournament
 
     eoSelectPerc<Indi> select(selectOne, 2.0);
@@ -87,22 +88,38 @@ void OptimizationEngine::Run(std::vector<ExpData>* dataSet)
 
     eoEasyEA<Indi> gga(continuator, eval, select, transform, replace);
 
-    // Apply algo to pop - that's it!
-    std::cout << "GO!" << std::endl;
+    std::cout << "Working..." << std::endl;
     gga(pop);
 
     // OUTPUT
     // Print (sorted) intial population
     pop.sort();
-    std::cout << "Final pop:" << std::endl;
-    std::cout << pop << std::endl;
+    std::cout << "Final Population:" << std::endl;
+    std::cout << "----------------------------" << std::endl;
+    std::cout << pop;
+    std::cout << "----------------------------" << std::endl;
 
-    std::cout << "The Best:" << std::endl;
-    std::cout << "           A           E      NS      yinf" << std::endl;
-    std::cout << pop[0] << std::endl;
+    std::cout << "The Best member:" << std::endl;
+
+    double fitness = pop[0].fitness();
+    double A = (pop[0])[0];
+    double E = (pop[0])[1];
+    double NS = (pop[0])[2];
+    double yinf = (pop[0])[3];
+
+    std::cout << "Fitness: " << fitness << std::endl;
+    std::cout << "A: " << A << std::endl;
+    std::cout << "E: " << E << std::endl;
+    std::cout << "NS: " << NS << std::endl;
+    std::cout << "yinf: " << yinf << std::endl;
+
+    std::cout << "----------------------------" << std::endl;
+
+    SaveResults(fitness, A, E, NS, yinf);
+
+    std::cout << "Results saved into results.xy" << std::endl;
 
     delete[] ModData;
-
 }
 
 double OptimizationEngine::FitnessFce(const std::vector<double>& pars)
@@ -145,5 +162,27 @@ void OptimizationEngine::InitPop(eoPop<Indi>& pop, eoEvalFuncPtr<Indi, double, c
     }
 }
 
+void OptimizationEngine::SaveResults(double fitness, double A, double E, double NS, double yinf)
+{
+    std::ofstream results;
 
+    results.open("results.xy", std::ios::out | std::ios::trunc);
+
+    if(!results.good())
+    {
+        throw new std::ios_base::failure("Unable to write results.xy");
+    }
+
+    results << "#Fitness:" << fitness << ", A: " << A << ", E: " << E << ", NS: " << NS  << ", yinf: " << yinf << std::endl;
+    results << "#Time,Temp,Exp,Model"  << std::endl;
+
+    Integrator::Runge23(DataSet, ModData, A, E, NS, yinf);
+
+    for(unsigned int i = 0; i < DataSet->size(); i++)
+    {
+        results << (*DataSet)[i].Time() <<  "," << (*DataSet)[i].Temp() << "," << (*DataSet)[i].MassFrac() << "," << ModData[i] << std::endl;
+    }
+
+    results.close();
+}
 

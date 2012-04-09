@@ -4,6 +4,8 @@
 #include <eo>
 #include <es.h>
 #include <vector>
+#include <fstream>
+#include <iostream>
 
 #include "ExpData.hpp"
 #include "Integrator.hpp"
@@ -41,6 +43,7 @@ private:
     static std::vector<ExpData>* DataSet;
     static double* ModData;
     static void InitPop(eoPop<Indi>& pop, eoEvalFuncPtr<Indi, double, const std::vector<double>& > eval);
+    static void SaveResults(double fitness, double A, double E, double NS, double yinf);
 
 public:
     static void Run(std::vector<ExpData>* dataSet);
