@@ -8,7 +8,7 @@
 #include "ExpData.hpp"
 #include "Integrator.hpp"
 
-typedef eoReal<eoMinimizingFitness> Indi;
+typedef eoReal<eoMaximizingFitness> Indi;
 
 
 

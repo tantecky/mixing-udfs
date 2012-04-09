@@ -21,18 +21,18 @@ int main()
              std::cout << *it;
          }*/
 
-        OptimizationEngine::Run(&dataSet);
+        //OptimizationEngine::Run(&dataSet);
 
-        /*double* modData = new double[dataSet.size()];
+        double* modData = new double[dataSet.size()];
 
-        Integrator::Runge23(&dataSet, modData, 5.49e12, 1.70e5, 3.56, 0.231642);
+        Integrator::Runge23(&dataSet, modData, 37456.6, 81646, 1.5901, 0.236859);
 
         for(unsigned int i = 0; i < dataSet.size(); i++)
         {
-            std::cout << dataSet[i].Time() << "," << dataSet[i].MassFrac() << "," << modData[i] << std::endl;
+            std::cout << dataSet[i].Time() << "," << dataSet[i].MassFrac() << "," << modData[i] << "," << dataSet[i].Temp() << std::endl;
         }
 
-        delete[] modData;*/
+        delete[] modData;
     }
     catch(std::exception& e)
     {

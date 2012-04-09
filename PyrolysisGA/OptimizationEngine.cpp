@@ -9,13 +9,13 @@ const double OptimizationEngine::NS_initial = 3.56;
 const double OptimizationEngine::yinf_initial = 0.231642;
 
 const int OptimizationEngine::SEED = 1337;
-const int OptimizationEngine::POP_SIZE = 50; // Size of population
-const int OptimizationEngine::MAX_GEN = 1e5; // Maximum number of generation before STOP
+const int OptimizationEngine::POP_SIZE = 100; // Size of population
+const int OptimizationEngine::MAX_GEN = 5e4; // Maximum number of generation before STOP
 
 const double OptimizationEngine::HYPER_CUBE_RATE = 0.5;     // relative weight for hypercube Xover
 const double OptimizationEngine::SEGMENT_RATE = 0.5;  // relative weight for segment Xover
-const double OptimizationEngine::ALFA = 5.0;     //BLX coefficient
-const double OptimizationEngine::EPSILON = 0.01;	// range for real uniform mutation
+const double OptimizationEngine::ALFA = 10.0;     //BLX coefficient
+const double OptimizationEngine::EPSILON = 0.1;	// range for real uniform mutation
 const double OptimizationEngine::SIGMA = 0.3;	    	// std dev. for normal mutation
 const double OptimizationEngine::UNIFORM_MUT_RATE = 0.5;  // relative weight for uniform mutation
 const double OptimizationEngine::DET_MUT_RATE = 0.5;      // relative weight for det-uniform mutation
@@ -40,11 +40,25 @@ void OptimizationEngine::Run(std::vector<ExpData>* dataSet)
     std::cout << "Initial Population" << std::endl;
     std::cout << pop;
 
-    eoDetTournamentSelect<Indi> selectOne(20);
+   // eoDetTournamentSelect<Indi> selectOne(30); //deterministic tournament selection
+   // eoProportionalSelect<Indi> selectOne; //roulette wheel selection
+    eoStochTournamentSelect<Indi>  selectOne(0.8); //Stochastic Tournament
 
-    eoSelectPerc<Indi> select(selectOne, 2.0);// by default rate==1
-    eoPlusReplacement<Indi> replace;
+    eoSelectPerc<Indi> select(selectOne, 2.0);
+    /*It will select floor(rate*pop.size()) individuals and pushes them to
+    the back of the destination population.*/
+    //eoSelectPerc<Indi> select(selectOne); //rate == 1.0
 
+    //eoGenerationalReplacement<Indi> replace; //all offspring replace all parents
+    eoPlusReplacement<Indi> replace; //the best from offspring+parents become the next generation
+
+    //eoSSGAStochTournamentReplacement<Indi> replace(0.8);
+    /*
+    in which parents to be killed are chosen by a (reverse) stochastic tournament.
+    Additional parameter (in the constructor) is the tournament rate, a double.
+    */
+
+    //Transformation
     eoSegmentCrossover<Indi> xoverS(ALFA);
     // uniform choice in hypercube built by the parents
     eoHypercubeCrossover<Indi> xoverA(ALFA);
@@ -74,7 +88,7 @@ void OptimizationEngine::Run(std::vector<ExpData>* dataSet)
     eoEasyEA<Indi> gga(continuator, eval, select, transform, replace);
 
     // Apply algo to pop - that's it!
-    std::cout << "GO" << std::endl;
+    std::cout << "GO!" << std::endl;
     gga(pop);
 
     // OUTPUT
@@ -106,11 +120,11 @@ double OptimizationEngine::FitnessFce(const std::vector<double>& pars)
     for(unsigned int i = 1; i < DataSet->size(); i++)
     {
         delta = (*DataSet)[i].MassFrac() - ModData[i];
-        fitness += delta*delta;
+        fitness -= delta*delta;
     }
 
     if(!std::isfinite(fitness))
-        return 1e10;
+        return -1e300;
 
     return fitness;
 }
@@ -121,10 +135,10 @@ void OptimizationEngine::InitPop(eoPop<Indi>& pop, eoEvalFuncPtr<Indi, double, c
     {
         Indi v;
 
-        v.push_back(A_initial + rng.normal(A_initial*rng.uniform(0., 1.)));
-        v.push_back(E_initial + rng.normal(E_initial*rng.uniform(0., 1.)));
-        v.push_back(NS_initial + rng.normal(NS_initial*rng.uniform(0., 1.)));
-        v.push_back(yinf_initial + rng.normal(yinf_initial*rng.uniform(0., 1.)));
+        v.push_back(A_initial + rng.normal(A_initial*rng.uniform(0., 2.)));
+        v.push_back(E_initial + rng.normal(E_initial*rng.uniform(0., 2.)));
+        v.push_back(NS_initial + rng.normal(NS_initial*rng.uniform(0., 2.)));
+        v.push_back(yinf_initial + rng.normal(yinf_initial*rng.uniform(0., 2.)));
 
         eval(v);
         pop.push_back(v);
