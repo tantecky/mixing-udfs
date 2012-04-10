@@ -10,7 +10,9 @@ const double OptimizationEngine::yinf_initial = 0.231642;
 
 const int OptimizationEngine::SEED = 1337;
 const int OptimizationEngine::POP_SIZE = 100; // Size of population
-const int OptimizationEngine::MAX_GEN = 1e4; // Maximum number of generation before STOP
+const int OptimizationEngine::MAX_GEN = 1000; // Maximum number of generation before STOP
+const unsigned int OptimizationEngine::PRINT_EVERY_SEC = 10; //print info to console every specified second
+
 
 const double OptimizationEngine::HYPER_CUBE_RATE = 0.5;     // relative weight for hypercube Xover
 const double OptimizationEngine::SEGMENT_RATE = 0.5;  // relative weight for segment Xover
@@ -29,11 +31,12 @@ void OptimizationEngine::Run(std::vector<ExpData>* dataSet)
     ModData = new double[dataSet->size()];
 
     rng.reseed(SEED);
-    eoEvalFuncPtr<Indi, double, const std::vector<double>& > eval(FitnessFce);
+    eoEvalFuncPtr<Indi, double, const std::vector<double>& > plainEval(FitnessFce);
+    eoEvalFuncCounter<Indi> eval(plainEval);
 
     eoPop<Indi> pop;
 
-    InitPop(pop, eval);
+    InitPop(pop, plainEval);
 
     pop.sort();
 
@@ -86,10 +89,62 @@ void OptimizationEngine::Run(std::vector<ExpData>* dataSet)
 
     eoCombinedContinue<Indi> continuator(genCont);
 
-    eoEasyEA<Indi> gga(continuator, eval, select, transform, replace);
+    //statistics
+    // but now you want to make many different things every generation
+    // (e.g. statistics, plots, ...).
+    // the class eoCheckPoint is dedicated to just that:
+    // Declare a checkpoint (from a continuator: an eoCheckPoint
+    // IS AN eoContinue and will be called in the loop of all algorithms)
+    eoCheckPoint<Indi> checkpoint(continuator);
+
+    // Create a counter parameter
+    eoValueParam<unsigned> generationCounter(0, "Gen.");
+
+    // Create an incrementor (sub-class of eoUpdater). Note that the
+    // parameter's value is passed by reference,
+    // so every time the incrementer is updated (every generation),
+    // the data in generationCounter will change.
+    eoIncrementor<unsigned> increment(generationCounter.value());
+    // Add it to the checkpoint,
+    // so the counter is updated (here, incremented) every generation
+    checkpoint.add(increment);
+    // now some statistics on the population:
+    // Best fitness in population
+    eoBestFitnessStat<Indi> bestStat;
+    // Second moment stats: average and stdev
+    eoSecondMomentStats<Indi> SecondStat;
+    // Add them to the checkpoint to get them called at the appropriate time
+    checkpoint.add(bestStat);
+    checkpoint.add(SecondStat);
+    // The Stdout monitor will print parameters to the screen ...
+    eoStdoutMonitor monitor;
+
+    // when called by the checkpoint (i.e. at every generation)
+    // checkpoint.add(monitor);
+    eoTimedMonitor timed(PRINT_EVERY_SEC);
+    timed.add(monitor);
+    checkpoint.add(timed);
+
+    // the monitor will output a series of parameters: add them
+    monitor.add(generationCounter);
+    // monitor.add(eval); // because now eval is an eoEvalFuncCounter!
+    monitor.add(bestStat);
+    monitor.add(SecondStat);
+    // A file monitor: will print parameters to ... a File, yes, you got it!
+    eoFileMonitor fileMonitor("stats.xy", " ");
+
+    // the checkpoint mechanism can handle multiple monitors
+    checkpoint.add(fileMonitor);
+    // the fileMonitor can monitor parameters, too, but you must tell it!
+    fileMonitor.add(generationCounter);
+    fileMonitor.add(bestStat);
+    fileMonitor.add(SecondStat);
+
+    //final settings
+    eoEasyEA<Indi> gga(checkpoint, eval, select, transform, replace);
 
     std::cout << "Working..." << std::endl;
-    gga(pop);
+    gga(pop); //GO!
 
     // OUTPUT
     // Print (sorted) intial population
@@ -118,6 +173,7 @@ void OptimizationEngine::Run(std::vector<ExpData>* dataSet)
     SaveResults(fitness, A, E, NS, yinf);
 
     std::cout << "Results saved into results.xy" << std::endl;
+    std::cout << "Statistics saved into stats.xy" << std::endl;
 
     delete[] ModData;
 }
@@ -185,4 +241,6 @@ void OptimizationEngine::SaveResults(double fitness, double A, double E, double 
 
     results.close();
 }
+
+
 

@@ -6,6 +6,7 @@
 #include <vector>
 #include <fstream>
 #include <iostream>
+#include <utils/eoTimedMonitor.h>
 
 #include "ExpData.hpp"
 #include "Integrator.hpp"
@@ -20,6 +21,7 @@ private:
     static const int SEED;
     static const int POP_SIZE; // Size of population
     static const int MAX_GEN; // Maximum number of generation before STOP
+    static const unsigned int PRINT_EVERY_SEC; //print info to console every specified second
 
     static const double ALFA;     //BLX coefficient
     static const double HYPER_CUBE_RATE;     // relative weight for hypercube Xover

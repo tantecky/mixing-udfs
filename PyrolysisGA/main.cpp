@@ -17,7 +17,9 @@ int main(int argc, char* argv[])
         if(argc != 3)
         {
             std::cerr << "Bad number of arguments" << std::endl;
-            std::cerr << " expected: PyrolysisGA <file> <initialMass in grams>" << std::endl;
+            std::cerr << " expected: PyrolysisGA <file> <initialMass>" << std::endl;
+            std::cerr << " file format: " << std::endl;
+            std::cerr << "             columns: Temperature in Celsius,time,TG,heatFlow" << std::endl;
 
             return EXIT_FAILURE;
         }

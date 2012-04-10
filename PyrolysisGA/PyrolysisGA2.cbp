@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="PyrolysisGA" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/PyrolysisGA" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+					<Add directory="/usr/include/eo" />
+					<Add directory="/home/antecky/src" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/PyrolysisGA" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+					<Add directory="/usr/include/eo" />
+					<Add directory="/home/antecky/src" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wextra" />
+			<Add option="-Wall" />
+			<Add option="-fexceptions" />
+			<Add option="-Wno-unknown-pragmas" />
+			<Add directory="/usr/include/eo" />
+			<Add directory="/home/antecky/src" />
+		</Compiler>
+		<Linker>
+			<Add library="/home/antecky/lib/eo/libeo.a" />
+			<Add library="/home/antecky/lib/eo/libeoutils.a" />
+		</Linker>
+		<Unit filename="ExpData.cpp" />
+		<Unit filename="ExpData.hpp" />
+		<Unit filename="Integrator.cpp" />
+		<Unit filename="Integrator.hpp" />
+		<Unit filename="ModEq.cpp" />
+		<Unit filename="ModEq.hpp" />
+		<Unit filename="OptimizationEngine.cpp" />
+		<Unit filename="OptimizationEngine.hpp" />
+		<Unit filename="main.cpp" />
+		<Extensions>
+			<envvars />
+			<code_completion />
+			<lib_finder disable_auto="1" />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
