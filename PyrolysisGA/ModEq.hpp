@@ -2,6 +2,8 @@
 #define MODEQ_HPP_INCLUDED
 
 #include <cmath>
+#include <iostream>
+#include <cstdlib>
 
 class ModEq
 {

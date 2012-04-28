@@ -20,5 +20,4 @@ void Integrator::Runge23(std::vector<ExpData>* dataSet, double* modData, double 
         modData[i] = yn + step*((1./4.)*k1 + (3./4.)*k2);
 
     }
-
 }

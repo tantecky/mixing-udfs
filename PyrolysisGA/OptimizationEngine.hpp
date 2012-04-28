@@ -4,6 +4,7 @@
 #include <eo>
 #include <es.h>
 #include <vector>
+#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <utils/eoTimedMonitor.h>
@@ -11,7 +12,7 @@
 #include "ExpData.hpp"
 #include "Integrator.hpp"
 
-typedef eoReal<eoMaximizingFitness> Indi;
+typedef eoReal<eoMinimizingFitness> Indi;
 
 
 
@@ -40,15 +41,23 @@ private:
     static const double NS_initial;
     static const double yinf_initial;
 
+    static double Amin[3][3];
+    static double Amax[3][3];
 
-    static double FitnessFce(const std::vector<double>& pars);
     static std::vector<ExpData>* DataSet;
     static double* ModData;
+    static double* IntHeap;
+    static int NumberOfParameterGroups;
+
+    static double FitnessFce(const std::vector<double>& pars);
     static void InitPop(eoPop<Indi>& pop, eoEvalFuncPtr<Indi, double, const std::vector<double>& > eval);
-    static void SaveResults(double fitness, double A, double E, double NS, double yinf);
+    static void SaveResults(double fitness, double* A, double* E, double* NS, double* yinf);
+    static double Logdist(eoRng& gen, int maxExp, bool alsoNegative);
+    inline static void ClearModData();
+    static void ComputeModData(double A, double E, double NS, double yinf);
 
 public:
-    static void Run(std::vector<ExpData>* dataSet);
+    static void Run(std::vector<ExpData>* dataSet, int numberOfParameterGroups);
 
 };
 
