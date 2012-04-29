@@ -5,22 +5,22 @@ double* OptimizationEngine::ModData = (double*)0;
 double* OptimizationEngine::IntHeap = (double*)0;
 int OptimizationEngine::NumberOfParameterGroups = 1;
 
-const double OptimizationEngine::A_initial = 1e12;
+/*const double OptimizationEngine::A_initial = 1e12;
 const double OptimizationEngine::E_initial = 1.70e5;
 const double OptimizationEngine::NS_initial = 3.56;
-const double OptimizationEngine::yinf_initial = 0.231642;
+const double OptimizationEngine::yinf_initial = 0.231642;*/
 
-double OptimizationEngine::Amin[3][3]  =
+const double OptimizationEngine::Amin[3][3]  =
 {
-    { 1e14, 0, 0}, //NumberOfParameterGroups == 1
-    { 1e10, 1e5, 0}, //NumberOfParameterGroups == 2
+    { 1e14}, //NumberOfParameterGroups == 1
+    { 1e10, 1e5}, //NumberOfParameterGroups == 2
     { 1e18, 1e13, 1e7} //NumberOfParameterGroups == 3
 };
 
-double OptimizationEngine::Amax[3][3]  =
+const double OptimizationEngine::Amax[3][3]  =
 {
-    { 1e17, 0, 0}, //NumberOfParameterGroups == 1
-    { 1e13, 1e7, 0}, //NumberOfParameterGroups == 2
+    { 1e17}, //NumberOfParameterGroups == 1
+    { 1e13, 1e7}, //NumberOfParameterGroups == 2
     { 1e20, 1e15, 1e9} //NumberOfParameterGroups == 3
 };
 
@@ -41,12 +41,39 @@ const double OptimizationEngine::NORMAL_MUT_RATE = 0.5;   // relative weight for
 const double OptimizationEngine::P_CROSS = 0.8;	// Crossover probability
 const double OptimizationEngine::P_MUT = 0.5;	// mutation probability
 
+int OptimizationEngine::GetNumberOfParameterGroups()
+{
+    return NumberOfParameterGroups;
+}
+
 void OptimizationEngine::Run(std::vector<ExpData>* dataSet, int numberOfParameterGroups)
 {
     NumberOfParameterGroups = numberOfParameterGroups;
     DataSet = dataSet;
     ModData = new double[dataSet->size()];
     IntHeap = new double[dataSet->size()];
+
+
+
+
+//-----
+    /*  double At = 1.72e12;
+      double Et = 1.68e5;
+      double NSt = 2.23;
+      double yinft = 0.0037;*/
+
+    /* ClearModData();
+
+     ComputeModData(At, Et, NSt, yinft);
+
+     for(unsigned i = 0; i < dataSet->size(); i++)
+     {
+         std::cout << ModData[i] << std::endl;
+     }
+
+     std::abort();
+     return;*/
+    //-----
 
     rng.reseed(SEED);
     eoEvalFuncPtr<Indi, double, const std::vector<double>& > plainEval(FitnessFce);
@@ -97,7 +124,7 @@ void OptimizationEngine::Run(std::vector<ExpData>* dataSet, int numberOfParamete
     {
         maxBnds.push_back(Amax[NumberOfParameterGroups-1][i]); //A_max
         maxBnds.push_back(1e20); //E_max
-        maxBnds.push_back(10.); //NS_max
+        maxBnds.push_back(5.); //NS_max
         maxBnds.push_back((*DataSet)[DataSet->size()-1].MassFrac()); //yinf_max
     }
 
@@ -207,10 +234,10 @@ void OptimizationEngine::Run(std::vector<ExpData>* dataSet, int numberOfParamete
 
     for(int i = 0; i < NumberOfParameterGroups; i++)
     {
-        A[i] = (pop[0])[i];
-        E[i] = (pop[0])[i+1];
-        NS[i] = (pop[0])[i+2];
-        yinf[i] = (pop[0])[i+3];
+        A[i] = (pop[0])[4*i];
+        E[i] = (pop[0])[4*i+1];
+        NS[i] = (pop[0])[4*i+2];
+        yinf[i] = (pop[0])[4*i+3];
 
 
         std::cout << "A" << i+1 << ": " << A[i] << std::endl;
@@ -247,15 +274,29 @@ double OptimizationEngine::FitnessFce(const std::vector<double>& pars)
 
     for(int i = 0; i < NumberOfParameterGroups; i++)
     {
-        double A = pars[i];
-        double E = pars[i+1];
-        double NS = pars[i+2];
-        double yinf = pars[i+3];
+        double A = pars[4*i];
+        double E = pars[4*i+1];
+        double NS = pars[4*i+2];
+        double yinf = pars[4*i+3];
 
         Asum += (A - Amin[NumberOfParameterGroups-1][i])/Amax[NumberOfParameterGroups-1][i];
 
-        ComputeModData(A, E, NS, yinf);
+        ComputeModData(A, E, NS, yinf, i);
+
+        //-------
+
+        /* for(unsigned int i = 0; i < DataSet->size(); i++)
+         {
+             std::cout << ModData[i] << std::endl;
+
+         }
+
+         std::cout << "Done" << std::endl;*/
+
+        //-------
     }
+
+    // std::abort();
 
     for(unsigned int i = 1; i < DataSet->size(); i++)
     {
@@ -263,28 +304,28 @@ double OptimizationEngine::FitnessFce(const std::vector<double>& pars)
         deltaExpAvg += pow((*DataSet)[i].MassFrac() - ExpData::AvgMassFrac(), 2);
     }
 
-   /* if(Asum < 0.)
-    {
-        std::cout << "Asum:" << Asum << std::endl;
-        for(int i = 0; i < NumberOfParameterGroups; i++)
-        {
-            std::cout << "Amin" << i << ": " << Amin[NumberOfParameterGroups-1][i] << std::endl;
-            std::cout << "Amax" << i << ": "<< Amax[NumberOfParameterGroups-1][i] << std::endl;
-        }
+    /* if(Asum < 0.)
+     {
+         std::cout << "Asum:" << Asum << std::endl;
+         for(int i = 0; i < NumberOfParameterGroups; i++)
+         {
+             std::cout << "Amin" << i << ": " << Amin[NumberOfParameterGroups-1][i] << std::endl;
+             std::cout << "Amax" << i << ": "<< Amax[NumberOfParameterGroups-1][i] << std::endl;
+         }
 
-        std::cout << "Asum below zero" << std::endl;
-        std::abort();
-    }
+         std::cout << "Asum below zero" << std::endl;
+         std::abort();
+     }
 
-    if((1.0 - (deltaExpAvg - deltaExpMod)/deltaExpAvg) < 0.)
-    {
-        std::cout << "vyraz" << std::endl;
-        std::abort();
-    }*/
+     if((1.0 - (deltaExpAvg - deltaExpMod)/deltaExpAvg) < 0.)
+     {
+         std::cout << "vyraz" << std::endl;
+         std::abort();
+     }*/
 
     fitness = 0.985*(1.0 - (deltaExpAvg - deltaExpMod)/deltaExpAvg) + (0.015/NumberOfParameterGroups)*Asum;
 
-    if(!std::isfinite(fitness))
+    if(!std::isfinite(fitness) || fitness < 0.0)
         return 1e20;
 
     return fitness;
@@ -298,15 +339,26 @@ void OptimizationEngine::InitPop(eoPop<Indi>& pop, eoEvalFuncPtr<Indi, double, c
 
         if(NumberOfParameterGroups == 1)
         {
-            v.push_back(Logdist(rng, 15, false) + Amin[0][0]); //A
-            v.push_back(Logdist(rng, 6, false) + 1e5); //E
-            v.push_back(rng.uniform(0., 5.)); //NS
-            v.push_back(rng.uniform(0., (*DataSet)[DataSet->size()-1].MassFrac() )); //yinf
+            /*   v.push_back(Logdist(rng, 15, false) + Amin[0][0]); //A
+               v.push_back(Logdist(rng, 6, false) + 1e5); //E
+               v.push_back(rng.uniform(0., 5.)); //NS
+               v.push_back(rng.uniform(0., (*DataSet)[DataSet->size()-1].MassFrac() )); //yinf*/
+
+            double At = 1.72e12;
+            double Et = 1.68e5;
+            double NSt = 2.23;
+            double yinft = 0.0037;
+
+            v.push_back(At);
+            v.push_back(Et);
+            v.push_back(NSt);
+            v.push_back(yinft);
+
 
         }
         else if(NumberOfParameterGroups == 2)
         {
-            v.push_back(Logdist(rng, 13, false) + Amin[1][0]); //A1
+            /*v.push_back(Logdist(rng, 13, false) + Amin[1][0]); //A1
             v.push_back(Logdist(rng, 6, false) + 1e5); //E1
             v.push_back(rng.uniform(0., 5.)); //NS1
             v.push_back(rng.uniform(0., (*DataSet)[DataSet->size()-1].MassFrac() )); //yinf1
@@ -314,11 +366,35 @@ void OptimizationEngine::InitPop(eoPop<Indi>& pop, eoEvalFuncPtr<Indi, double, c
             v.push_back(Logdist(rng, 7, false) + Amin[1][1]); //A2
             v.push_back(Logdist(rng, 6, false) + 1e5); //E2
             v.push_back(rng.uniform(0., 5.)); //NS2
-            v.push_back(rng.uniform(0., (*DataSet)[DataSet->size()-1].MassFrac())); //yinf2
+            v.push_back(rng.uniform(0., (*DataSet)[DataSet->size()-1].MassFrac())); //yinf2*/
+
+            v.push_back(1.72e12); //A1
+            v.push_back(1.68e5); //E1
+            v.push_back(2.23); //NS1
+            v.push_back(0.0037); //yinf1
+
+            v.push_back(2.21e6); //A2
+            v.push_back(1.25e5); //E2
+            v.push_back(2.81); //NS2
+            v.push_back(0.2); //yinf2
 
         }
         else
         {
+            v.push_back(1.72e12); //A1
+            v.push_back(1.68e5); //E1
+            v.push_back(2.23); //NS1
+            v.push_back(0.0037); //yinf1
+
+            v.push_back(2.21e6); //A2
+            v.push_back(1.25e5); //E2
+            v.push_back(2.81); //NS2
+            v.push_back(0.2); //yinf2
+
+            v.push_back(2.21e6); //A3
+            v.push_back(1.25e5); //E3
+            v.push_back(2.81); //NS3
+            v.push_back(0.2); //yinf3
 
         }
 
@@ -342,10 +418,30 @@ void OptimizationEngine::SaveResults(double fitness, double* A, double* E, doubl
 
     for(int i = 0; i < NumberOfParameterGroups; i++)
     {
-        results << "#A" << i+1 << ": " << A << std::endl;
-        results << "#E" << i+1 << ": " << E << std::endl;
-        results << "#NS" << i+1 << ": " << NS << std::endl;
-        results << "#yinf" << i+1 << ": " << yinf << std::endl;
+        results << "#A" << i+1 << ": " << A[i] << std::endl;
+        results << "#E" << i+1 << ": " << E[i] << std::endl;
+        results << "#NS" << i+1 << ": " << NS[i] << std::endl;
+        results << "#yinf" << i+1 << ": " << yinf[i] << std::endl;
+
+        Integrator::Runge23(DataSet, IntHeap, A[i], E[i], NS[i], yinf[i], i);
+
+        std::ofstream line;
+
+        std::stringstream fileName;
+
+        fileName << "line" << (i+1) << ".xy";
+
+        line.open(fileName.str().c_str(), std::ios::out | std::ios::trunc);
+
+        line << "#Time Temp Exp Model"  << std::endl;
+
+        for(unsigned int j = 0; j < DataSet->size(); j++)
+        {
+            line << (*DataSet)[j].Time() <<  " " << (*DataSet)[j].Temp() << " " << (*DataSet)[j].MassFrac() << " " << IntHeap[j] << std::endl;
+        }
+
+        line.close();
+
     }
 
     results << "#Time Temp Exp Model"  << std::endl;
@@ -354,7 +450,7 @@ void OptimizationEngine::SaveResults(double fitness, double* A, double* E, doubl
 
     for(int i = 0; i < NumberOfParameterGroups; i++)
     {
-        ComputeModData(A[i], E[i], NS[i], yinf[i]);
+        ComputeModData(A[i], E[i], NS[i], yinf[i], i);
     }
 
     for(unsigned int i = 0; i < DataSet->size(); i++)
@@ -411,15 +507,14 @@ inline void OptimizationEngine::ClearModData()
     ModData[0] = (*DataSet)[0].MassFrac(); //initial condition
 }
 
-void OptimizationEngine::ComputeModData(double A, double E, double NS, double yinf)
+void OptimizationEngine::ComputeModData(double A, double E, double NS, double yinf, int component)
 {
-    for(int i = 0; i < NumberOfParameterGroups; i++)
-    {
-        Integrator::Runge23(DataSet, IntHeap, A, E, NS, yinf);
+    Integrator::Runge23(DataSet, IntHeap, A, E, NS, yinf, component);
 
-        for(unsigned int j = 1; j < DataSet->size(); j++)
-        {
-            ModData[j] += IntHeap[j];
-        }
+    for(unsigned int j = 1; j < DataSet->size(); j++)
+    {
+        ModData[j] += IntHeap[j];
     }
 }
+
+

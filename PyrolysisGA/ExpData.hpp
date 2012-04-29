@@ -11,6 +11,13 @@
 
 class ExpData
 {
+public:
+    enum Material
+    {
+        Pine = 0,
+        Oak = 1,
+    };
+
 private:
     static const int NumberOfRows = 4;
 
@@ -19,13 +26,20 @@ private:
     double m_TG;
     double m_HeatFlow;
     double m_MassFrac;
+    static Material m_WoodType;
 
     static double m_AvgMassFrac;
+    static double m_Beta;
 
 public:
 
+    const static double EqWeight[2][3][3];
+
     static double AvgMassFrac();
-    static void LoadExpData(const char* const filename, std::vector<ExpData>& dataSet, double initialMass);
+    static double Beta();
+    static const Material& WoodType();
+
+    static void LoadExpData(const char* const filename, std::vector<ExpData>& dataSet, double initialMass, Material woodType, double beta);
 
     friend std::ostream& operator<<(std::ostream& stream, ExpData obj);
 

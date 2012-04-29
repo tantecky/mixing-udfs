@@ -4,12 +4,13 @@
 #include <vector>
 #include "ModEq.hpp"
 #include "ExpData.hpp"
+#include "OptimizationEngine.hpp"
 
 class Integrator
 {
 
 public:
-    static void Runge23(std::vector<ExpData>* dataSet, double* modData, double A, double E, double NS, double yinf);
+    static void Runge23(std::vector<ExpData>* dataSet, double* modData, double A, double E, double NS, double yinf, int component);
 
 };
 

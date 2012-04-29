@@ -16,11 +16,13 @@ int main(int argc, char* argv[])
     {
         double initalMass;
         int numberOfParameterGroups;
+        ExpData::Material woodType;
+        double beta;
 
-        if(argc != 4)
+        if(argc != 6)
         {
             std::cerr << "Bad number of arguments" << std::endl;
-            std::cerr << " expected: PyrolysisGA <file> <initialMass> <numberOfParameterGroups>" << std::endl;
+            std::cerr << " expected: PyrolysisGA <file> <initialMass> <numberOfParameterGroups> <woodType=pine|oak> <beta>" << std::endl;
             std::cerr << " file format: " << std::endl;
             std::cerr << "             columns: Temperature in Celsius,time,TG,heatFlow" << std::endl;
 
@@ -45,9 +47,33 @@ int main(int argc, char* argv[])
             return EXIT_FAILURE;
         }
 
+        if(!std::strcmp(argv[4], "pine"))
+        {
+            woodType = ExpData::Pine;
+        }
+        else if(!std::strcmp(argv[4], "oak"))
+        {
+            woodType = ExpData::Oak;
+        }
+        else
+        {
+            std::cerr << "Unkown wood type" << std::endl;
+
+            return EXIT_FAILURE;
+        }
+
+        beta = std::atof(argv[5]);
+
+        if(initalMass <= 0.0)
+        {
+            std::cerr << "Wrong number: beta" << std::endl;
+
+            return EXIT_FAILURE;
+        }
+
         std::vector<ExpData> dataSet;
 
-        ExpData::LoadExpData(argv[1], dataSet, initalMass); //initialMass
+        ExpData::LoadExpData(argv[1], dataSet, initalMass, woodType, beta); //initialMass
 
         OptimizationEngine::Run(&dataSet, numberOfParameterGroups);
     }

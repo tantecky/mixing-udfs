@@ -4,6 +4,7 @@
 #include <eo>
 #include <es.h>
 #include <vector>
+#include <sstream>
 #include <cstring>
 #include <fstream>
 #include <iostream>
@@ -41,8 +42,8 @@ private:
     static const double NS_initial;
     static const double yinf_initial;
 
-    static double Amin[3][3];
-    static double Amax[3][3];
+    const static double Amin[3][3];
+    const static double Amax[3][3];
 
     static std::vector<ExpData>* DataSet;
     static double* ModData;
@@ -54,10 +55,11 @@ private:
     static void SaveResults(double fitness, double* A, double* E, double* NS, double* yinf);
     static double Logdist(eoRng& gen, int maxExp, bool alsoNegative);
     inline static void ClearModData();
-    static void ComputeModData(double A, double E, double NS, double yinf);
+    static void ComputeModData(double A, double E, double NS, double yinf, int component);
 
 public:
     static void Run(std::vector<ExpData>* dataSet, int numberOfParameterGroups);
+    static int GetNumberOfParameterGroups();
 
 };
 

@@ -1,11 +1,11 @@
 #include "Integrator.hpp"
 
-void Integrator::Runge23(std::vector<ExpData>* dataSet, double* modData, double A, double E, double NS, double yinf)
+void Integrator::Runge23(std::vector<ExpData>* dataSet, double* modData, double A, double E, double NS, double yinf, int component)
 {
     double k1, k2;
     double step, tn, yn;
 
-    modData[0] = (*dataSet)[0].MassFrac(); //initial condition
+    modData[0] = ExpData::EqWeight[(int)ExpData::WoodType()][OptimizationEngine::GetNumberOfParameterGroups()-1][component]*(*dataSet)[0].MassFrac(); //initial condition
 
     for(unsigned int i = 1; i < dataSet->size(); i++)
     {

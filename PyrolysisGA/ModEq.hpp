@@ -4,12 +4,12 @@
 #include <cmath>
 #include <iostream>
 #include <cstdlib>
+#include "ExpData.hpp"
 
 class ModEq
 {
 private:
     static const double R = 8.314472;
-    static const double beta = 5./60.;
     static const double T0 =  17 + 273.15;
 
 public:
