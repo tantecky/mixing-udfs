@@ -1,10 +1,10 @@
 #include "cfx5ext.h"
-#define __stack_point__ INTEGER*8
 #define DEBUG
 dllexport(bubble_source)
       SUBROUTINE BUBBLE_SOURCE( 
      &  NLOC, NRET, NARG, RET, ARGS, CRESLT,CZ,DZ,IZ,LZ,RZ )
       IMPLICIT NONE
+#include "stack_point.h"
 C-----Volane funkce
       REAL ComputeSource
 C-----Parametry podprogramu
@@ -19,9 +19,13 @@ C-----Parametry podprogramu
 C-----Lokalni promene
       __stack_point__ pVar
       INTEGER bClass
+      INTEGER ILOC
       bClass = INT(ARGS(1,1))
+C-----Kod
+C vynuluje vse pro jistotu
+      CALL SET_A_0( RET, NLOC*NRET )
       
-      RET(1,1) = ComputeSource(bClass, CRESLT, pVar,CZ,DZ,IZ,LZ,RZ)
+C      RET(1,1) = ComputeSource(bClass, CRESLT, pVar,CZ,DZ,IZ,LZ,RZ)
       CRESLT = 'GOOD'
 
       END
