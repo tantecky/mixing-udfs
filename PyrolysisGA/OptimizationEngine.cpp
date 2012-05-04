@@ -4,6 +4,8 @@ std::vector<ExpData>* OptimizationEngine::DataSet = (std::vector<ExpData>*)0;
 double* OptimizationEngine::ModData = (double*)0;
 double* OptimizationEngine::IntHeap = (double*)0;
 int OptimizationEngine::NumberOfParameterGroups = 1;
+std::vector<double> OptimizationEngine::MinBnds;
+std::vector<double> OptimizationEngine::MaxBnds;
 
 /*const double OptimizationEngine::A_initial = 1e12;
 const double OptimizationEngine::E_initial = 1.70e5;
@@ -75,6 +77,31 @@ void OptimizationEngine::Run(std::vector<ExpData>* dataSet, int numberOfParamete
      return;*/
     //-----
 
+    std::vector<double> minBnds;
+
+    for(int i = 0; i < NumberOfParameterGroups; i++)
+    {
+        minBnds.push_back(Amin[NumberOfParameterGroups-1][i]); //A_min
+        minBnds.push_back(0.); //E_min
+        minBnds.push_back(0.); //NS_min
+        minBnds.push_back(0.); //yinf_min
+    }
+
+
+    std::vector<double> maxBnds;
+
+    for(int i = 0; i < NumberOfParameterGroups; i++)
+    {
+        maxBnds.push_back(Amax[NumberOfParameterGroups-1][i]); //A_max
+        maxBnds.push_back(1e20); //E_max
+        maxBnds.push_back(5.); //NS_max
+        maxBnds.push_back((*DataSet)[DataSet->size()-1].MassFrac()); //yinf_max
+    }
+
+    MinBnds = minBnds;
+    MaxBnds = maxBnds;
+    eoRealVectorBounds bnds(minBnds, maxBnds);
+
     rng.reseed(SEED);
     eoEvalFuncPtr<Indi, double, const std::vector<double>& > plainEval(FitnessFce);
     eoEvalFuncCounter<Indi> eval(plainEval);
@@ -106,29 +133,6 @@ void OptimizationEngine::Run(std::vector<ExpData>* dataSet, int numberOfParamete
     in which parents to be killed are chosen by a (reverse) stochastic tournament.
     Additional parameter (in the constructor) is the tournament rate, a double.
     */
-
-    std::vector<double> minBnds;
-
-    for(int i = 0; i < NumberOfParameterGroups; i++)
-    {
-        minBnds.push_back(Amin[NumberOfParameterGroups-1][i]); //A_min
-        minBnds.push_back(0.); //E_min
-        minBnds.push_back(0.); //NS_min
-        minBnds.push_back(0.); //yinf_min
-    }
-
-
-    std::vector<double> maxBnds;
-
-    for(int i = 0; i < NumberOfParameterGroups; i++)
-    {
-        maxBnds.push_back(Amax[NumberOfParameterGroups-1][i]); //A_max
-        maxBnds.push_back(1e20); //E_max
-        maxBnds.push_back(5.); //NS_max
-        maxBnds.push_back((*DataSet)[DataSet->size()-1].MassFrac()); //yinf_max
-    }
-
-    eoRealVectorBounds bnds(minBnds, maxBnds);
 
     //Transformation
     eoSegmentCrossover<Indi> xoverS(bnds, ALFA);
@@ -278,6 +282,12 @@ double OptimizationEngine::FitnessFce(const std::vector<double>& pars)
         double E = pars[4*i+1];
         double NS = pars[4*i+2];
         double yinf = pars[4*i+3];
+
+        for(int j = 0; j < 4; j++) //bounds checking
+        {
+            if(pars[4*i+j] > MaxBnds[4*i+j] ||  pars[4*i+j] < MinBnds[4*i+j])
+               return 1e20;
+        }
 
         Asum += (A - Amin[NumberOfParameterGroups-1][i])/Amax[NumberOfParameterGroups-1][i];
 

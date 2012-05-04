@@ -49,6 +49,8 @@ private:
     static double* ModData;
     static double* IntHeap;
     static int NumberOfParameterGroups;
+    static std::vector<double> MinBnds;
+    static std::vector<double> MaxBnds;
 
     static double FitnessFce(const std::vector<double>& pars);
     static void InitPop(eoPop<Indi>& pop, eoEvalFuncPtr<Indi, double, const std::vector<double>& > eval);

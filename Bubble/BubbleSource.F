@@ -5,6 +5,7 @@ dllexport(bubble_source)
      &  NLOC, NRET, NARG, RET, ARGS, CRESLT,CZ,DZ,IZ,LZ,RZ )
       IMPLICIT NONE
 #include "stack_point.h"
+#include "parallel_partitioning.h"
 C-----Volane funkce
       REAL ComputeSource
 C-----Parametry podprogramu
@@ -17,22 +18,39 @@ C-----Parametry podprogramu
       LOGICAL LZ(*)
       REAL RZ(*)
 C-----Lokalni promene
-      __stack_point__ pVar
       INTEGER bClass
-      INTEGER ILOC
-      bClass = INT(ARGS(1,1))
-      CALL USER_PRINT_INTR('class', bClass)
-      CALL ABORT()
+      INTEGER iLoc
+      REAL retVal
 C-----Kod
-C vynuluje vse pro jistotu
-      CALL SET_A_0( RET, NLOC*NRET )
+      bClass = INT(ARGS(1,1))
       
-C      RET(1,1) = ComputeSource(bClass, CRESLT, pVar,CZ,DZ,IZ,LZ,RZ)
+#ifdef DEBUG
+      IF(bClass .GT. 12 .OR. bClass .LT. 1) THEN
+        CALL ERRMSG('Wrong bClass')
+        CALL ERRMSG('bClass')
+        STOP
+      ENDIF
+#endif
+      
+C Initialise RET() to zero.
+      CALL SET_A_0( RET, NLOC*NRET )
+      DO iLoc = 1, NLOC
+        retVal = ComputeSource(bClass, CRESLT, CZ,DZ,IZ,LZ,RZ)
+        
+#ifdef DEBUG
+        IF(ISNAN(retVal) .EQV. .TRUE.) THEN
+          CALL ERRMSG('retVal is NaN')
+          STOP
+        ENDIF
+#endif
+        RET(iLoc,1) = retVal
+      END DO
+      
       CRESLT = 'GOOD'
 
       END
 C=======================================================================
-      REAL FUNCTION ComputeSource(bClass, CRESLT, pVar, 
+      REAL FUNCTION ComputeSource(bClass, CRESLT, 
      *CZ,DZ,IZ,LZ,RZ)
       IMPLICIT NONE
 C-----Symbolicke konstanty
@@ -45,7 +63,6 @@ C-----Common bloky
       CHARACTER NameOfClasses(1:NUMBER_OF_CLASSES)*10
       COMMON /C_NameOfClasses/ NameOfClasses
 C-----Parametry podprogramu
-      __stack_point__ pVar
       INTEGER IZ(*)
       CHARACTER CZ(*)*(1)
       DOUBLE PRECISION DZ(*)
@@ -53,11 +70,12 @@ C-----Parametry podprogramu
       REAL RZ(*)
       CHARACTER CRESLT*(*)
 C-----Lokalni promene
+      __stack_point__ pVar
       INTEGER bClass
       REAL density_g
       REAL volFrac
       REAL fi
- 
+C-----Kod
       CALL USER_GETVAR('air.Volume Fraction', CRESLT,
      * pVar,CZ,DZ,IZ,LZ,RZ)
      
@@ -70,7 +88,7 @@ C-----Lokalni promene
       volFrac = RZ(pVar)
 
 #ifdef DEBUG
-      IF(volFrac .GT. 1.01 .OR. volFrac .LT. -0.01) THEN
+      IF(volFrac .GT. 1.01D0 .OR. volFrac .LT. 0.0D0) THEN
         CALL ERRMSG('Error air.Volume wrong num')
         CALL ERRMSG(volFrac)
         STOP
@@ -88,7 +106,7 @@ C-----Lokalni promene
       density_g = RZ(pVar)
       
 #ifdef DEBUG
-      IF(density_g .GT. 1.5 .OR. density_g .LT. 1.0) THEN
+      IF(density_g .GT. 1.5D0 .OR. density_g .LT. 1.0D0) THEN
         CALL ERRMSG('Error air.Density wrong num')
         CALL ERRMSG(density_g)
         STOP
@@ -124,10 +142,18 @@ C-----Parametry podprogramu
       REAL fi
 C-----Lokalni promene
       REAL ni
-
+C-----Kod
       ni = volFrac*fi/ComputeBubbleVol(bClass) 
       
       Dbr = 1.0E0*ni
+      
+#ifdef DEBUG
+        IF(Dbr .LT. 0.0D0) THEN
+          CALL ERRMSG('Dbr is negative')
+          CALL ERRMSG(Dbr)
+          STOP
+        ENDIF
+#endif
       
       END
 C=======================================================================
@@ -141,8 +167,16 @@ C-----Common bloky
       COMMON /C_BubbleClasses/ BubbleClasses
 C-----Parametry podprogramu
       INTEGER bClass
+C-----Kod
+      ComputeBubbleVol = (PI*BubbleClasses(bClass)**3.0E0)/6.0E0
       
-      ComputeBubbleVol = PI*BubbleClasses(bClass)**3.0E0/6.0E0
+#ifdef DEBUG
+        IF(ComputeBubbleVol .LT. 0.0D0) THEN
+          CALL ERRMSG('Bubble volume is negative')
+          CALL ERRMSG(ComputeBubbleVol)
+          STOP
+        ENDIF
+#endif
       
       END
 C=======================================================================
