@@ -1,3 +1,9 @@
+//Program to calculate the kinetics parameters from TGA data using GA
+//Reaction schemes: 1. One-step reaction
+//                  2. Combination of two independent components
+//                  3. Combination of three independent components
+//Authors: Jiří Ira, Tomáš Antecký (7.3.2012)
+
 #include <iostream>
 #include <cstdlib>
 // the general include for eo
@@ -57,7 +63,7 @@ int main(int argc, char* argv[])
         }
         else
         {
-            std::cerr << "Unkown wood type" << std::endl;
+            std::cerr << "Unknown wood type" << std::endl;
 
             return EXIT_FAILURE;
         }

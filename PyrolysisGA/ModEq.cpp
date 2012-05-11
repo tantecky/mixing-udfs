@@ -1,3 +1,4 @@
+//Model equation: Arrhenius equation
 #include "ModEq.hpp"
 
 double ModEq::Eq(double t, double y, double A, double E, double NS, double yinf)

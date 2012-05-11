@@ -1,3 +1,4 @@
+//Integrator: explicit second-order Runge-Kutta method with two stages
 #include "Integrator.hpp"
 
 void Integrator::Runge23(std::vector<ExpData>* dataSet, double* modData, double A, double E, double NS, double yinf, int component)

@@ -8,14 +8,14 @@ const double ExpData::EqWeight[2][3][3]  =
     {
         //pine
         { 1.0},
-        { 0.75, 0.25}, //celuosa + hemiceluosa, lignin
-        { 0.43, 0.32, 0.25} //celuosa, hemiceluosa, lignin
+        { 0.75, 0.25},      //cellulose + hemicelluloses, lignin
+        { 0.43, 0.32, 0.25} //cellulose, hemicelluloses, lignin
     },
     {
         //oak
         { 1.0},
-        { 0.75, 0.25}, //celuosa + hemiceluosa, lignin
-        { 0.4, 0.35, 0.25} //celuosa, hemiceluosa, lignin
+        { 0.75, 0.25},      //cellulose + hemicelluloses, lignin
+        { 0.4, 0.35, 0.25}  //cellulose, hemicelluloses, lignin
     }
 
 };
