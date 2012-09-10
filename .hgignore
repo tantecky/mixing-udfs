@@ -3,6 +3,7 @@ relre:/bin/
 relre:\.layout$
 relre:\.depend$
 glob:include/
+glob:Bubble/linux-amd64
 glob:include-v121/
 glob:include-v130/
 syntax: glob
@@ -16,3 +17,7 @@ Bubble/Bubble.o
 Bubble/Tester
 Bubble/Tester.o
 PyrolysisGA/Test.png
+*.cfx
+*.def
+*.out
+*.res
