@@ -80,14 +80,21 @@ C-----Code
      *  ARGS(1,2), RF)
       END DO
       
+      CRESLT = 'GOOD'
+      
       END
 C=======================================================================
       REAL FUNCTION COMPUTE_SOURCE(NLOC, ILOC, ICLASS, RALFA, RF)
+      IMPLICIT NONE
 C-----Symbolic constants
       INTEGER NUMBER_OF_CLASSES
       PARAMETER (NUMBER_OF_CLASSES = 12)
       REAL RHO_G
       PARAMETER (RHO_G = 9.81)
+C-----Called functions
+      REAL BAGI
+      REAL DBRI
+      REAL DAGI
 C-----Common blocks
       REAL BUBBLE_CLASSES_VOL(1:NUMBER_OF_CLASSES)
       COMMON /C_BUBBLE_CLASSES_VOL/ BUBBLE_CLASSES_VOL
@@ -98,12 +105,18 @@ C-----Arguments
       REAL RALFA(NLOC)
       REAL RF(1:NLOC, NUMBER_OF_CLASSES)
 C-----Code
-      COMPUTE_SOURCE = RHO_G*BUBBLE_CLASSES_VOL(ICLASS)*
-     * (-DBRI(NLOC, ILOC, ICLASS, RALFA, RF))
 
-      END 
+      COMPUTE_SOURCE = RHO_G*BUBBLE_CLASSES_VOL(ICLASS)*
+     * (
+     *  BAGI(NLOC, ILOC, ICLASS, RALFA, RF)
+     *  -DBRI(NLOC, ILOC, ICLASS, RALFA, RF)
+     *  -DAGI(NLOC, ILOC, ICLASS, RALFA, RF)
+     * )
+
+      END
 C=======================================================================
       REAL FUNCTION NI(NLOC, ILOC, ICLASS, RALFA, RF)
+      IMPLICIT NONE
 C-----Symbolic constants
       INTEGER NUMBER_OF_CLASSES
       PARAMETER (NUMBER_OF_CLASSES = 12)
@@ -117,10 +130,152 @@ C-----Arguments
       REAL RALFA(NLOC)
       REAL RF(1:NLOC, NUMBER_OF_CLASSES)
 C-----Code
+
+#ifdef DEBUG
+      IF(ICLASS .GT. NUMBER_OF_CLASSES .OR. ICLASS .LT. 1) THEN
+        CALL ERRMSG('Wrong NI - ICLASS')
+        CALL ERRMSG(ICLASS)
+        STOP
+      ENDIF
+#endif
+
       NI = RALFA(ILOC)*RF(ILOC,ICLASS)/BUBBLE_CLASSES_VOL(ICLASS)
       END
 C=======================================================================
+      REAL FUNCTION BAGI(NLOC, ILOC, ICLASS, RALFA, RF)
+      IMPLICIT NONE
+C-----Symbolic constants
+      INTEGER NUMBER_OF_CLASSES
+      PARAMETER (NUMBER_OF_CLASSES = 12)
+C-----Common blocks
+      REAL BUBBLE_CLASSES_VOL(1:NUMBER_OF_CLASSES)
+      COMMON /C_BUBBLE_CLASSES_VOL/ BUBBLE_CLASSES_VOL
+C-----Called functions
+      REAL NI
+      REAL XI
+      REAL XI_MINUS_ONE
+      INTEGER KRONECKER_D
+C-----Arguments
+      INTEGER NLOC
+      INTEGER ILOC
+      INTEGER ICLASS
+      REAL RALFA(NLOC)
+      REAL RF(1:NLOC, NUMBER_OF_CLASSES)
+C-----Locale variables
+      INTEGER J
+      INTEGER K
+      REAL V
+      REAL BRACKET_PRODUCT
+C-----Code
+#ifdef DEBUG
+      IF(ICLASS .GT. NUMBER_OF_CLASSES .OR. ICLASS .LT. 1) THEN
+        CALL ERRMSG('Wrong BAGI - ICLASS')
+        CALL ERRMSG(ICLASS)
+        STOP
+      ENDIF
+#endif
+
+      BAGI = 0.0D0
+
+      DO J = 1, (NUMBER_OF_CLASSES - 1)
+        DO K = J, (NUMBER_OF_CLASSES - 1)
+        
+          V = BUBBLE_CLASSES_VOL(J)+BUBBLE_CLASSES_VOL(K)
+          BRACKET_PRODUCT = 0.0D0
+          
+          IF(ICLASS .NE. 1) THEN
+            IF(BUBBLE_CLASSES_VOL(ICLASS - 1) .LT. V .AND.
+     *        V .LT. BUBBLE_CLASSES_VOL(ICLASS)) THEN
+             BRACKET_PRODUCT = BRACKET_PRODUCT + XI_MINUS_ONE(ICLASS, V)
+            ENDIF
+          ENDIF
+          
+          IF(ICLASS .NE. NUMBER_OF_CLASSES) THEN
+            IF(BUBBLE_CLASSES_VOL(ICLASS) .LT. V .AND.
+     *        V .LT. BUBBLE_CLASSES_VOL(ICLASS + 1)) THEN
+              BRACKET_PRODUCT = BRACKET_PRODUCT + XI(ICLASS, V)
+            ENDIF
+          ENDIF
+          
+        BAGI = BAGI + 
+     *  BRACKET_PRODUCT*(1.0D0 - 0.5D0*KRONECKER_D(J,K))
+     *  *NI(NLOC, ILOC, J, RALFA, RF)*NI(NLOC, ILOC, K, RALFA, RF)
+          
+        END DO
+      END DO 
+
+#ifdef DEBUG
+      IF(ISNAN(BAGI) .EQV. .TRUE.) THEN
+        CALL ERRMSG('BAGI ISNAN')
+        STOP
+      ENDIF
+#endif
+      END 
+C=======================================================================
+      REAL FUNCTION XI(I, V)
+      IMPLICIT NONE
+C-----Symbolic constants
+      INTEGER NUMBER_OF_CLASSES
+      PARAMETER (NUMBER_OF_CLASSES = 12)
+C-----Common blocks
+      REAL BUBBLE_CLASSES_VOL(1:NUMBER_OF_CLASSES)
+      COMMON /C_BUBBLE_CLASSES_VOL/ BUBBLE_CLASSES_VOL
+C-----Arguments
+      INTEGER I
+      REAL V
+      
+#ifdef DEBUG
+      IF(I .GT. NUMBER_OF_CLASSES .OR. I .LT. 1) THEN
+        CALL ERRMSG('Wrong XI - I')
+        CALL ERRMSG(I)
+        STOP
+      ENDIF
+#endif
+      XI = (BUBBLE_CLASSES_VOL(I+1) - V)
+     */(BUBBLE_CLASSES_VOL(I+1) - BUBBLE_CLASSES_VOL(I))
+      
+      END
+C=======================================================================
+      REAL FUNCTION XI_MINUS_ONE(I, V)
+      IMPLICIT NONE
+C-----Symbolic constants
+      INTEGER NUMBER_OF_CLASSES
+      PARAMETER (NUMBER_OF_CLASSES = 12)
+C-----Common blocks
+      REAL BUBBLE_CLASSES_VOL(1:NUMBER_OF_CLASSES)
+      COMMON /C_BUBBLE_CLASSES_VOL/ BUBBLE_CLASSES_VOL
+C-----Arguments
+      INTEGER I
+      REAL V
+      
+#ifdef DEBUG
+      IF(I .GT. NUMBER_OF_CLASSES .OR. I .LT. 1) THEN
+        CALL ERRMSG('Wrong XI_MINUS_ONE - I')
+        CALL ERRMSG(I)
+        STOP
+      ENDIF
+#endif
+      XI_MINUS_ONE = (V - BUBBLE_CLASSES_VOL(I-1))
+     */(BUBBLE_CLASSES_VOL(I) - BUBBLE_CLASSES_VOL(I-1))
+      
+      END
+C=======================================================================
+      INTEGER FUNCTION KRONECKER_D(J, K)
+      IMPLICIT NONE
+C-----Arguments
+      INTEGER J
+      REAL K
+      
+      IF(J .EQ. K) THEN
+        KRONECKER_D = 1
+      ELSE
+        KRONECKER_D = 0
+      ENDIF
+      
+      END
+C=======================================================================
       REAL FUNCTION DBRI(NLOC, ILOC, ICLASS, RALFA, RF)
+      IMPLICIT NONE
 C-----Symbolic constants
       INTEGER NUMBER_OF_CLASSES
       PARAMETER (NUMBER_OF_CLASSES = 12)
@@ -133,12 +288,71 @@ C-----Arguments
       REAL RALFA(NLOC)
       REAL RF(1:NLOC, NUMBER_OF_CLASSES)
 C-----Code
+
+#ifdef DEBUG
+      IF(ICLASS .GT. NUMBER_OF_CLASSES .OR. ICLASS .LT. 1) THEN
+        CALL ERRMSG('Wrong DBRI - ICLASS')
+        CALL ERRMSG(ICLASS)
+        STOP
+      ENDIF
+#endif
+
       IF(ICLASS .EQ. 1) THEN
         DBRI = 0.D0
       ELSE
         DBRI = NI(NLOC, ILOC, ICLASS, RALFA, RF)
       ENDIF
 
+#ifdef DEBUG
+      IF(ISNAN(DBRI) .EQV. .TRUE.) THEN
+        CALL ERRMSG('DBRI ISNAN')
+        STOP
+      ENDIF
+#endif
+      END 
+C=======================================================================
+      REAL FUNCTION DAGI(NLOC, ILOC, ICLASS, RALFA, RF)
+      IMPLICIT NONE
+C-----Symbolic constants
+      INTEGER NUMBER_OF_CLASSES
+      PARAMETER (NUMBER_OF_CLASSES = 12)
+C-----Called functions
+      REAL NI
+C-----Arguments
+      INTEGER NLOC
+      INTEGER ILOC
+      INTEGER ICLASS
+      REAL RALFA(NLOC)
+      REAL RF(1:NLOC, NUMBER_OF_CLASSES)
+C-----Locale variables
+      INTEGER J
+C-----Code
+      DAGI = 0.D0
+
+#ifdef DEBUG
+      IF(ICLASS .GT. NUMBER_OF_CLASSES .OR. ICLASS .LT. 1) THEN
+        CALL ERRMSG('Wrong DAGI - ICLASS')
+        CALL ERRMSG(ICLASS)
+        STOP
+      ENDIF
+#endif
+
+      IF(ICLASS .EQ. NUMBER_OF_CLASSES) THEN
+        RETURN
+      ELSE
+        DO J = 1, (NUMBER_OF_CLASSES - 1)
+          DAGI = DAGI  
+     *    + NI(NLOC, ILOC, ICLASS, RALFA, RF)
+     *      *NI(NLOC, J, ICLASS, RALFA, RF)
+        END DO
+      ENDIF
+
+#ifdef DEBUG
+      IF(ISNAN(DAGI) .EQV. .TRUE.) THEN
+        CALL ERRMSG('DAGI ISNAN')
+        STOP
+      ENDIF
+#endif
       END 
 C=======================================================================
       BLOCKDATA
