@@ -325,14 +325,14 @@ C-----Code
           IF(ICLASS .NE. 1) THEN
             IF(BUBBLE_CLASSES_VOL(ICLASS - 1) .LT. V .AND.
      *        V .LT. BUBBLE_CLASSES_VOL(ICLASS)) THEN
-             BRACKET_PRODUCT = BRACKET_PRODUCT + XI_MINUS_ONE(ICLASS, V)
+             BRACKET_PRODUCT = XI_MINUS_ONE(ICLASS, V)
             ENDIF
           ENDIF
           
           IF(ICLASS .NE. NUMBER_OF_CLASSES) THEN
             IF(BUBBLE_CLASSES_VOL(ICLASS) .LT. V .AND.
      *        V .LT. BUBBLE_CLASSES_VOL(ICLASS + 1)) THEN
-              BRACKET_PRODUCT = BRACKET_PRODUCT + XI(ICLASS, V)
+              BRACKET_PRODUCT = XI(ICLASS, V)
             ENDIF
           ENDIF
           
