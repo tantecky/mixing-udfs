@@ -109,8 +109,7 @@ C-----Code
       DO ILOC = 1, NLOC
         RET(ILOC,NRET) = COMPUTE_SOURCE(NLOC, ILOC, ICLASS, 
      *  ARGS(1,2), RF)   
-      END DO
-      
+      END DO 
      
       END
 C=======================================================================
@@ -262,7 +261,7 @@ C-----Code
       ENDDO
   
   
-      GK15 = INTEGRAL +  WEIGHTS(7)*FCE(ICLASS, TRANS2, J)
+      GK15 = TRANS1*(INTEGRAL +  WEIGHTS(7)*FCE(ICLASS, TRANS2, J))
       
       END
 C=======================================================================
@@ -628,4 +627,6 @@ C-----Common blocks
       COMMON /C_BUBBLE_CLASSES_VOL/ BUBBLE_CLASSES_VOL
       
       END
+      
+      
 
