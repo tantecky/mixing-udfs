@@ -27,10 +27,10 @@
         ARGS(1:NLOC,8) = 0.1E0
         ARGS(1:NLOC,9) = 0.1E0
         ARGS(1:NLOC,10) = 0.1E0
-        ARGS(1:NLOC,11) = 0.025E0
-        ARGS(1:NLOC,12) = 0.025E0
-        ARGS(1:NLOC,13) = 0.025E0
-        ARGS(1:NLOC,14) = 0.025E0
+        ARGS(1:NLOC,11) = 0.05E0
+        ARGS(1:NLOC,12) = 0.05E0
+        ARGS(1:NLOC,13) = 0.05E0
+        ARGS(1:NLOC,14) = 0.05E0
         
         CALL BUBBLE_SOURCE(NLOC, NRET, NARG, RET, ARGS)
         TOTSUM = TOTSUM + RET(NLOC,NRET)
