@@ -19,18 +19,18 @@
         ARGS(1,1) = ICLASS
         ARGS(1:NLOC,2) = 0.1E0
         
-        ARGS(1:NLOC,3) = 0.0E0
-        ARGS(1:NLOC,4) = 0.0E0
-        ARGS(1:NLOC,5) = 0.0E0
-        ARGS(1:NLOC,6) = 0.0E0
-        ARGS(1:NLOC,7) = 0.0E0
-        ARGS(1:NLOC,8) = 0.0E0
-        ARGS(1:NLOC,9) = 1.0E0
-        ARGS(1:NLOC,10) = 0.0E0
-        ARGS(1:NLOC,11) = 0.0E0
-        ARGS(1:NLOC,12) = 0.0E0
-        ARGS(1:NLOC,13) = 0.0E0
-        ARGS(1:NLOC,14) = 0.0E0
+        ARGS(1:NLOC,3) = 0.1E0
+        ARGS(1:NLOC,4) = 0.1E0
+        ARGS(1:NLOC,5) = 0.1E0
+        ARGS(1:NLOC,6) = 0.1E0
+        ARGS(1:NLOC,7) = 0.1E0
+        ARGS(1:NLOC,8) = 0.1E0
+        ARGS(1:NLOC,9) = 0.1E0
+        ARGS(1:NLOC,10) = 0.1E0
+        ARGS(1:NLOC,11) = 0.025E0
+        ARGS(1:NLOC,12) = 0.025E0
+        ARGS(1:NLOC,13) = 0.025E0
+        ARGS(1:NLOC,14) = 0.025E0
         
         CALL BUBBLE_SOURCE(NLOC, NRET, NARG, RET, ARGS)
         TOTSUM = TOTSUM + RET(NLOC,NRET)
@@ -329,6 +329,11 @@ C-----Code
       DO J = ICLASS, NUMBER_OF_CLASSES
         BBRI = BBRI + GAMMA_IJ(ICLASS, J)*N(NLOC, ILOC, J, RALFA, RF)
       ENDDO
+
+      IF(ISNAN(BBRI) .EQV. .TRUE.) THEN
+        WRITE(*,*) ('BBRI ISNAN')
+        STOP
+      ENDIF
       
       END
 C=======================================================================
@@ -356,6 +361,8 @@ C-----Locale variables
       INTEGER K
       REAL V
       REAL BRACKET_PRODUCT
+      REAL AJK
+      DATA AJK /1.0E-6/
 C-----Code
 
       IF(ICLASS .GT. NUMBER_OF_CLASSES .OR. ICLASS .LT. 1) THEN
@@ -389,7 +396,7 @@ C-----Code
           
         BAGI = BAGI + 
      *  BRACKET_PRODUCT*(1.0E0 - 0.5E0*KRONECKER_D(J,K))
-     *  *N(NLOC, ILOC, J, RALFA, RF)*N(NLOC, ILOC, K, RALFA, RF)
+     *  *N(NLOC, ILOC, J, RALFA, RF)*N(NLOC, ILOC, K, RALFA, RF)*AJK
           
         END DO
       END DO 
@@ -505,7 +512,7 @@ C=======================================================================
       IMPLICIT NONE
 C-----Arguments
       INTEGER J
-      REAL K
+      INTEGER K
       
       IF(J .EQ. K) THEN
         KRONECKER_D = 1
@@ -567,6 +574,8 @@ C-----Arguments
       REAL RF(1:NLOC, 1:NUMBER_OF_CLASSES)
 C-----Locale variables
       INTEGER J
+      REAL AJK
+      DATA AJK /1.0E-6/
 C-----Code
       DAGI = 0.0E0
 
@@ -584,7 +593,7 @@ C-----Code
         DO J = 1, (NUMBER_OF_CLASSES - 1)
           DAGI = DAGI  
      *    + N(NLOC, ILOC, ICLASS, RALFA, RF)
-     *      *N(NLOC, ILOC, J, RALFA, RF)
+     *      *N(NLOC, ILOC, J, RALFA, RF)*AJK
         END DO
       ENDIF
 
@@ -595,6 +604,7 @@ C-----Code
       ENDIF
 
       END 
+      
 C=======================================================================
       BLOCKDATA
       IMPLICIT NONE
@@ -626,7 +636,6 @@ C-----Common blocks
       COMMON /C_BUBBLE_CLASSES_DIA/ BUBBLE_CLASSES_DIA
       COMMON /C_BUBBLE_CLASSES_VOL/ BUBBLE_CLASSES_VOL
       
-      END
-      
+      END 
       
 

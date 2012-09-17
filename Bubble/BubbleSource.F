@@ -161,7 +161,7 @@ C-----Code
       END
 
 C=======================================================================
-      REAL FUNCTION GK15(FCE, A, B, ICLASS)
+      REAL FUNCTION GK15(FCE, A, B, ICLASS, J)
       IMPLICIT NONE 
 C-----Called functions
       REAL FCE
@@ -170,6 +170,7 @@ C-----Arguments
       REAL A
       REAL B
       INTEGER ICLASS
+      INTEGER J
 C-----Locale variables
       REAL TRANS1
       REAL TRANS2
@@ -205,12 +206,12 @@ C-----Code
       
       DO I = 0, 6
         INTEGRAL = INTEGRAL +
-     *  WEIGHTS(I)*((FCE(ICLASS, TRANS1*NODES(I) + TRANS2)) +
-     *  (FCE(ICLASS, TRANS1*(-NODES(I)) + TRANS2)))
+     *  WEIGHTS(I)*((FCE(ICLASS, TRANS1*NODES(I) + TRANS2, J)) +
+     *  (FCE(ICLASS, TRANS1*(-NODES(I)) + TRANS2, J)))
       ENDDO
   
   
-      GK15 = INTEGRAL +  WEIGHTS(7)*FCE(ICLASS, TRANS2)
+      GK15 = TRANS1*(INTEGRAL +  WEIGHTS(7)*FCE(ICLASS, TRANS2, J))
       
       END
 C=======================================================================
@@ -223,10 +224,10 @@ C-----Common blocks
       REAL BUBBLE_CLASSES_VOL(1:NUMBER_OF_CLASSES)
       COMMON /C_BUBBLE_CLASSES_VOL/ BUBBLE_CLASSES_VOL
 C-----Called functions
-      REAL XI
-      EXTERNAL XI
-      REAL XI_MINUS_ONE
-      EXTERNAL XI_MINUS_ONE
+      REAL XI_BETA
+      EXTERNAL XI_BETA
+      REAL XI_MINUS_ONE_BETA
+      EXTERNAL XI_MINUS_ONE_BETA
       REAL GK15
 C-----Arguments
       INTEGER ICLASS
@@ -234,24 +235,24 @@ C-----Arguments
       
       IF(ICLASS .EQ. 1) THEN
         GAMMA_IJ = 
-     *     GK15(XI, BUBBLE_CLASSES_VOL(ICLASS), 
-     *     BUBBLE_CLASSES_VOL(ICLASS+1), ICLASS)     
+     *     GK15(XI_BETA, BUBBLE_CLASSES_VOL(ICLASS), 
+     *     BUBBLE_CLASSES_VOL(ICLASS+1), ICLASS, J)     
         RETURN
       ENDIF
       
       IF(ICLASS .EQ. J) THEN
         GAMMA_IJ = 
-     *     GK15(XI_MINUS_ONE, BUBBLE_CLASSES_VOL(ICLASS-1), 
-     *     BUBBLE_CLASSES_VOL(ICLASS), ICLASS)
+     *     GK15(XI_MINUS_ONE_BETA, BUBBLE_CLASSES_VOL(ICLASS-1), 
+     *     BUBBLE_CLASSES_VOL(ICLASS), ICLASS, J)
         RETURN
       ENDIF
       
       GAMMA_IJ =
-     *GK15(XI_MINUS_ONE, BUBBLE_CLASSES_VOL(ICLASS-1), 
-     *     BUBBLE_CLASSES_VOL(ICLASS), ICLASS)
+     *GK15(XI_MINUS_ONE_BETA, BUBBLE_CLASSES_VOL(ICLASS-1), 
+     *     BUBBLE_CLASSES_VOL(ICLASS), ICLASS, J)
      *     +
-     *GK15(XI, BUBBLE_CLASSES_VOL(ICLASS), 
-     *     BUBBLE_CLASSES_VOL(ICLASS+1), ICLASS)              
+     *GK15(XI_BETA, BUBBLE_CLASSES_VOL(ICLASS), 
+     *     BUBBLE_CLASSES_VOL(ICLASS+1), ICLASS, J)              
       
       END
 C=======================================================================
@@ -279,6 +280,13 @@ C-----Code
         BBRI = BBRI + GAMMA_IJ(ICLASS, J)*N(NLOC, ILOC, J, RALFA, RF)
       ENDDO
       
+#ifdef DEBUG
+      IF(ISNAN(BBRI) .EQV. .TRUE.) THEN
+        CALL ERRMSG('BBRI ISNAN')
+        STOP
+      ENDIF
+#endif
+      
       END
 C=======================================================================
       REAL FUNCTION BAGI(NLOC, ILOC, ICLASS, RALFA, RF)
@@ -305,6 +313,8 @@ C-----Locale variables
       INTEGER K
       REAL V
       REAL BRACKET_PRODUCT
+      REAL AJK
+      DATA AJK /1.0E-6/
 C-----Code
 #ifdef DEBUG
       IF(ICLASS .GT. NUMBER_OF_CLASSES .OR. ICLASS .LT. 1) THEN
@@ -338,7 +348,7 @@ C-----Code
           
         BAGI = BAGI + 
      *  BRACKET_PRODUCT*(1.0E0 - 0.5E0*KRONECKER_D(J,K))
-     *  *N(NLOC, ILOC, J, RALFA, RF)*N(NLOC, ILOC, K, RALFA, RF)
+     *  *N(NLOC, ILOC, J, RALFA, RF)*N(NLOC, ILOC, K, RALFA, RF)*AJK
           
         END DO
       END DO 
@@ -350,6 +360,57 @@ C-----Code
       ENDIF
 #endif
       END 
+C=======================================================================
+      REAL FUNCTION XI_BETA(I, V, J)
+      IMPLICIT NONE
+C-----Called functions
+      REAL BETA
+      REAL XI
+C-----Arguments
+      INTEGER J
+      INTEGER I
+      REAL V
+      
+      XI_BETA = XI(I,V)*BETA(J, V)
+      END
+C=======================================================================
+      REAL FUNCTION XI_MINUS_ONE_BETA(I, V, J)
+      IMPLICIT NONE
+C-----Called functions
+      REAL BETA
+      REAL XI_MINUS_ONE
+C-----Arguments
+      INTEGER J
+      INTEGER I
+      REAL V
+      
+      XI_MINUS_ONE_BETA = XI_MINUS_ONE(I,V)*BETA(J, V)
+      END
+C=======================================================================
+      REAL FUNCTION BETA(J, V)
+      IMPLICIT NONE
+C-----Symbolic constants
+      INTEGER NUMBER_OF_CLASSES
+      PARAMETER (NUMBER_OF_CLASSES = 12)
+C-----Common blocks
+      REAL BUBBLE_CLASSES_VOL(1:NUMBER_OF_CLASSES)
+      COMMON /C_BUBBLE_CLASSES_VOL/ BUBBLE_CLASSES_VOL
+C-----Arguments
+      INTEGER J
+      REAL V
+      
+
+      IF(J .GT. NUMBER_OF_CLASSES .OR. J .LT. 1) THEN
+        WRITE(*,*) ('Wrong XI - J')
+        WRITE(*,*) (J)
+        STOP
+      ENDIF
+
+      BETA = 60.0E0/BUBBLE_CLASSES_VOL(J) 
+     * *(V/BUBBLE_CLASSES_VOL(J))**2
+     * *(1.0E0 - V/BUBBLE_CLASSES_VOL(J))**2
+      
+      END
 C=======================================================================
       REAL FUNCTION XI(I, V)
       IMPLICIT NONE
@@ -403,7 +464,7 @@ C=======================================================================
       IMPLICIT NONE
 C-----Arguments
       INTEGER J
-      REAL K
+      INTEGER K
       
       IF(J .EQ. K) THEN
         KRONECKER_D = 1
@@ -465,6 +526,8 @@ C-----Arguments
       REAL RF(1:NLOC, 1:NUMBER_OF_CLASSES)
 C-----Locale variables
       INTEGER J
+      REAL AJK
+      DATA AJK /1.0E-6/
 C-----Code
       DAGI = 0.0E0
 
@@ -482,7 +545,7 @@ C-----Code
         DO J = 1, (NUMBER_OF_CLASSES - 1)
           DAGI = DAGI  
      *    + N(NLOC, ILOC, ICLASS, RALFA, RF)
-     *      *N(NLOC, ILOC, J, RALFA, RF)
+     *      *N(NLOC, ILOC, J, RALFA, RF)*AJK
         END DO
       ENDIF
 
