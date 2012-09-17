@@ -10,6 +10,16 @@
       INTEGER NRET
       PARAMETER (NRET = 1)
       
+      REAL G_DBRI
+      REAL G_DAGI
+      REAL G_BBRI
+      REAL G_BAGI
+      
+      COMMON /C_DBRI/ G_DBRI
+      COMMON /C_DAGI/ G_DAGI
+      COMMON /C_BBRI/ G_BBRI
+      COMMON /C_BAGI/ G_BAGI
+      
       REAL ARGS(NLOC,NARG), RET(NLOC,NRET)
       REAL TOTSUM
       
@@ -38,6 +48,8 @@
       
       WRITE(*,*) '==========================='
       WRITE(*,'(A, E20.10)') 'SUM_SOURCE: ', TOTSUM
+      WRITE(*,'(A, E20.10)') 'BAGI-DAGI: ', (G_BAGI-G_DAGI)
+      WRITE(*,'(A, E20.10)') 'BBRI-DBRI ', (G_BBRI-G_DBRI)
       
       END
 
@@ -311,6 +323,13 @@ C=======================================================================
 C-----Symbolic constants
       INTEGER NUMBER_OF_CLASSES
       PARAMETER (NUMBER_OF_CLASSES = 12)
+      REAL RHO_G
+      PARAMETER (RHO_G = 1.125E0)
+C-----Common blocks
+      REAL G_BBRI
+      COMMON /C_BBRI/ G_BBRI
+      REAL BUBBLE_CLASSES_VOL(1:NUMBER_OF_CLASSES)
+      COMMON /C_BUBBLE_CLASSES_VOL/ BUBBLE_CLASSES_VOL
 C-----Called functions
       REAL N
       REAL GAMMA_IJ
@@ -335,6 +354,8 @@ C-----Code
         STOP
       ENDIF
       
+      G_BBRI = G_BBRI + BUBBLE_CLASSES_VOL(ICLASS)*RHO_G*BBRI
+      
       END
 C=======================================================================
       REAL FUNCTION BAGI(NLOC, ILOC, ICLASS, RALFA, RF)
@@ -342,9 +363,13 @@ C=======================================================================
 C-----Symbolic constants
       INTEGER NUMBER_OF_CLASSES
       PARAMETER (NUMBER_OF_CLASSES = 12)
+      REAL RHO_G
+      PARAMETER (RHO_G = 1.125E0)
 C-----Common blocks
       REAL BUBBLE_CLASSES_VOL(1:NUMBER_OF_CLASSES)
       COMMON /C_BUBBLE_CLASSES_VOL/ BUBBLE_CLASSES_VOL
+      REAL G_BAGI
+      COMMON /C_BAGI/ G_BAGI
 C-----Called functions
       REAL N
       REAL XI
@@ -406,6 +431,8 @@ C-----Code
         WRITE(*,*) ('BAGI ISNAN')
         STOP
       ENDIF
+      
+      G_BAGI = G_BAGI + BUBBLE_CLASSES_VOL(ICLASS)*RHO_G*BAGI
 
       END 
 C=======================================================================
@@ -527,8 +554,15 @@ C=======================================================================
 C-----Symbolic constants
       INTEGER NUMBER_OF_CLASSES
       PARAMETER (NUMBER_OF_CLASSES = 12)
+      REAL RHO_G
+      PARAMETER (RHO_G = 1.125E0)
 C-----Called functions
       REAL N
+C-----Common blocks
+      REAL G_DBRI
+      COMMON /C_DBRI/ G_DBRI
+      REAL BUBBLE_CLASSES_VOL(1:NUMBER_OF_CLASSES)
+      COMMON /C_BUBBLE_CLASSES_VOL/ BUBBLE_CLASSES_VOL
 C-----Arguments
       INTEGER NLOC
       INTEGER ILOC
@@ -556,6 +590,8 @@ C-----Code
         WRITE(*,*) ('DBRI ISNAN')
         STOP
       ENDIF
+      
+      G_DBRI = G_DBRI + BUBBLE_CLASSES_VOL(ICLASS)*RHO_G*DBRI
 
       END 
 C=======================================================================
@@ -564,6 +600,13 @@ C=======================================================================
 C-----Symbolic constants
       INTEGER NUMBER_OF_CLASSES
       PARAMETER (NUMBER_OF_CLASSES = 12)
+      REAL RHO_G
+      PARAMETER (RHO_G = 1.125E0)
+C-----Common blocks
+      REAL G_DAGI
+      COMMON /C_DAGI/ G_DAGI
+      REAL BUBBLE_CLASSES_VOL(1:NUMBER_OF_CLASSES)
+      COMMON /C_BUBBLE_CLASSES_VOL/ BUBBLE_CLASSES_VOL
 C-----Called functions
       REAL N
 C-----Arguments
@@ -602,6 +645,8 @@ C-----Code
         WRITE(*,*) ('DAGI ISNAN')
         STOP
       ENDIF
+      
+      G_DAGI = G_DAGI + BUBBLE_CLASSES_VOL(ICLASS)*RHO_G*DAGI 
 
       END 
       
@@ -614,6 +659,16 @@ C-----Symbolic constants
 C-----Locale variables
       REAL BUBBLE_CLASSES_VOL(1:NUMBER_OF_CLASSES)
       REAL BUBBLE_CLASSES_DIA(1:NUMBER_OF_CLASSES)
+      REAL G_DBRI
+      REAL G_DAGI
+      REAL G_BBRI
+      REAL G_BAGI
+      
+      DATA G_DBRI /0.0E0/
+      DATA G_DAGI /0.0E0/
+      DATA G_BBRI /0.0E0/
+      DATA G_BAGI /0.0E0/
+      
 C     diameter of bubble classes
       DATA BUBBLE_CLASSES_DIA /0.5E-3, 1.0E-3, 2.0E-3, 3.0E-3, 4.0E-3
      * , 5.0E-3, 6.0E-3, 7.0E-3, 8.0E-3, 10.0E-3, 12.0E-3, 16.0E-3/
@@ -635,6 +690,11 @@ C     diameter of bubble classes
 C-----Common blocks
       COMMON /C_BUBBLE_CLASSES_DIA/ BUBBLE_CLASSES_DIA
       COMMON /C_BUBBLE_CLASSES_VOL/ BUBBLE_CLASSES_VOL
+      
+      COMMON /C_DBRI/ G_DBRI
+      COMMON /C_DAGI/ G_DAGI
+      COMMON /C_BBRI/ G_BBRI
+      COMMON /C_BAGI/ G_BAGI
       
       END 
       
