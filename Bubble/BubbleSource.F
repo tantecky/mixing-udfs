@@ -1,5 +1,5 @@
 #include "cfx5ext.h"
-#define DEBUG
+/*#define DEBUG*/
 
 dllexport(bubble_source)
       SUBROUTINE BUBBLE_SOURCE( 
