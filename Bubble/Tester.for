@@ -140,6 +140,14 @@ C-----Called functions
 C-----Common blocks
       REAL BUBBLE_CLASSES_VOL(1:NUMBER_OF_CLASSES)
       COMMON /C_BUBBLE_CLASSES_VOL/ BUBBLE_CLASSES_VOL
+      REAL G_DBRI
+      REAL G_DAGI
+      REAL G_BBRI
+      REAL G_BAGI
+      COMMON /C_DBRI/ G_DBRI
+      COMMON /C_DAGI/ G_DAGI
+      COMMON /C_BBRI/ G_BBRI
+      COMMON /C_BAGI/ G_BAGI
 C-----Arguments
       INTEGER NLOC
       INTEGER ILOC
@@ -163,7 +171,19 @@ C-----Code
      *  -DBRI(NLOC, ILOC, ICLASS, RALFA, RF)
      *  -DAGI(NLOC, ILOC, ICLASS, RALFA, RF)
      * )
-     
+      
+      G_BBRI = G_BBRI + BUBBLE_CLASSES_VOL(ICLASS)*RHO_G*
+     *BBRI(NLOC, ILOC, ICLASS, RALFA, RF)    
+               
+      G_BAGI = G_BAGI + BUBBLE_CLASSES_VOL(ICLASS)*RHO_G*
+     *BAGI(NLOC, ILOC, ICLASS, RALFA, RF)
+               
+      G_DBRI = G_DBRI + BUBBLE_CLASSES_VOL(ICLASS)*RHO_G*
+     *DBRI(NLOC, ILOC, ICLASS, RALFA, RF)
+               
+      G_DAGI = G_DAGI + BUBBLE_CLASSES_VOL(ICLASS)*RHO_G*
+     *DAGI(NLOC, ILOC, ICLASS, RALFA, RF) 
+      
       WRITE(*,*) '---------------------------'
       WRITE(*,'(A, I0)') 'CLASS: ', ICLASS
       WRITE(*,'(A, F5.2)') 'VOLFRAC_G: ', RALFA(ILOC)
@@ -323,16 +343,13 @@ C=======================================================================
 C-----Symbolic constants
       INTEGER NUMBER_OF_CLASSES
       PARAMETER (NUMBER_OF_CLASSES = 12)
-      REAL RHO_G
-      PARAMETER (RHO_G = 1.125E0)
 C-----Common blocks
-      REAL G_BBRI
-      COMMON /C_BBRI/ G_BBRI
       REAL BUBBLE_CLASSES_VOL(1:NUMBER_OF_CLASSES)
       COMMON /C_BUBBLE_CLASSES_VOL/ BUBBLE_CLASSES_VOL
 C-----Called functions
       REAL N
       REAL GAMMA_IJ
+      REAL GV
 C-----Arguments
       INTEGER NLOC
       INTEGER ILOC
@@ -346,7 +363,8 @@ C-----Code
       BBRI = 0.0E0
       
       DO J = ICLASS, NUMBER_OF_CLASSES
-        BBRI = BBRI + GAMMA_IJ(ICLASS, J)*N(NLOC, ILOC, J, RALFA, RF)
+        BBRI = BBRI + GV(J, BUBBLE_CLASSES_VOL(J))*
+     *  GAMMA_IJ(ICLASS, J)*N(NLOC, ILOC, J, RALFA, RF)
       ENDDO
 
       IF(ISNAN(BBRI) .EQV. .TRUE.) THEN
@@ -354,7 +372,6 @@ C-----Code
         STOP
       ENDIF
       
-      G_BBRI = G_BBRI + BUBBLE_CLASSES_VOL(ICLASS)*RHO_G*BBRI
       
       END
 C=======================================================================
@@ -363,13 +380,9 @@ C=======================================================================
 C-----Symbolic constants
       INTEGER NUMBER_OF_CLASSES
       PARAMETER (NUMBER_OF_CLASSES = 12)
-      REAL RHO_G
-      PARAMETER (RHO_G = 1.125E0)
 C-----Common blocks
       REAL BUBBLE_CLASSES_VOL(1:NUMBER_OF_CLASSES)
       COMMON /C_BUBBLE_CLASSES_VOL/ BUBBLE_CLASSES_VOL
-      REAL G_BAGI
-      COMMON /C_BAGI/ G_BAGI
 C-----Called functions
       REAL N
       REAL XI
@@ -432,8 +445,6 @@ C-----Code
         STOP
       ENDIF
       
-      G_BAGI = G_BAGI + BUBBLE_CLASSES_VOL(ICLASS)*RHO_G*BAGI
-
       END 
 C=======================================================================
       REAL FUNCTION XI_BETA(I, V, J)
@@ -549,18 +560,29 @@ C-----Arguments
       
       END
 C=======================================================================
+      REAL FUNCTION GV(ICLASS, V)
+      IMPLICIT NONE
+C-----Arguments
+      REAL V
+      INTEGER ICLASS
+      
+      IF(ICLASS .EQ. 1) THEN
+        GV = 0.E0
+      ELSE
+        GV = 1.0E0
+      ENDIF
+      
+      END
+C=======================================================================
       REAL FUNCTION DBRI(NLOC, ILOC, ICLASS, RALFA, RF)
       IMPLICIT NONE
 C-----Symbolic constants
       INTEGER NUMBER_OF_CLASSES
       PARAMETER (NUMBER_OF_CLASSES = 12)
-      REAL RHO_G
-      PARAMETER (RHO_G = 1.125E0)
 C-----Called functions
       REAL N
+      REAL GV
 C-----Common blocks
-      REAL G_DBRI
-      COMMON /C_DBRI/ G_DBRI
       REAL BUBBLE_CLASSES_VOL(1:NUMBER_OF_CLASSES)
       COMMON /C_BUBBLE_CLASSES_VOL/ BUBBLE_CLASSES_VOL
 C-----Arguments
@@ -579,11 +601,9 @@ C-----Code
       ENDIF
 
 
-      IF(ICLASS .EQ. 1) THEN
-        DBRI = 0.E0
-      ELSE
-        DBRI = N(NLOC, ILOC, ICLASS, RALFA, RF)
-      ENDIF
+
+      DBRI = N(NLOC, ILOC, ICLASS, RALFA, RF)*
+     *GV(ICLASS, BUBBLE_CLASSES_VOL(ICLASS))
 
 
       IF(ISNAN(DBRI) .EQV. .TRUE.) THEN
@@ -591,7 +611,6 @@ C-----Code
         STOP
       ENDIF
       
-      G_DBRI = G_DBRI + BUBBLE_CLASSES_VOL(ICLASS)*RHO_G*DBRI
 
       END 
 C=======================================================================
@@ -600,13 +619,6 @@ C=======================================================================
 C-----Symbolic constants
       INTEGER NUMBER_OF_CLASSES
       PARAMETER (NUMBER_OF_CLASSES = 12)
-      REAL RHO_G
-      PARAMETER (RHO_G = 1.125E0)
-C-----Common blocks
-      REAL G_DAGI
-      COMMON /C_DAGI/ G_DAGI
-      REAL BUBBLE_CLASSES_VOL(1:NUMBER_OF_CLASSES)
-      COMMON /C_BUBBLE_CLASSES_VOL/ BUBBLE_CLASSES_VOL
 C-----Called functions
       REAL N
 C-----Arguments
@@ -646,10 +658,21 @@ C-----Code
         STOP
       ENDIF
       
-      G_DAGI = G_DAGI + BUBBLE_CLASSES_VOL(ICLASS)*RHO_G*DAGI 
-
       END 
+C=======================================================================
+      LOGICAL FUNCTION ISFINITE(X)
+      REAL X
+      REAL TMP
       
+      TMP = X * 10.0E0
+            
+      IF(X .EQ.TMP) THEN
+       ISFINITE = .FALSE.
+      ELSE
+        ISFINITE = .TRUE.
+      ENDIF
+      
+      END
 C=======================================================================
       BLOCKDATA
       IMPLICIT NONE
