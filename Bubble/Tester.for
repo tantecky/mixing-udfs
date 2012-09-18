@@ -1,3 +1,5 @@
+#define REAL DOUBLE PRECISION
+      
       PROGRAM TESTER
       IMPLICIT NONE
       INTEGER NUMBER_OF_CLASSES
@@ -125,7 +127,8 @@ C-----Code
      
       END
 C=======================================================================
-      REAL FUNCTION COMPUTE_SOURCE(NLOC, ILOC, ICLASS, RALFA, RF)
+      REAL FUNCTION 
+     *COMPUTE_SOURCE(NLOC, ILOC, ICLASS, RALFA, RF)
       IMPLICIT NONE
 C-----Symbolic constants
       INTEGER NUMBER_OF_CLASSES
@@ -693,11 +696,11 @@ C-----Locale variables
       DATA G_BAGI /0.0E0/
       
 C     diameter of bubble classes
-      DATA BUBBLE_CLASSES_DIA /0.5E-3, 1.0E-3, 2.0E-3, 3.0E-3, 4.0E-3
+      DATA BUBBLE_CLASSES_DIA /0.1E-3, 1.0E-3, 2.0E-3, 3.0E-3, 4.0E-3
      * , 5.0E-3, 6.0E-3, 7.0E-3, 8.0E-3, 10.0E-3, 12.0E-3, 16.0E-3/
      
       DATA BUBBLE_CLASSES_VOL 
-     */ 6.54498469497874E-11
+     */ 5.23598775598299e-13
      *, 5.23598775598299E-10
      *, 4.18879020478639E-09
      *, 1.41371669411541E-08
