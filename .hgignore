@@ -21,3 +21,4 @@ PyrolysisGA/Test.png
 *.def
 *.out
 *.res
+*.bak

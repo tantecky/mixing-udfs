@@ -8,7 +8,7 @@
       INTEGER ICLASS
       PARAMETER (NLOC = 1)
       INTEGER NARG
-      PARAMETER (NARG = 19)
+      PARAMETER (NARG = 15)
       INTEGER NRET
       PARAMETER (NRET = 1)
       
@@ -43,12 +43,7 @@
         ARGS(1:NLOC,12) = 0.05E0
         ARGS(1:NLOC,13) = 0.05E0
         ARGS(1:NLOC,14) = 0.05E0
-        
-        ARGS(1:NLOC,15) = 0.01E0
-        ARGS(1:NLOC,16) = 0.073E0
-        ARGS(1:NLOC,17) = 1000E0
-        ARGS(1:NLOC,18) = 1.125E0
-        ARGS(1:NLOC,19) = 1.0E-3
+        ARGS(1:NLOC,15) = 0.001E0
         
         CALL BUBBLE_SOURCE(NLOC, NRET, NARG, RET, ARGS)
         TOTSUM = TOTSUM + RET(NLOC,NRET)
@@ -92,17 +87,8 @@ c     F12 = ARGS(1:NLOC,14)
 C-----Locale variables
       INTEGER ICLASS
       INTEGER ILOC
-      REAL RALFA(1:NLOC)
       REAL RF(1:NLOC, 1:NUMBER_OF_CLASSES)
-      REAL EPS(1:NLOC)
-      REAL SIGMA(1:NLOC)
-      REAL RHO_L(1:NLOC)
-      REAL RHO_G(1:NLOC)
-      REAL MU_L(1:NLOC)
       
-C-----Code
-      ICLASS = INT(ARGS(1,1))
-      RALFA = ARGS(1,2)
       RF(:, 1) = ARGS(:,3)
       RF(:, 2) = ARGS(:,4)
       RF(:, 3) = ARGS(:,5)
@@ -115,11 +101,9 @@ C-----Code
       RF(:, 10) = ARGS(:,12)
       RF(:, 11) = ARGS(:,13)
       RF(:, 12) = ARGS(:,14)
-      EPS = ARGS(1,15)
-      SIGMA = ARGS(1,16)
-      RHO_L = ARGS(1,17)
-      RHO_G = ARGS(1,18)
-      MU_L = ARGS(1,19)
+      
+C-----Code
+      ICLASS = INT(ARGS(1,1))
 
       IF(ICLASS .GT. NUMBER_OF_CLASSES .OR. ICLASS .LT. 1) THEN
         WRITE(*,*) ('Wrong ICLASS')
@@ -139,18 +123,19 @@ C-----Code
 
       DO ILOC = 1, NLOC
         RET(ILOC,NRET) = COMPUTE_SOURCE(NLOC, ILOC, ICLASS, 
-     *  RALFA, RF, EPS, SIGMA, RHO_L, RHO_G, MU_L)   
+     *  ARGS(1,2), RF, ARGS(1,15))   
       END DO 
      
       END
 C=======================================================================
       REAL FUNCTION 
-     *COMPUTE_SOURCE(NLOC, ILOC, ICLASS, RALFA, RF, 
-     *EPS, SIGMA, RHO_L, RHO_G, MU_L)
+     *COMPUTE_SOURCE(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
       IMPLICIT NONE
 C-----Symbolic constants
       INTEGER NUMBER_OF_CLASSES
       PARAMETER (NUMBER_OF_CLASSES = 12)
+      REAL RHO_G
+      PARAMETER (RHO_G = 1.185E0)
 C-----Called functions
       REAL BBRI
       REAL BAGI
@@ -174,10 +159,6 @@ C-----Arguments
       REAL RALFA(NLOC)
       REAL RF(1:NLOC, 1:NUMBER_OF_CLASSES)
       REAL EPS(NLOC)
-      REAL SIGMA(NLOC)
-      REAL RHO_L(NLOC)
-      REAL RHO_G(NLOC)
-      REAL MU_L(NLOC)
 C-----Code
 
 
@@ -188,62 +169,46 @@ C-----Code
       ENDIF
 
 
-      COMPUTE_SOURCE = RHO_G(ILOC)*BUBBLE_CLASSES_VOL(ICLASS)*
+      COMPUTE_SOURCE = RHO_G*BUBBLE_CLASSES_VOL(ICLASS)*
      * (
-     *  BBRI(NLOC, ILOC, ICLASS, RALFA, RF, 
-     *       EPS, SIGMA, RHO_L, RHO_G, MU_L)
-     *  +BAGI(NLOC, ILOC, ICLASS, RALFA, RF,
-     *                   EPS, SIGMA, RHO_L)
-     *  -DBRI(NLOC, ILOC, ICLASS, RALFA, RF,
-     *        EPS, SIGMA, RHO_L, RHO_G, MU_L)
-     *  -DAGI(NLOC, ILOC, ICLASS, RALFA, RF,
-     *        EPS, SIGMA, RHO_L)
+     *  BBRI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
+     *  +BAGI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
+     *  -DBRI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
+     *  -DAGI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
      * )
       
-      G_BBRI = G_BBRI + BUBBLE_CLASSES_VOL(ICLASS)*RHO_G(ILOC)*
-     *BBRI(NLOC, ILOC, ICLASS, RALFA, RF,
-     *       EPS, SIGMA, RHO_L, RHO_G, MU_L)
+      G_BBRI = G_BBRI + BUBBLE_CLASSES_VOL(ICLASS)*RHO_G*
+     *BBRI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)    
                
-      G_BAGI = G_BAGI + BUBBLE_CLASSES_VOL(ICLASS)*RHO_G(ILOC)*
-     *BAGI(NLOC, ILOC, ICLASS, RALFA, RF,
-     *     EPS, SIGMA, RHO_L)
+      G_BAGI = G_BAGI + BUBBLE_CLASSES_VOL(ICLASS)*RHO_G*
+     *BAGI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
                
-      G_DBRI = G_DBRI + BUBBLE_CLASSES_VOL(ICLASS)*RHO_G(ILOC)*
-     *DBRI(NLOC, ILOC, ICLASS, RALFA, RF,
-     *     EPS, SIGMA, RHO_L, RHO_G, MU_L)
+      G_DBRI = G_DBRI + BUBBLE_CLASSES_VOL(ICLASS)*RHO_G*
+     *DBRI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
                
-      G_DAGI = G_DAGI + BUBBLE_CLASSES_VOL(ICLASS)*RHO_G(ILOC)*
-     *DAGI(NLOC, ILOC, ICLASS, RALFA, RF,
-     *    EPS, SIGMA, RHO_L)
+      G_DAGI = G_DAGI + BUBBLE_CLASSES_VOL(ICLASS)*RHO_G*
+     *DAGI(NLOC, ILOC, ICLASS, RALFA, RF, EPS) 
       
       WRITE(*,*) '---------------------------'
       WRITE(*,'(A, I0)') 'CLASS: ', ICLASS
       WRITE(*,'(A, F5.2)') 'VOLFRAC_G: ', RALFA(ILOC)
       WRITE(*,'(A, I0, A, F5.2)') 'F', ICLASS, ':', RF(ILOC,ICLASS)
       WRITE(*,
-     * '(A, E10.5)') 'BBRI: ', BBRI(NLOC, ILOC, ICLASS, RALFA, RF,
-     *       EPS, SIGMA, RHO_L, RHO_G, MU_L)
+     * '(A, E10.5)') 'BBRI: ', BBRI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
       WRITE(*,
-     * '(A, E10.5)') 'BAGI: ', BAGI(NLOC, ILOC, ICLASS, RALFA, RF,
-     *                              EPS, SIGMA, RHO_L)
+     * '(A, E10.5)') 'BAGI: ', BAGI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
       WRITE(*,
-     * '(A, E20.10)') 'DBRI: ', -DBRI(NLOC, ILOC, ICLASS, RALFA, RF,
-     *                                EPS, SIGMA, RHO_L, RHO_G, MU_L)
+     * '(A, E20.10)') 'DBRI: ',-DBRI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
       WRITE(*,
-     * '(A, E20.10)') 'DAGI: ', -DAGI(NLOC, ILOC, ICLASS, RALFA, RF,
-     *                                EPS, SIGMA, RHO_L)
+     * '(A, E20.10)') 'DAGI: ',-DAGI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
       WRITE(*,
      * '(A, E20.10)') 'BAGI-DAGI: ',
-     * BAGI(NLOC, ILOC, ICLASS, RALFA, RF,
-     *      EPS, SIGMA, RHO_L)
-     *-DAGI(NLOC, ILOC, ICLASS, RALFA, RF,      
-     *      EPS, SIGMA, RHO_L)
+     * BAGI(NLOC, ILOC, ICLASS, RALFA, RF, EPS) 
+     *-DAGI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
       WRITE(*,
      * '(A, E20.10)') 'BBRI-DBRI: ',
-     * BBRI(NLOC, ILOC, ICLASS, RALFA, RF,
-     *       EPS, SIGMA, RHO_L, RHO_G, MU_L) 
-     *-DBRI(NLOC, ILOC, ICLASS, RALFA, RF
-     *, EPS, SIGMA, RHO_L, RHO_G, MU_L)
+     * BBRI(NLOC, ILOC, ICLASS, RALFA, RF, EPS) 
+     *-DBRI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
       WRITE(*,'(A, E20.10)') 'SOURCE: ', COMPUTE_SOURCE
       END
 C=======================================================================
@@ -378,8 +343,7 @@ C-----Arguments
       
       END
 C=======================================================================
-      REAL FUNCTION BBRI(NLOC, ILOC, ICLASS, RALFA, RF,
-     *                   EPS, SIGMA, RHO_L, RHO_G, MU_L)
+      REAL FUNCTION BBRI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
       IMPLICIT NONE
 C-----Symbolic constants
       INTEGER NUMBER_OF_CLASSES
@@ -398,10 +362,6 @@ C-----Arguments
       REAL RALFA(NLOC)
       REAL RF(1:NLOC, NUMBER_OF_CLASSES)
       REAL EPS(NLOC)
-      REAL SIGMA(NLOC)
-      REAL RHO_L(NLOC)
-      REAL RHO_G(NLOC)
-      REAL MU_L(NLOC)
 C-----Locale variables
       INTEGER J
 C-----Code
@@ -409,8 +369,7 @@ C-----Code
       BBRI = 0.0E0
       
       DO J = ICLASS, NUMBER_OF_CLASSES
-        BBRI = BBRI +
-     *  G_I(J, EPS, SIGMA, RHO_L, RHO_G, MU_L)*  
+        BBRI = BBRI + G_I(J, EPS(ILOC))*
      *  GAMMA_IJ(ICLASS, J)*N(NLOC, ILOC, J, RALFA, RF)
       ENDDO
 
@@ -422,8 +381,7 @@ C-----Code
       
       END
 C=======================================================================
-      REAL FUNCTION BAGI(NLOC, ILOC, ICLASS, RALFA, RF,
-     *                   EPS, SIGMA, RHO_L)
+      REAL FUNCTION BAGI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
       IMPLICIT NONE
 C-----Symbolic constants
       INTEGER NUMBER_OF_CLASSES
@@ -444,8 +402,6 @@ C-----Arguments
       REAL RALFA(NLOC)
       REAL RF(1:NLOC, NUMBER_OF_CLASSES)
       REAL EPS(NLOC)
-      REAL SIGMA(NLOC)
-      REAL RHO_L(NLOC)
 C-----Locale variables
       INTEGER J
       INTEGER K
@@ -485,7 +441,8 @@ C-----Code
         BAGI = BAGI + 
      *  BRACKET_PRODUCT*(1.0E0 - 0.5E0*KRONECKER_D(J,K))
      *  *N(NLOC, ILOC, J, RALFA, RF)*N(NLOC, ILOC, K, RALFA, RF)*
-     *  A_IJ(J, K, EPS, SIGMA, RHO_L)     
+     *   A_IJ(J, K, EPS(ILOC))
+          
         END DO
       END DO 
 
@@ -610,23 +567,15 @@ C-----Arguments
       
       END
 C=======================================================================
-      REAL FUNCTION A_IJ(I, J, EPS, SIGMA, RHO_L)
+      REAL FUNCTION A_IJ(I, J, EPS)
       IMPLICIT NONE
 C-----Symbolic constants
       INTEGER NUMBER_OF_CLASSES
       PARAMETER (NUMBER_OF_CLASSES = 12)
-C-----Common blocks
-      REAL BUBBLE_CLASSES_DIA(1:NUMBER_OF_CLASSES)
-      COMMON /C_BUBBLE_CLASSES_DIA/ BUBBLE_CLASSES_DIA
-C-----Arguments   
-      INTEGER I
-      INTEGER J
-      REAL EPS
       REAL SIGMA
+      PARAMETER (SIGMA = 0.0728E0)
       REAL RHO_L
-      REAL FREQ
-      REAL EFF
-      REAL R_IJ
+      PARAMETER (RHO_L = 997.0E0)
       REAL H0
       PARAMETER (H0 = 1.0E-4)
       REAL HF
@@ -635,6 +584,16 @@ C-----Arguments
       PARAMETER (COAL_FACTOR = 1.0E0)
       REAL PI
       PARAMETER (PI = 3.1415926535897931E0)
+C-----Common blocks
+      REAL BUBBLE_CLASSES_DIA(1:NUMBER_OF_CLASSES)
+      COMMON /C_BUBBLE_CLASSES_DIA/ BUBBLE_CLASSES_DIA
+C-----Arguments   
+      INTEGER I
+      INTEGER J
+      REAL EPS
+      REAL FREQ
+      REAL EFF
+      REAL R_IJ
       
       R_IJ = BUBBLE_CLASSES_DIA(I)*BUBBLE_CLASSES_DIA(J)
      *      / (BUBBLE_CLASSES_DIA(I)+BUBBLE_CLASSES_DIA(J)) 
@@ -647,30 +606,34 @@ C-----Arguments
       
       A_IJ = COAL_FACTOR * FREQ * EFF
       
-      END      
+      END 
 C=======================================================================
-      REAL FUNCTION G_I(I, EPS, SIGMA, RHO_L, RHO_G, MU_L)
+      REAL FUNCTION G_I(I, EPS)
       IMPLICIT NONE
 C-----Symbolic constants
       INTEGER NUMBER_OF_CLASSES
       PARAMETER (NUMBER_OF_CLASSES = 12)
+      REAL SIGMA
+      PARAMETER (SIGMA = 0.0728E0)
+      REAL RHO_L
+      PARAMETER (RHO_L = 997.0E0)
+      REAL RHO_G
+      PARAMETER (RHO_G = 1.185E0)
+      REAL MU_L
+      PARAMETER (MU_L = 0.0008899)
+      REAL BREAKUP_FACTOR
+      PARAMETER (BREAKUP_FACTOR = 1.0E0)
+      REAL P_ERF
+      PARAMETER (P_ERF = 0.3275911E0)
 C-----Common blocks
       REAL BUBBLE_CLASSES_DIA(1:NUMBER_OF_CLASSES)
       COMMON /C_BUBBLE_CLASSES_DIA/ BUBBLE_CLASSES_DIA
 C-----Arguments   
       INTEGER I
       REAL EPS
-      REAL SIGMA
-      REAL RHO_L
-      REAL RHO_G
-      REAL MU_L
       REAL ERF_ARG
       REAL T_ERF
       REAL ERF
-      REAL BREAKUP_FACTOR
-      PARAMETER (BREAKUP_FACTOR = 1.0E0)
-      REAL P_ERF
-      PARAMETER (P_ERF = 0.3275911E0)
 
       IF(I .EQ. 1) THEN
         G_I = 0.E0
@@ -684,13 +647,12 @@ C-----Arguments
      *      + 1.421413741E0*T_ERF**3.E0 - 1.453152027*T_ERF**4.E0
      *      + 1.061405429E0*T_ERF**5.E0) * EXP(-ERF_ARG**2.E0)
         
-        G_I = BREAKUP_FACTOR * EPS**(1.E0/3.E0) * (1.E0-ERF)
+        G_I = BREAKUP_FACTOR * EPS**(1.E0/3.E0) * (1.0E0-ERF)
       ENDIF
       
-      END 
+      END      
 C=======================================================================
-      REAL FUNCTION DBRI(NLOC, ILOC, ICLASS, RALFA, RF,
-     *                   EPS, SIGMA, RHO_L, RHO_G, MU_L)
+      REAL FUNCTION DBRI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
       IMPLICIT NONE
 C-----Symbolic constants
       INTEGER NUMBER_OF_CLASSES
@@ -708,10 +670,6 @@ C-----Arguments
       REAL RALFA(NLOC)
       REAL RF(1:NLOC, 1:NUMBER_OF_CLASSES)
       REAL EPS(NLOC)
-      REAL SIGMA(NLOC)
-      REAL RHO_L(NLOC)
-      REAL RHO_G(NLOC)
-      REAL MU_L(NLOC)
 C-----Code
 
 
@@ -724,7 +682,7 @@ C-----Code
 
 
       DBRI = N(NLOC, ILOC, ICLASS, RALFA, RF)*
-     *G_I(ICLASS, EPS, SIGMA, RHO_L, RHO_G, MU_L)
+     *G_I(ICLASS, EPS(ILOC))
 
 
       IF(ISNAN(DBRI) .EQV. .TRUE.) THEN
@@ -735,8 +693,7 @@ C-----Code
 
       END 
 C=======================================================================
-      REAL FUNCTION DAGI(NLOC, ILOC, ICLASS, RALFA, RF,
-     *                   EPS, SIGMA, RHO_L)
+      REAL FUNCTION DAGI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
       IMPLICIT NONE
 C-----Symbolic constants
       INTEGER NUMBER_OF_CLASSES
@@ -751,8 +708,6 @@ C-----Arguments
       REAL RALFA(NLOC)
       REAL RF(1:NLOC, 1:NUMBER_OF_CLASSES)
       REAL EPS(NLOC)
-      REAL SIGMA(NLOC)
-      REAL RHO_L(NLOC)
 C-----Locale variables
       INTEGER J
 C-----Code
@@ -772,8 +727,7 @@ C-----Code
         DO J = 1, (NUMBER_OF_CLASSES - 1)
           DAGI = DAGI  
      *    + N(NLOC, ILOC, ICLASS, RALFA, RF)
-     *      *N(NLOC, ILOC, J, RALFA, RF)*
-     *         A_IJ(ICLASS, J, EPS, SIGMA, RHO_L)
+     *      *N(NLOC, ILOC, J, RALFA, RF)*A_IJ(ICLASS, J, EPS(ILOC))
         END DO
       ENDIF
 
