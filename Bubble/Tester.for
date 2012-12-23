@@ -1,9 +1,15 @@
 #define REAL DOUBLE PRECISION
-/*model constants*/
+
+#define MODEL_ALAPEOUS
+C#define MODEL_LEHR
+
+C-------- constants
 #define SIGMA_SURF_TENS (0.0728E0)
 #define RHO_GAS (1.185E0)
 #define RHO_LIQUID (997.0E0)
 #define MU_LIQUID (0.0008899E0)
+#define PI_CONST (3.1415926535897931E0)
+C-------- constants
       
       PROGRAM TESTER
       IMPLICIT NONE
@@ -253,7 +259,7 @@ C-----Code
       END
 
 C=======================================================================
-      REAL FUNCTION GK15(FCE, A, B, ICLASS, J)
+      REAL FUNCTION GK15(FCE, A, B, ICLASS, J, BRANCH)
       IMPLICIT NONE 
 C-----Called functions
       REAL FCE
@@ -263,6 +269,7 @@ C-----Arguments
       REAL B
       INTEGER ICLASS
       INTEGER J
+      INTEGER BRANCH
 C-----Locale variables
       REAL TRANS1
       REAL TRANS2
@@ -298,12 +305,13 @@ C-----Code
       
       DO I = 0, 6
         INTEGRAL = INTEGRAL +
-     *  WEIGHTS(I)*((FCE(ICLASS, TRANS1*NODES(I) + TRANS2, J)) +
-     *  (FCE(ICLASS, TRANS1*(-NODES(I)) + TRANS2, J)))
+     *  WEIGHTS(I)*((FCE(ICLASS, TRANS1*NODES(I) + TRANS2, J, BRANCH)) +
+     *  (FCE(ICLASS, TRANS1*(-NODES(I)) + TRANS2, J, BRANCH)))
       ENDDO
   
   
-      GK15 = TRANS1*(INTEGRAL +  WEIGHTS(7)*FCE(ICLASS, TRANS2, J))
+      GK15 = 
+     * TRANS1*(INTEGRAL +  WEIGHTS(7)*FCE(ICLASS, TRANS2, J, BRANCH))
       
       END
 C=======================================================================
@@ -333,23 +341,23 @@ C-----Code
       IF(ICLASS .EQ. 1) THEN
         GAMMA_IJ = 
      *     GK15(XI_BETA, BUBBLE_CLASSES_VOL(ICLASS), 
-     *     BUBBLE_CLASSES_VOL(ICLASS+1), ICLASS, J)     
+     *     BUBBLE_CLASSES_VOL(ICLASS+1), ICLASS, J, 0)     
         RETURN
       ENDIF
       
       IF(ICLASS .EQ. J) THEN
         GAMMA_IJ = 
      *     GK15(XI_MINUS_ONE_BETA, BUBBLE_CLASSES_VOL(ICLASS-1), 
-     *     BUBBLE_CLASSES_VOL(ICLASS), ICLASS, J)
+     *     BUBBLE_CLASSES_VOL(ICLASS), ICLASS, J, 0)
         RETURN
       ENDIF
       
       GAMMA_IJ =
      *GK15(XI_MINUS_ONE_BETA, BUBBLE_CLASSES_VOL(ICLASS-1), 
-     *     BUBBLE_CLASSES_VOL(ICLASS), ICLASS, J)
+     *     BUBBLE_CLASSES_VOL(ICLASS), ICLASS, J, 0)
      *     +
      *GK15(XI_BETA, BUBBLE_CLASSES_VOL(ICLASS), 
-     *     BUBBLE_CLASSES_VOL(ICLASS+1), ICLASS, J)              
+     *     BUBBLE_CLASSES_VOL(ICLASS+1), ICLASS, J, 0)              
       
       END
 C=======================================================================
@@ -464,7 +472,7 @@ C-----Code
       
       END 
 C=======================================================================
-      REAL FUNCTION XI_BETA(I, V, J)
+      REAL FUNCTION XI_BETA(I, V, J, BRANCH)
       IMPLICIT NONE
 C-----Called functions
       REAL BETA
@@ -472,12 +480,13 @@ C-----Called functions
 C-----Arguments
       INTEGER J
       INTEGER I
+      INTEGER BRANCH
       REAL V
       
-      XI_BETA = XI(I,V)*BETA(J, V)
+      XI_BETA = XI(I,V)*BETA(J, V, BRANCH)
       END
 C=======================================================================
-      REAL FUNCTION XI_MINUS_ONE_BETA(I, V, J)
+      REAL FUNCTION XI_MINUS_ONE_BETA(I, V, J, BRANCH)
       IMPLICIT NONE
 C-----Called functions
       REAL BETA
@@ -485,12 +494,14 @@ C-----Called functions
 C-----Arguments
       INTEGER J
       INTEGER I
+      INTEGER BRANCH
       REAL V
       
-      XI_MINUS_ONE_BETA = XI_MINUS_ONE(I,V)*BETA(J, V)
+      XI_MINUS_ONE_BETA = XI_MINUS_ONE(I,V)*BETA(J, V, BRANCH)
       END
 C=======================================================================
-      REAL FUNCTION BETA(J, V)
+#ifdef MODEL_ALAPEOUS
+      REAL FUNCTION BETA(J, V, BRANCH)
       IMPLICIT NONE
 C-----Symbolic constants
       INTEGER NUMBER_OF_CLASSES
@@ -501,11 +512,18 @@ C-----Common blocks
 C-----Arguments
       INTEGER J
       REAL V
+      INTEGER BRANCH
       
 
       IF(J .GT. NUMBER_OF_CLASSES .OR. J .LT. 1) THEN
         WRITE(*,*) ('Wrong XI - J')
         WRITE(*,*) (J)
+        STOP
+      ENDIF
+      
+      IF(BRANCH .NE. 0) THEN
+        WRITE(*,*) ('Wrong BRANCH')
+        WRITE(*,*) (BRANCH)
         STOP
       ENDIF
 
@@ -514,6 +532,76 @@ C-----Arguments
      * *(1.0E0 - V/BUBBLE_CLASSES_VOL(J))**2
       
       END
+C=======================================================================
+#elif defined MODEL_LEHR
+      REAL FUNCTION BETA(J, V, BRANCH)
+      IMPLICIT NONE
+C-----Symbolic constants
+      INTEGER NUMBER_OF_CLASSES
+      PARAMETER (NUMBER_OF_CLASSES = 12)
+      REAL SIGMA
+      PARAMETER (SIGMA = SIGMA_SURF_TENS)
+      REAL RHO_L
+      PARAMETER (RHO_L = (RHO_LIQUID))
+      REAL P_ERF
+      PARAMETER (P_ERF = 0.3275911E0)
+      REAL PI
+      PARAMETER (PI = PI_CONST)
+C-----Common blocks
+      REAL BUBBLE_CLASSES_VOL(1:NUMBER_OF_CLASSES)
+      COMMON /C_BUBBLE_CLASSES_VOL/ BUBBLE_CLASSES_VOL
+      REAL BUBBLE_CLASSES_DIA(1:NUMBER_OF_CLASSES)
+      COMMON /C_BUBBLE_CLASSES_DIA/ BUBBLE_CLASSES_DIA
+      REAL G_EPS
+      COMMON /C_EPS/ G_EPS
+C-----Arguments
+      INTEGER J
+      REAL V
+      INTEGER BRANCH
+      REAL ERF_ARG
+      REAL T_ERF
+      REAL ERF
+                  
+      IF(J .GT. NUMBER_OF_CLASSES .OR. J .LT. 1) THEN
+        WRITE(*,*) ('Wrong XI - J')
+        WRITE(*,*) (J)
+        STOP
+      ENDIF
+      
+      IF(BRANCH .NE. 1 .AND. BRANCH .NE. 2) THEN
+        WRITE(*,*) ('Wrong BRANCH')
+        WRITE(*,*) (BRANCH)
+        STOP
+      ENDIF
+                    
+      ERF_ARG = 3.E0/2.E0 * LOG(2**(1.E0/15.E0) * BUBBLE_CLASSES_DIA(J)
+     *        * RHO_L**(3.E0/5.E0) * G_EPS**(2.E0/5.E0)
+     *        / SIGMA**(3.E0/5.E0))
+      T_ERF = 1.E0 / (1.E0 + P_ERF*ERF_ARG)
+      ERF = 1.E0 - (0.254829592E0*T_ERF - 0.284496736E0*T_ERF**2.E0
+     *    + 1.421413741E0*T_ERF**3.E0 - 1.453152027*T_ERF**4.E0
+     *    + 1.061405429E0*T_ERF**5.E0) * EXP(-ERF_ARG**2.E0)
+
+      IF(BRANCH .EQ. 1) THEN
+      BETA = 
+     *   1.E0/(SQRT(PI)*V) * EXP(-9.E0/4.E0 * (LOG(2**(2.E0/5.E0)
+     *   * RHO_L**(3.E0/5.E0) * (6.E0*V/PI)**(1.E0/3.E0)
+     *   * G_EPS**(2.E0/5.E0) / SIGMA**(3.E0/5.E0)))**2.E0) / (1.E0+ERF) 
+      ELSEIF(BRANCH .EQ. 2) THEN
+        BETA = 1.E0 / (SQRT(PI) * (BUBBLE_CLASSES_VOL(J) - V))
+     *    * EXP(-9.E0/4.E0 * (LOG(2**(2.E0/5.E0) * RHO_L**(3.E0/5.E0)
+     *    * (BUBBLE_CLASSES_DIA(J)**3.E0 - 6.E0*V/PI)**(1.E0/3.E0)
+     *   * G_EPS**(2.E0/5.E0) / SIGMA**(3.E0/5.E0)))**2.E0) / (1.E0+ERF)   
+      ELSE
+        WRITE(*,*) ('Wrong BRANCH')
+        WRITE(*,*) (BRANCH)
+        STOP
+      ENDIF
+       
+      END
+#else
+#error "Unknown model specified"
+#endif 
 C=======================================================================
       REAL FUNCTION XI(I, V)
       IMPLICIT NONE
@@ -592,7 +680,7 @@ C-----Symbolic constants
       REAL COAL_FACTOR
       PARAMETER (COAL_FACTOR = 1.0E0)
       REAL PI
-      PARAMETER (PI = 3.1415926535897931E0)
+      PARAMETER (PI = PI_CONST)
 C-----Common blocks
       REAL BUBBLE_CLASSES_DIA(1:NUMBER_OF_CLASSES)
       COMMON /C_BUBBLE_CLASSES_DIA/ BUBBLE_CLASSES_DIA
@@ -626,20 +714,23 @@ C-----Symbolic constants
       PARAMETER (SIGMA = SIGMA_SURF_TENS)
       REAL RHO_L
       PARAMETER (RHO_L = RHO_LIQUID)
-      REAL RHO_G
-      PARAMETER (RHO_G = RHO_GAS)
-      REAL MU_L
-      PARAMETER (MU_L = MU_LIQUID)
+
       REAL BREAKUP_FACTOR
       PARAMETER (BREAKUP_FACTOR = 1.0E0)
-      REAL P_ERF
-      PARAMETER (P_ERF = 0.3275911E0)
 C-----Common blocks
       REAL BUBBLE_CLASSES_DIA(1:NUMBER_OF_CLASSES)
       COMMON /C_BUBBLE_CLASSES_DIA/ BUBBLE_CLASSES_DIA
 C-----Arguments   
       INTEGER I
       REAL EPS
+
+#ifdef MODEL_ALAPEOUS
+      REAL P_ERF
+      PARAMETER (P_ERF = 0.3275911E0)
+      REAL RHO_G
+      PARAMETER (RHO_G = RHO_GAS)
+      REAL MU_L
+      PARAMETER (MU_L = MU_LIQUID)
       REAL ERF_ARG
       REAL T_ERF
       REAL ERF
@@ -659,6 +750,19 @@ C-----Arguments
         G_I = BREAKUP_FACTOR * EPS**(1.E0/3.E0) * (1.0E0-ERF)
       ENDIF
       
+#elif defined MODEL_LEHR
+      IF(I .EQ. 1) THEN
+        G_I = 0.0E0
+      ELSE
+        G_I = BREAKUP_FACTOR * 0.5E0 *BUBBLE_CLASSES_DIA(I)**(5.E0/3.E0)
+     *      * EPS**(19.E0/15.E0) * RHO_L**(7.E0/5.E0)
+     *      / SIGMA**(7.E0/5.E0) * EXP(-SQRT(2.0E0) * SIGMA**(9.E0/5.E0)
+     *      /(BUBBLE_CLASSES_DIA(I)**3.E0 * RHO_L**(9.E0/5.E0)
+     *      * EPS**(6.E0/5.E0)))
+      ENDIF
+#else
+#error "Unknown model specified"
+#endif      
       END      
 C=======================================================================
       REAL FUNCTION DBRI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
