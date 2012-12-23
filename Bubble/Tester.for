@@ -1,4 +1,9 @@
 #define REAL DOUBLE PRECISION
+/*model constants*/
+#define SIGMA_SURF_TENS (0.0728E0)
+#define RHO_GAS (1.185E0)
+#define RHO_LIQUID (997.0E0)
+#define MU_LIQUID (0.0008899E0)
       
       PROGRAM TESTER
       IMPLICIT NONE
@@ -135,7 +140,7 @@ C-----Symbolic constants
       INTEGER NUMBER_OF_CLASSES
       PARAMETER (NUMBER_OF_CLASSES = 12)
       REAL RHO_G
-      PARAMETER (RHO_G = 1.185E0)
+      PARAMETER (RHO_G = RHO_GAS)
 C-----Called functions
       REAL BBRI
       REAL BAGI
@@ -302,7 +307,7 @@ C-----Code
       
       END
 C=======================================================================
-      REAL FUNCTION GAMMA_IJ(ICLASS, J)
+      REAL FUNCTION GAMMA_IJ(ICLASS, J, EPS)
       IMPLICIT NONE
 C-----Symbolic constants
       INTEGER NUMBER_OF_CLASSES
@@ -310,6 +315,8 @@ C-----Symbolic constants
 C-----Common blocks
       REAL BUBBLE_CLASSES_VOL(1:NUMBER_OF_CLASSES)
       COMMON /C_BUBBLE_CLASSES_VOL/ BUBBLE_CLASSES_VOL
+      REAL G_EPS
+      COMMON /C_EPS/ G_EPS
 C-----Called functions
       REAL XI_BETA
       EXTERNAL XI_BETA
@@ -319,7 +326,10 @@ C-----Called functions
 C-----Arguments
       INTEGER ICLASS
       INTEGER J
-      
+      REAL EPS
+C-----Code
+      G_EPS = EPS
+
       IF(ICLASS .EQ. 1) THEN
         GAMMA_IJ = 
      *     GK15(XI_BETA, BUBBLE_CLASSES_VOL(ICLASS), 
@@ -370,7 +380,7 @@ C-----Code
       
       DO J = ICLASS, NUMBER_OF_CLASSES
         BBRI = BBRI + G_I(J, EPS(ILOC))*
-     *  GAMMA_IJ(ICLASS, J)*N(NLOC, ILOC, J, RALFA, RF)
+     *  GAMMA_IJ(ICLASS, J, EPS(ILOC))*N(NLOC, ILOC, J, RALFA, RF)
       ENDDO
 
       IF(ISNAN(BBRI) .EQV. .TRUE.) THEN
@@ -516,7 +526,6 @@ C-----Common blocks
 C-----Arguments
       INTEGER I
       REAL V
-      
 
       IF(I .GT. NUMBER_OF_CLASSES .OR. I .LT. 1) THEN
         WRITE(*,*) ('Wrong XI - I')
@@ -573,9 +582,9 @@ C-----Symbolic constants
       INTEGER NUMBER_OF_CLASSES
       PARAMETER (NUMBER_OF_CLASSES = 12)
       REAL SIGMA
-      PARAMETER (SIGMA = 0.0728E0)
+      PARAMETER (SIGMA = SIGMA_SURF_TENS)
       REAL RHO_L
-      PARAMETER (RHO_L = 997.0E0)
+      PARAMETER (RHO_L = RHO_LIQUID)
       REAL H0
       PARAMETER (H0 = 1.0E-4)
       REAL HF
@@ -614,13 +623,13 @@ C-----Symbolic constants
       INTEGER NUMBER_OF_CLASSES
       PARAMETER (NUMBER_OF_CLASSES = 12)
       REAL SIGMA
-      PARAMETER (SIGMA = 0.0728E0)
+      PARAMETER (SIGMA = SIGMA_SURF_TENS)
       REAL RHO_L
-      PARAMETER (RHO_L = 997.0E0)
+      PARAMETER (RHO_L = RHO_LIQUID)
       REAL RHO_G
-      PARAMETER (RHO_G = 1.185E0)
+      PARAMETER (RHO_G = RHO_GAS)
       REAL MU_L
-      PARAMETER (MU_L = 0.0008899)
+      PARAMETER (MU_L = MU_LIQUID)
       REAL BREAKUP_FACTOR
       PARAMETER (BREAKUP_FACTOR = 1.0E0)
       REAL P_ERF
@@ -761,6 +770,7 @@ C-----Symbolic constants
 C-----Locale variables
       REAL BUBBLE_CLASSES_VOL(1:NUMBER_OF_CLASSES)
       REAL BUBBLE_CLASSES_DIA(1:NUMBER_OF_CLASSES)
+      REAL G_EPS
       REAL G_DBRI
       REAL G_DAGI
       REAL G_BBRI
@@ -792,6 +802,7 @@ C     diameter of bubble classes
 C-----Common blocks
       COMMON /C_BUBBLE_CLASSES_DIA/ BUBBLE_CLASSES_DIA
       COMMON /C_BUBBLE_CLASSES_VOL/ BUBBLE_CLASSES_VOL
+      COMMON /C_EPS/ G_EPS
       
       COMMON /C_DBRI/ G_DBRI
       COMMON /C_DAGI/ G_DAGI
