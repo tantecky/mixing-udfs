@@ -1,7 +1,7 @@
 #define REAL DOUBLE PRECISION
 
-#define MODEL_ALAPEOUS
-C#define MODEL_LEHR
+C#define MODEL_ALAPEOUS
+#define MODEL_LEHR
 
 C-------- constants
 #define SIGMA_SURF_TENS (0.0728E0)
@@ -335,6 +335,7 @@ C-----Arguments
       INTEGER ICLASS
       INTEGER J
       REAL EPS
+#ifdef MODEL_ALAPEOUS
 C-----Code
       G_EPS = EPS
 
@@ -358,7 +359,115 @@ C-----Code
      *     +
      *GK15(XI_BETA, BUBBLE_CLASSES_VOL(ICLASS), 
      *     BUBBLE_CLASSES_VOL(ICLASS+1), ICLASS, J, 0)              
+
+#elif defined MODEL_LEHR
+      REAL V0HALF
+      REAL VA
+      REAL VB
+C-----Code
+      G_EPS = EPS
+      V0HALF = (BUBBLE_CLASSES_VOL(J)/2.E0)
       
+      WRITE(*,*) 'I', ICLASS
+      WRITE(*,*) 'J', J
+      
+      IF(ICLASS .EQ. 1) THEN
+        VA = BUBBLE_CLASSES_VOL(ICLASS)
+        VB = BUBBLE_CLASSES_VOL(ICLASS+1)
+        
+        WRITE(*,*) 'VA', VA
+        WRITE(*,*) 'VB', VB
+        
+        IF(VA .LT. V0HALF .AND. VB .GT. V0HALF) THEN
+          GAMMA_IJ = 
+     *    GK15(XI_BETA, VA, V0HALF, ICLASS, J, 1)
+          
+          GAMMA_IJ = GAMMA_IJ +
+     *    GK15(XI_BETA, V0HALF, VB, ICLASS, J, 2)
+        ELSEIF(VA .GT. V0HALF) THEN
+          GAMMA_IJ = 
+     *    GK15(XI_BETA, VA, VB, ICLASS, J, 2) 
+        ELSEIF(VB .LT. V0HALF) THEN
+          GAMMA_IJ = 
+     *    GK15(XI_BETA, VA, VB, ICLASS, J, 1) 
+        ELSE
+          WRITE(*,*) ('No solution - BETA')
+          WRITE(*,*) (J)
+          STOP
+        ENDIF
+            
+        RETURN
+      ENDIF
+      
+      IF(ICLASS .EQ. J) THEN
+        VA = BUBBLE_CLASSES_VOL(ICLASS-1)
+        VB = BUBBLE_CLASSES_VOL(ICLASS)
+        
+        IF(VA .LT. V0HALF .AND. VB .GT. V0HALF) THEN
+          GAMMA_IJ = 
+     *    GK15(XI_MINUS_ONE_BETA, VA, V0HALF, ICLASS, J, 1)
+          
+          GAMMA_IJ = GAMMA_IJ +
+     *    GK15(XI_MINUS_ONE_BETA, V0HALF, VB, ICLASS, J, 2)
+        ELSEIF(VA .GT. V0HALF) THEN
+          GAMMA_IJ = 
+     *    GK15(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 2) 
+        ELSEIF(VB .LT. V0HALF) THEN
+          GAMMA_IJ = 
+     *    GK15(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 1) 
+        ELSE
+          WRITE(*,*) ('No solution - BETA')
+          WRITE(*,*) (J)
+          STOP
+        ENDIF
+            
+        RETURN
+      ENDIF
+      
+      VA = BUBBLE_CLASSES_VOL(ICLASS)
+      VB = BUBBLE_CLASSES_VOL(ICLASS+1)
+      
+      IF(VA .LT. V0HALF .AND. VB .GT. V0HALF) THEN
+         GAMMA_IJ = 
+     *   GK15(XI_BETA, VA, V0HALF, ICLASS, J, 1)
+          
+         GAMMA_IJ = GAMMA_IJ +
+     *   GK15(XI_BETA, V0HALF, VB, ICLASS, J, 2)
+      ELSEIF(VA .GT. V0HALF) THEN
+         GAMMA_IJ = 
+     *   GK15(XI_BETA, VA, VB, ICLASS, J, 2) 
+      ELSEIF(VB .LT. V0HALF) THEN
+        GAMMA_IJ = 
+     *   GK15(XI_BETA, VA, VB, ICLASS, J, 1) 
+      ELSE
+        WRITE(*,*) ('No solution - BETA')
+        WRITE(*,*) (J)
+        STOP
+      ENDIF
+      
+      VA = BUBBLE_CLASSES_VOL(ICLASS-1)
+      VB = BUBBLE_CLASSES_VOL(ICLASS)
+        
+      IF(VA .LT. V0HALF .AND. VB .GT. V0HALF) THEN
+        GAMMA_IJ = GAMMA_IJ +
+     *  GK15(XI_MINUS_ONE_BETA, VA, V0HALF, ICLASS, J, 1)
+          
+        GAMMA_IJ = GAMMA_IJ +
+     *  GK15(XI_MINUS_ONE_BETA, V0HALF, VB, ICLASS, J, 2)
+      ELSEIF(VA .GT. V0HALF) THEN
+        GAMMA_IJ = GAMMA_IJ +
+     *  GK15(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 2) 
+      ELSEIF(VB .LT. V0HALF) THEN
+        GAMMA_IJ = GAMMA_IJ +
+     *  GK15(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 1) 
+      ELSE
+        WRITE(*,*) ('No solution - BETA')
+        WRITE(*,*) (J)
+        STOP
+      ENDIF
+#else
+#error "Unknown model specified"
+#endif 
       END
 C=======================================================================
       REAL FUNCTION BBRI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
@@ -561,6 +670,8 @@ C-----Arguments
       REAL ERF_ARG
       REAL T_ERF
       REAL ERF
+      REAL V0
+      REAL D0
                   
       IF(J .GT. NUMBER_OF_CLASSES .OR. J .LT. 1) THEN
         WRITE(*,*) ('Wrong XI - J')
@@ -573,8 +684,11 @@ C-----Arguments
         WRITE(*,*) (BRANCH)
         STOP
       ENDIF
-                    
-      ERF_ARG = 3.E0/2.E0 * LOG(2**(1.E0/15.E0) * BUBBLE_CLASSES_DIA(J)
+      
+      V0 = BUBBLE_CLASSES_VOL(J) 
+      D0 = BUBBLE_CLASSES_DIA(J)
+      
+      ERF_ARG = 3.E0/2.E0 * LOG(2**(1.E0/15.E0) * D0
      *        * RHO_L**(3.E0/5.E0) * G_EPS**(2.E0/5.E0)
      *        / SIGMA**(3.E0/5.E0))
       T_ERF = 1.E0 / (1.E0 + P_ERF*ERF_ARG)
@@ -588,15 +702,27 @@ C-----Arguments
      *   * RHO_L**(3.E0/5.E0) * (6.E0*V/PI)**(1.E0/3.E0)
      *   * G_EPS**(2.E0/5.E0) / SIGMA**(3.E0/5.E0)))**2.E0) / (1.E0+ERF) 
       ELSEIF(BRANCH .EQ. 2) THEN
-        BETA = 1.E0 / (SQRT(PI) * (BUBBLE_CLASSES_VOL(J) - V))
+        BETA = 1.E0 / (SQRT(PI) * (V0 - V))
      *    * EXP(-9.E0/4.E0 * (LOG(2**(2.E0/5.E0) * RHO_L**(3.E0/5.E0)
-     *    * (BUBBLE_CLASSES_DIA(J)**3.E0 - 6.E0*V/PI)**(1.E0/3.E0)
+     *    * (6.E0*(V0 - V)/PI)**(1.E0/3.E0)
      *   * G_EPS**(2.E0/5.E0) / SIGMA**(3.E0/5.E0)))**2.E0) / (1.E0+ERF)   
       ELSE
         WRITE(*,*) ('Wrong BRANCH')
         WRITE(*,*) (BRANCH)
         STOP
       ENDIF
+      
+      
+      IF(ISNAN(BETA) .EQV. .TRUE.) THEN
+        WRITE(*,*) 'BETA (LEHR) ISNAN'
+        WRITE(*,*) '================='
+        WRITE(*,*) 'J=',J
+        WRITE(*,*) 'V0HALF=',BUBBLE_CLASSES_VOL(J)/2.0E0
+        WRITE(*,*) 'V=',V
+        WRITE(*,*) 'V0=',BUBBLE_CLASSES_VOL(J)
+        WRITE(*,*) 'BRANCH=',BRANCH
+        STOP
+      ENDIF 
        
       END
 #else
