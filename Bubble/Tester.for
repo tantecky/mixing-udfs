@@ -1,6 +1,6 @@
 #define REAL DOUBLE PRECISION
 
-C#define MODEL_ALAPEOUS
+c#define MODEL_ALOPEA
 #define MODEL_LEHR
 
 #define DEBUG
@@ -11,6 +11,8 @@ C-------- constants
 #define RHO_LIQUID (997.0E0)
 #define MU_LIQUID (0.0008899E0)
 #define PI_CONST (3.1415926535897931E0)
+c#define BREAKUP_F (0.008E0)
+#define BREAKUP_F (1.0E0)
 C-------- constants
       
       PROGRAM TESTER
@@ -208,9 +210,9 @@ C-----Code
       WRITE(*,'(A, F5.2)') 'VOLFRAC_G: ', RALFA(ILOC)
       WRITE(*,'(A, I0, A, F5.2)') 'F', ICLASS, ':', RF(ILOC,ICLASS)
       WRITE(*,
-     * '(A, E10.5)') 'BBRI: ', BBRI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
+     * '(A, E20.10)') 'BBRI: ', BBRI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
       WRITE(*,
-     * '(A, E10.5)') 'BAGI: ', BAGI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
+     * '(A, E20.10)') 'BAGI: ', BAGI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
       WRITE(*,
      * '(A, E20.10)') 'DBRI: ',-DBRI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
       WRITE(*,
@@ -303,7 +305,8 @@ C-----Code
       INTEGRAL = 0.0E0
       TRANS1 = (B-A)/2.0E0
       TRANS2 = (A+B)/2.0E0
-           
+      
+#ifdef DEBUG      
       IF(A .GE. B) THEN
         WRITE(*,*) ('GK15: A >= B')
         WRITE(*,*) 'A=',A
@@ -312,6 +315,7 @@ C-----Code
         WRITE(*,*) 'TRANS2=',TRANS2
         CALL ABORT()
       ENDIF
+#endif
       
       DO I = 0, 6
         INTEGRAL = INTEGRAL +
@@ -345,10 +349,15 @@ C-----Arguments
       INTEGER ICLASS
       INTEGER J
       REAL EPS
-#ifdef MODEL_ALAPEOUS
+#ifdef MODEL_ALOPEA
 C-----Code
       G_EPS = EPS
-
+     
+      IF(ICLASS .EQ. 1 .AND. ICLASS .EQ. J) THEN
+        GAMMA_IJ = 0.0E0
+        RETURN
+      ENDIF
+     
       IF(ICLASS .EQ. 1) THEN
         GAMMA_IJ = 
      *     GK15(XI_BETA, BUBBLE_CLASSES_VOL(ICLASS), 
@@ -380,16 +389,15 @@ C-----Code
       V0 = BUBBLE_CLASSES_VOL(J)
       V0HALF = (V0/2.E0)
       
-      WRITE(*,*) 'I', ICLASS
-      WRITE(*,*) 'J', J
-      
+      IF(ICLASS .EQ. 1 .AND. ICLASS .EQ. J) THEN
+        GAMMA_IJ = 0.0E0
+        RETURN
+      ENDIF
+           
       IF(ICLASS .EQ. 1) THEN
         VA = BUBBLE_CLASSES_VOL(ICLASS)
         VB = BUBBLE_CLASSES_VOL(ICLASS+1)
-        
-        WRITE(*,*) 'VA', VA
-        WRITE(*,*) 'VB', VB
-        
+                
         IF(VA .LT. V0HALF .AND. VB .GT. V0HALF) THEN
           GAMMA_IJ = 
      *    GK15(XI_BETA, VA, V0HALF, ICLASS, J, 1)
@@ -616,7 +624,7 @@ C-----Arguments
       XI_MINUS_ONE_BETA = XI_MINUS_ONE(I,V)*BETA(J, V, BRANCH)
       END
 C=======================================================================
-#ifdef MODEL_ALAPEOUS
+#ifdef MODEL_ALOPEA
       REAL FUNCTION BETA(J, V, BRANCH)
       IMPLICIT NONE
 C-----Symbolic constants
@@ -629,8 +637,8 @@ C-----Arguments
       INTEGER J
       REAL V
       INTEGER BRANCH
-      
 
+#ifdef DEBUG
       IF(J .GT. NUMBER_OF_CLASSES .OR. J .LT. 1) THEN
         WRITE(*,*) ('Wrong XI - J')
         WRITE(*,*) (J)
@@ -642,10 +650,15 @@ C-----Arguments
         WRITE(*,*) (BRANCH)
         CALL ABORT()
       ENDIF
+#endif
 
       BETA = 60.0E0/BUBBLE_CLASSES_VOL(J) 
      * *(V/BUBBLE_CLASSES_VOL(J))**2
      * *(1.0E0 - V/BUBBLE_CLASSES_VOL(J))**2
+     
+#ifdef DEBUG    
+      CALL CHECK_FINITE(BETA, __LINE__)
+#endif
       
       END
 C=======================================================================
@@ -719,16 +732,9 @@ C-----Arguments
         CALL ABORT()
       ENDIF
       
-      IF(ISNAN(BETA) .EQV. .TRUE.) THEN
-        WRITE(*,*) 'BETA (LEHR) ISNAN'
-        WRITE(*,*) '================='
-        WRITE(*,*) 'J=',J
-        WRITE(*,*) 'V0HALF=',BUBBLE_CLASSES_VOL(J)/2.0E0
-        WRITE(*,*) 'V=',V
-        WRITE(*,*) 'V0=',BUBBLE_CLASSES_VOL(J)
-        WRITE(*,*) 'BRANCH=',BRANCH
-        CALL ABORT()
-      ENDIF 
+#ifdef DEBUG    
+      CALL CHECK_FINITE(BETA, __LINE__)
+#endif
        
       END
 #else
@@ -849,7 +855,7 @@ C-----Symbolic constants
       PARAMETER (RHO_L = RHO_LIQUID)
 
       REAL BREAKUP_FACTOR
-      PARAMETER (BREAKUP_FACTOR = 1.0E0)
+      PARAMETER (BREAKUP_FACTOR = BREAKUP_F)
 C-----Common blocks
       REAL BUBBLE_CLASSES_DIA(1:NUMBER_OF_CLASSES)
       COMMON /C_BUBBLE_CLASSES_DIA/ BUBBLE_CLASSES_DIA
@@ -857,7 +863,7 @@ C-----Arguments
       INTEGER I
       REAL EPS
 
-#ifdef MODEL_ALAPEOUS
+#ifdef MODEL_ALOPEA
       REAL P_ERF
       PARAMETER (P_ERF = 0.3275911E0)
       REAL RHO_G
@@ -977,21 +983,22 @@ C-----Code
 #endif
       END 
 C=======================================================================
+#ifdef DEBUG
       SUBROUTINE CHECK_FINITE(X, LINE)
       IMPLICIT NONE
 C-----Arguments
       REAL X
       INTEGER LINE
 
-#ifdef DEBUG
+
       IF(ISNAN(X) .OR. ABS(X) .GE. HUGE(X)) THEN
         WRITE(*,*) 'Variable is NOT a finite number:',X
         WRITE(*,*) 'Throw by line:', LINE
         CALL ABORT()
       ENDIF
-#endif
-      
+           
       END
+#endif
 C=======================================================================
       BLOCKDATA
       IMPLICIT NONE
@@ -1013,11 +1020,11 @@ C-----Locale variables
       DATA G_BAGI /0.0E0/
       
 C     diameter of bubble classes
-      DATA BUBBLE_CLASSES_DIA /0.1E-3, 1.0E-3, 2.0E-3, 3.0E-3, 4.0E-3
+      DATA BUBBLE_CLASSES_DIA /0.5E-3, 1.0E-3, 2.0E-3, 3.0E-3, 4.0E-3
      * , 5.0E-3, 6.0E-3, 7.0E-3, 8.0E-3, 10.0E-3, 12.0E-3, 16.0E-3/
      
       DATA BUBBLE_CLASSES_VOL 
-     */ 5.23598775598299e-13
+     */ 6.54498469497874E-11
      *, 5.23598775598299E-10
      *, 4.18879020478639E-09
      *, 1.41371669411541E-08
