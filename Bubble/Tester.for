@@ -119,7 +119,7 @@ C-----Code
       IF(ICLASS .GT. NUMBER_OF_CLASSES .OR. ICLASS .LT. 1) THEN
         WRITE(*,*) ('Wrong ICLASS')
         WRITE(*,*) (ICLASS)
-        STOP
+        CALL ABORT()
       ENDIF
 
 
@@ -127,7 +127,7 @@ C-----Code
         IF(ARGS(ILOC,2) .GT. 1.0E0 .OR. ARGS(ILOC,2)  .LT. 0.0E0) THEN
           WRITE(*,*) ('Wrong air.Volume Fraction')
           WRITE(*,*) (ARGS(ILOC,2))
-          STOP
+          CALL ABORT()
         ENDIF
       END DO
 
@@ -176,7 +176,7 @@ C-----Code
       IF(ICLASS .GT. NUMBER_OF_CLASSES .OR. ICLASS .LT. 1) THEN
         WRITE(*,*) ('Wrong COMPUTE_SOURCE - ICLASS')
         WRITE(*,*) (ICLASS)
-        STOP
+        CALL ABORT()
       ENDIF
 
 
@@ -243,15 +243,13 @@ C-----Code
       IF(ICLASS .GT. NUMBER_OF_CLASSES .OR. ICLASS .LT. 1) THEN
         WRITE(*,*) ('Wrong N - ICLASS')
         WRITE(*,*) (ICLASS)
-        STOP
+        CALL ABORT()
       ENDIF
-
-
 
       IF(RALFA(ILOC) .GT. 1.0E0 .OR. RALFA(ILOC)  .LT. 0.0E0) THEN
         WRITE(*,*) ('Wrong air.Volume Fraction - N')
         WRITE(*,*) (RALFA(ILOC))
-        STOP
+        CALL ABORT()
       ENDIF
 
 
@@ -302,6 +300,15 @@ C-----Code
       INTEGRAL = 0.0E0
       TRANS1 = (B-A)/2.0E0
       TRANS2 = (A+B)/2.0E0
+           
+      IF(A .GE. B) THEN
+        WRITE(*,*) ('GK15: A >= B')
+        WRITE(*,*) 'A=',A
+        WRITE(*,*) 'B=',B
+        WRITE(*,*) 'TRANS1=',TRANS1
+        WRITE(*,*) 'TRANS2=',TRANS2
+        CALL ABORT()
+      ENDIF
       
       DO I = 0, 6
         INTEGRAL = INTEGRAL +
@@ -361,12 +368,14 @@ C-----Code
      *     BUBBLE_CLASSES_VOL(ICLASS+1), ICLASS, J, 0)              
 
 #elif defined MODEL_LEHR
+      REAL V0
       REAL V0HALF
       REAL VA
       REAL VB
 C-----Code
       G_EPS = EPS
-      V0HALF = (BUBBLE_CLASSES_VOL(J)/2.E0)
+      V0 = BUBBLE_CLASSES_VOL(J)
+      V0HALF = (V0/2.E0)
       
       WRITE(*,*) 'I', ICLASS
       WRITE(*,*) 'J', J
@@ -393,7 +402,7 @@ C-----Code
         ELSE
           WRITE(*,*) ('No solution - BETA')
           WRITE(*,*) (J)
-          STOP
+          CALL ABORT()
         ENDIF
             
         RETURN
@@ -418,7 +427,7 @@ C-----Code
         ELSE
           WRITE(*,*) ('No solution - BETA')
           WRITE(*,*) (J)
-          STOP
+          CALL ABORT()
         ENDIF
             
         RETURN
@@ -442,7 +451,7 @@ C-----Code
       ELSE
         WRITE(*,*) ('No solution - BETA')
         WRITE(*,*) (J)
-        STOP
+        CALL ABORT()
       ENDIF
       
       VA = BUBBLE_CLASSES_VOL(ICLASS-1)
@@ -463,7 +472,7 @@ C-----Code
       ELSE
         WRITE(*,*) ('No solution - BETA')
         WRITE(*,*) (J)
-        STOP
+        CALL ABORT()
       ENDIF
 #else
 #error "Unknown model specified"
@@ -499,12 +508,8 @@ C-----Code
         BBRI = BBRI + G_I(J, EPS(ILOC))*
      *  GAMMA_IJ(ICLASS, J, EPS(ILOC))*N(NLOC, ILOC, J, RALFA, RF)
       ENDDO
-
-      IF(ISNAN(BBRI) .EQV. .TRUE.) THEN
-        WRITE(*,*) ('BBRI ISNAN')
-        STOP
-      ENDIF
-      
+     
+      CALL CHECK_FINITE(BBRI, __LINE__)
       
       END
 C=======================================================================
@@ -539,7 +544,7 @@ C-----Code
       IF(ICLASS .GT. NUMBER_OF_CLASSES .OR. ICLASS .LT. 1) THEN
         WRITE(*,*) ('Wrong BAGI - ICLASS')
         WRITE(*,*) (ICLASS)
-        STOP
+        CALL ABORT()
       ENDIF
 
 
@@ -572,12 +577,8 @@ C-----Code
           
         END DO
       END DO 
-
-
-      IF(ISNAN(BAGI) .EQV. .TRUE.) THEN
-        WRITE(*,*) ('BAGI ISNAN')
-        STOP
-      ENDIF
+     
+      CALL CHECK_FINITE(BAGI, __LINE__)
       
       END 
 C=======================================================================
@@ -627,13 +628,13 @@ C-----Arguments
       IF(J .GT. NUMBER_OF_CLASSES .OR. J .LT. 1) THEN
         WRITE(*,*) ('Wrong XI - J')
         WRITE(*,*) (J)
-        STOP
+        CALL ABORT()
       ENDIF
       
       IF(BRANCH .NE. 0) THEN
         WRITE(*,*) ('Wrong BRANCH')
         WRITE(*,*) (BRANCH)
-        STOP
+        CALL ABORT()
       ENDIF
 
       BETA = 60.0E0/BUBBLE_CLASSES_VOL(J) 
@@ -676,13 +677,13 @@ C-----Arguments
       IF(J .GT. NUMBER_OF_CLASSES .OR. J .LT. 1) THEN
         WRITE(*,*) ('Wrong XI - J')
         WRITE(*,*) (J)
-        STOP
+        CALL ABORT()
       ENDIF
       
       IF(BRANCH .NE. 1 .AND. BRANCH .NE. 2) THEN
         WRITE(*,*) ('Wrong BRANCH')
         WRITE(*,*) (BRANCH)
-        STOP
+        CALL ABORT()
       ENDIF
       
       V0 = BUBBLE_CLASSES_VOL(J) 
@@ -709,9 +710,8 @@ C-----Arguments
       ELSE
         WRITE(*,*) ('Wrong BRANCH')
         WRITE(*,*) (BRANCH)
-        STOP
+        CALL ABORT()
       ENDIF
-      
       
       IF(ISNAN(BETA) .EQV. .TRUE.) THEN
         WRITE(*,*) 'BETA (LEHR) ISNAN'
@@ -721,7 +721,7 @@ C-----Arguments
         WRITE(*,*) 'V=',V
         WRITE(*,*) 'V0=',BUBBLE_CLASSES_VOL(J)
         WRITE(*,*) 'BRANCH=',BRANCH
-        STOP
+        CALL ABORT()
       ENDIF 
        
       END
@@ -744,7 +744,7 @@ C-----Arguments
       IF(I .GT. NUMBER_OF_CLASSES .OR. I .LT. 1) THEN
         WRITE(*,*) ('Wrong XI - I')
         WRITE(*,*) (I)
-        STOP
+        CALL ABORT()
       ENDIF
 
       XI = (BUBBLE_CLASSES_VOL(I+1) - V)
@@ -768,7 +768,7 @@ C-----Arguments
       IF(I .GT. NUMBER_OF_CLASSES .OR. I .LT. 1) THEN
         WRITE(*,*) ('Wrong XI_MINUS_ONE - I')
         WRITE(*,*) (I)
-        STOP
+        CALL ABORT()
       ENDIF
 
       XI_MINUS_ONE = (V - BUBBLE_CLASSES_VOL(I-1))
@@ -915,20 +915,14 @@ C-----Code
       IF(ICLASS .GT. NUMBER_OF_CLASSES .OR. ICLASS .LT. 1) THEN
         WRITE(*,*) ('Wrong DBRI - ICLASS')
         WRITE(*,*) (ICLASS)
-        STOP
+        CALL ABORT()
       ENDIF
-
-
 
       DBRI = N(NLOC, ILOC, ICLASS, RALFA, RF)*
      *G_I(ICLASS, EPS(ILOC))
 
-
-      IF(ISNAN(DBRI) .EQV. .TRUE.) THEN
-        WRITE(*,*) ('DBRI ISNAN')
-        STOP
-      ENDIF
-      
+     
+      CALL CHECK_FINITE(DBRI, __LINE__)
 
       END 
 C=======================================================================
@@ -956,7 +950,7 @@ C-----Code
       IF(ICLASS .GT. NUMBER_OF_CLASSES .OR. ICLASS .LT. 1) THEN
         WRITE(*,*) ('Wrong DAGI - ICLASS')
         WRITE(*,*) (ICLASS)
-        STOP
+        CALL ABORT()
       ENDIF
 
 
@@ -970,24 +964,20 @@ C-----Code
         END DO
       ENDIF
 
-
-      IF(ISNAN(DAGI) .EQV. .TRUE.) THEN
-        WRITE(*,*) ('DAGI ISNAN')
-        STOP
-      ENDIF
+      CALL CHECK_FINITE(DAGI, __LINE__)
       
       END 
 C=======================================================================
-      LOGICAL FUNCTION ISFINITE(X)
+      SUBROUTINE CHECK_FINITE(X, LINE)
+      IMPLICIT NONE
+C-----Arguments
       REAL X
-      REAL TMP
+      INTEGER LINE
       
-      TMP = X * 10.0E0
-            
-      IF(X .EQ.TMP) THEN
-       ISFINITE = .FALSE.
-      ELSE
-        ISFINITE = .TRUE.
+      IF(ISNAN(X) .OR. ABS(X) .GE. HUGE(X)) THEN
+        WRITE(*,*) 'Variable is NOT a finite number:',X
+        WRITE(*,*) 'Throw by line:', LINE
+        CALL ABORT()
       ENDIF
       
       END
@@ -1039,6 +1029,4 @@ C-----Common blocks
       COMMON /C_BBRI/ G_BBRI
       COMMON /C_BAGI/ G_BAGI
       
-      END 
-      
-
+      END
