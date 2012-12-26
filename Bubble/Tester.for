@@ -3,6 +3,8 @@
 C#define MODEL_ALAPEOUS
 #define MODEL_LEHR
 
+#define DEBUG
+
 C-------- constants
 #define SIGMA_SURF_TENS (0.0728E0)
 #define RHO_GAS (1.185E0)
@@ -115,7 +117,8 @@ C-----Locale variables
       
 C-----Code
       ICLASS = INT(ARGS(1,1))
-
+           
+#ifdef DEBUG
       IF(ICLASS .GT. NUMBER_OF_CLASSES .OR. ICLASS .LT. 1) THEN
         WRITE(*,*) ('Wrong ICLASS')
         WRITE(*,*) (ICLASS)
@@ -130,7 +133,7 @@ C-----Code
           CALL ABORT()
         ENDIF
       END DO
-
+#endif
 
       DO ILOC = 1, NLOC
         RET(ILOC,NRET) = COMPUTE_SOURCE(NLOC, ILOC, ICLASS, 
@@ -172,13 +175,13 @@ C-----Arguments
       REAL EPS(NLOC)
 C-----Code
 
-
+#ifdef DEBUG
       IF(ICLASS .GT. NUMBER_OF_CLASSES .OR. ICLASS .LT. 1) THEN
         WRITE(*,*) ('Wrong COMPUTE_SOURCE - ICLASS')
         WRITE(*,*) (ICLASS)
         CALL ABORT()
       ENDIF
-
+#endif
 
       COMPUTE_SOURCE = RHO_G*BUBBLE_CLASSES_VOL(ICLASS)*
      * (
@@ -239,7 +242,7 @@ C-----Arguments
       REAL RF(1:NLOC, 1:NUMBER_OF_CLASSES)
 C-----Code
 
-
+#ifdef DEBUG
       IF(ICLASS .GT. NUMBER_OF_CLASSES .OR. ICLASS .LT. 1) THEN
         WRITE(*,*) ('Wrong N - ICLASS')
         WRITE(*,*) (ICLASS)
@@ -251,7 +254,7 @@ C-----Code
         WRITE(*,*) (RALFA(ILOC))
         CALL ABORT()
       ENDIF
-
+#endif
 
       N = RALFA(ILOC)*RF(ILOC,ICLASS)/BUBBLE_CLASSES_VOL(ICLASS)
       END
@@ -509,7 +512,9 @@ C-----Code
      *  GAMMA_IJ(ICLASS, J, EPS(ILOC))*N(NLOC, ILOC, J, RALFA, RF)
       ENDDO
      
+#ifdef DEBUG
       CALL CHECK_FINITE(BBRI, __LINE__)
+#endif
       
       END
 C=======================================================================
@@ -540,13 +545,13 @@ C-----Locale variables
       REAL V
       REAL BRACKET_PRODUCT
 C-----Code
-
+#ifdef DEBUG
       IF(ICLASS .GT. NUMBER_OF_CLASSES .OR. ICLASS .LT. 1) THEN
         WRITE(*,*) ('Wrong BAGI - ICLASS')
         WRITE(*,*) (ICLASS)
         CALL ABORT()
       ENDIF
-
+#endif
 
       BAGI = 0.0E0
 
@@ -577,9 +582,10 @@ C-----Code
           
         END DO
       END DO 
-     
+  
+#ifdef DEBUG   
       CALL CHECK_FINITE(BAGI, __LINE__)
-      
+#endif 
       END 
 C=======================================================================
       REAL FUNCTION XI_BETA(I, V, J, BRANCH)
@@ -740,13 +746,14 @@ C-----Common blocks
 C-----Arguments
       INTEGER I
       REAL V
-
+      
+#ifdef DEBUG
       IF(I .GT. NUMBER_OF_CLASSES .OR. I .LT. 1) THEN
         WRITE(*,*) ('Wrong XI - I')
         WRITE(*,*) (I)
         CALL ABORT()
       ENDIF
-
+#endif
       XI = (BUBBLE_CLASSES_VOL(I+1) - V)
      */(BUBBLE_CLASSES_VOL(I+1) - BUBBLE_CLASSES_VOL(I))
       
@@ -764,13 +771,13 @@ C-----Arguments
       INTEGER I
       REAL V
       
-
+#ifdef DEBUG
       IF(I .GT. NUMBER_OF_CLASSES .OR. I .LT. 1) THEN
         WRITE(*,*) ('Wrong XI_MINUS_ONE - I')
         WRITE(*,*) (I)
         CALL ABORT()
       ENDIF
-
+#endif
       XI_MINUS_ONE = (V - BUBBLE_CLASSES_VOL(I-1))
      */(BUBBLE_CLASSES_VOL(I) - BUBBLE_CLASSES_VOL(I-1))
       
@@ -911,19 +918,20 @@ C-----Arguments
       REAL EPS(NLOC)
 C-----Code
 
-
+#ifdef DEBUG
       IF(ICLASS .GT. NUMBER_OF_CLASSES .OR. ICLASS .LT. 1) THEN
         WRITE(*,*) ('Wrong DBRI - ICLASS')
         WRITE(*,*) (ICLASS)
         CALL ABORT()
       ENDIF
+#endif
 
       DBRI = N(NLOC, ILOC, ICLASS, RALFA, RF)*
      *G_I(ICLASS, EPS(ILOC))
 
-     
+#ifdef DEBUG    
       CALL CHECK_FINITE(DBRI, __LINE__)
-
+#endif
       END 
 C=======================================================================
       REAL FUNCTION DAGI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
@@ -946,13 +954,13 @@ C-----Locale variables
 C-----Code
       DAGI = 0.0E0
 
-
+#ifdef DEBUG
       IF(ICLASS .GT. NUMBER_OF_CLASSES .OR. ICLASS .LT. 1) THEN
         WRITE(*,*) ('Wrong DAGI - ICLASS')
         WRITE(*,*) (ICLASS)
         CALL ABORT()
       ENDIF
-
+#endif
 
       IF(ICLASS .EQ. NUMBER_OF_CLASSES) THEN
         RETURN
@@ -964,8 +972,9 @@ C-----Code
         END DO
       ENDIF
 
+#ifdef DEBUG
       CALL CHECK_FINITE(DAGI, __LINE__)
-      
+#endif
       END 
 C=======================================================================
       SUBROUTINE CHECK_FINITE(X, LINE)
@@ -973,12 +982,14 @@ C=======================================================================
 C-----Arguments
       REAL X
       INTEGER LINE
-      
+
+#ifdef DEBUG
       IF(ISNAN(X) .OR. ABS(X) .GE. HUGE(X)) THEN
         WRITE(*,*) 'Variable is NOT a finite number:',X
         WRITE(*,*) 'Throw by line:', LINE
         CALL ABORT()
       ENDIF
+#endif
       
       END
 C=======================================================================
