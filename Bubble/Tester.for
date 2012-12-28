@@ -58,7 +58,7 @@ C-------- constants
         ARGS(1:NLOC,12) = 0.05E0
         ARGS(1:NLOC,13) = 0.05E0
         ARGS(1:NLOC,14) = 0.05E0
-        ARGS(1:NLOC,15) = 0.001E0
+        ARGS(1:NLOC,15) = 1.0E0
         
         CALL BUBBLE_SOURCE(NLOC, NRET, NARG, RET, ARGS)
         TOTSUM = TOTSUM + RET(NLOC,NRET)
@@ -672,8 +672,8 @@ C-----Symbolic constants
       PARAMETER (SIGMA = SIGMA_SURF_TENS)
       REAL RHO_L
       PARAMETER (RHO_L = (RHO_LIQUID))
-      REAL P_ERF
-      PARAMETER (P_ERF = 0.3275911E0)
+c      REAL P_ERF
+c      PARAMETER (P_ERF = 0.3275911E0)
       REAL PI
       PARAMETER (PI = PI_CONST)
 C-----Common blocks
@@ -688,7 +688,7 @@ C-----Arguments
       REAL V
       INTEGER BRANCH
       REAL ERF_ARG
-      REAL T_ERF
+c      REAL T_ERF
       REAL ERF
       REAL V0
       REAL D0
@@ -708,23 +708,25 @@ C-----Arguments
       V0 = BUBBLE_CLASSES_VOL(J) 
       D0 = BUBBLE_CLASSES_DIA(J)
       
-      ERF_ARG = 3.E0/2.E0 * LOG(2**(1.E0/15.E0) * D0
+      ERF_ARG = 3.E0/2.E0 * LOG(2.E0**(1.E0/15.E0) * D0
      *        * RHO_L**(3.E0/5.E0) * G_EPS**(2.E0/5.E0)
      *        / SIGMA**(3.E0/5.E0))
-      T_ERF = 1.E0 / (1.E0 + P_ERF*ERF_ARG)
-      ERF = 1.E0 - (0.254829592E0*T_ERF - 0.284496736E0*T_ERF**2.E0
-     *    + 1.421413741E0*T_ERF**3.E0 - 1.453152027*T_ERF**4.E0
-     *    + 1.061405429E0*T_ERF**5.E0) * EXP(-ERF_ARG**2.E0)
+c      T_ERF = 1.E0 / (1.E0 + P_ERF*ERF_ARG)
+c      ERF = 1.E0 - (0.254829592E0*T_ERF - 0.284496736E0*T_ERF**2.E0
+c     *    + 1.421413741E0*T_ERF**3.E0 - 1.453152027*T_ERF**4.E0
+c     *    + 1.061405429E0*T_ERF**5.E0) * EXP(-ERF_ARG**2.E0)
+
+      ERF = DERF(ERF_ARG)
 
       IF(BRANCH .EQ. 1) THEN
       BETA = 
-     *   1.E0/(SQRT(PI)*V) * EXP(-9.E0/4.E0 * (LOG(2**(2.E0/5.E0)
+     *   1.E0/(SQRT(PI)*V) * EXP(-9.E0/4.E0 * (LOG(2.0E0**(2.E0/5.E0)
      *   * RHO_L**(3.E0/5.E0) * (6.E0*V/PI)**(1.E0/3.E0)
      *   * G_EPS**(2.E0/5.E0) / SIGMA**(3.E0/5.E0)))**2.E0) / (1.E0+ERF) 
       ELSEIF(BRANCH .EQ. 2) THEN
         BETA = 1.E0 / (SQRT(PI) * (V0 - V))
-     *    * EXP(-9.E0/4.E0 * (LOG(2**(2.E0/5.E0) * RHO_L**(3.E0/5.E0)
-     *    * (6.E0*(V0 - V)/PI)**(1.E0/3.E0)
+     *   * EXP(-9.E0/4.E0 * (LOG(2.0E0**(2.E0/5.E0) * RHO_L**(3.E0/5.E0)
+     *   * (6.E0*(V0 - V)/PI)**(1.E0/3.E0)
      *   * G_EPS**(2.E0/5.E0) / SIGMA**(3.E0/5.E0)))**2.E0) / (1.E0+ERF)   
       ELSE
         WRITE(*,*) ('Wrong BRANCH')
