@@ -1,7 +1,8 @@
 #define REAL DOUBLE PRECISION
 
 c#define MODEL_ALOPEA
-#define MODEL_LEHR
+c#define MODEL_LEHR
+#define MODEL_MARTINEZ_BAZAN
 
 #define DEBUG
 
@@ -11,8 +12,8 @@ C-------- constants
 #define RHO_LIQUID (997.0E0)
 #define MU_LIQUID (0.0008899E0)
 #define PI_CONST (3.1415926535897931E0)
-c#define BREAKUP_F (0.008E0)
-#define BREAKUP_F (1.0E0)
+#define BREAKUP_F (0.008E0)
+c#define BREAKUP_F (1.0E0)
 C-------- constants
       
       PROGRAM TESTER
@@ -448,8 +449,6 @@ C-----Symbolic constants
 C-----Common blocks
       REAL BUBBLE_CLASSES_VOL(1:NUMBER_OF_CLASSES)
       COMMON /C_BUBBLE_CLASSES_VOL/ BUBBLE_CLASSES_VOL
-      REAL G_EPS
-      COMMON /C_EPS/ G_EPS
 C-----Called functions
       REAL XI_BETA
       EXTERNAL XI_BETA
@@ -459,16 +458,16 @@ C-----Arguments
       INTEGER ICLASS
       INTEGER J
       REAL EPS
+      
 #ifdef MODEL_ALOPEA
+C-----Called functions
       REAL GK15
 C-----Code
-      G_EPS = EPS
-     
       IF(ICLASS .EQ. 1 .AND. ICLASS .EQ. J) THEN
         GAMMA_IJ = 0.0E0
         RETURN
       ENDIF
-     
+               
       IF(ICLASS .EQ. 1) THEN
         GAMMA_IJ = 
      *     GK15(XI_BETA, BUBBLE_CLASSES_VOL(ICLASS), 
@@ -491,21 +490,26 @@ C-----Code
      *     BUBBLE_CLASSES_VOL(ICLASS+1), ICLASS, J, 0)              
 
 #elif defined MODEL_LEHR
+C-----Common blocks
+      REAL G_EPS
+      COMMON /C_EPS/ G_EPS
+C-----Locale variables
       REAL V0
       REAL V0HALF
       REAL VA
       REAL VB
+C-----Called functions
       REAL GK61
 C-----Code
-      G_EPS = EPS
-      V0 = BUBBLE_CLASSES_VOL(J)
-      V0HALF = (V0/2.E0)
-      
       IF(ICLASS .EQ. 1 .AND. ICLASS .EQ. J) THEN
         GAMMA_IJ = 0.0E0
         RETURN
       ENDIF
-           
+
+      G_EPS = EPS
+      V0 = BUBBLE_CLASSES_VOL(J)
+      V0HALF = (V0/2.E0)
+                 
       IF(ICLASS .EQ. 1) THEN
         VA = BUBBLE_CLASSES_VOL(ICLASS)
         VB = BUBBLE_CLASSES_VOL(ICLASS+1)
@@ -597,6 +601,160 @@ C-----Code
         WRITE(*,*) (J)
         CALL ABORT()
       ENDIF
+
+#elif defined MODEL_MARTINEZ_BAZAN
+C-----Symbolic constants
+      REAL SIGMA
+      PARAMETER (SIGMA = SIGMA_SURF_TENS)
+      REAL RHO_L
+      PARAMETER (RHO_L = RHO_LIQUID)
+      REAL BETA_PAR
+      PARAMETER (BETA_PAR = 8.2E0)
+      REAL PI
+      PARAMETER (PI = PI_CONST)
+C-----Common blocks
+      REAL G_LAMBDA
+      REAL G_VMIN
+      REAL G_VMAX
+      COMMON /C_MB_PARS/ G_LAMBDA, G_VMIN, G_VMAX
+      
+      REAL BUBBLE_CLASSES_DIA(1:NUMBER_OF_CLASSES)
+      COMMON /C_BUBBLE_CLASSES_DIA/ BUBBLE_CLASSES_DIA
+C-----Called functions
+      REAL GK15
+C-----Locale variables
+      REAL D0
+      REAL DC
+      REAL DMIN
+      REAL DMAX
+      REAL VA
+      REAL VB
+C-----Code
+      IF(ICLASS .EQ. 1 .AND. ICLASS .EQ. J) THEN
+        GAMMA_IJ = 0.0E0
+        RETURN
+      ENDIF
+      
+      D0 = BUBBLE_CLASSES_DIA(J)
+      
+      DC = 
+     *(12.0E0*SIGMA/(BETA_PAR*RHO_L))**(3.E0/5.E0) / EPS**(2.E0/5.E0)
+      
+C CHECK CHECK CHECK!!!
+      IF(DC .GT. D0) THEN
+        GAMMA_IJ = 0.0E0
+        RETURN
+      ENDIF
+     
+      DMIN = (12.0E0*SIGMA/(BETA_PAR*RHO_L
+     *     * D0))**(3.E0/2.E0) / EPS
+      DMAX = D0 * (1.0E0 - (DMIN
+     *     / D0)**3.E0)**(1.E0/3.E0)
+      G_VMIN = PI * DMIN**3.E0 / 6.E0
+      G_VMAX = PI * DMAX**3.E0 / 6.E0
+      G_LAMBDA = DC / D0
+      
+      IF(ICLASS .EQ. 1) THEN
+        VA = BUBBLE_CLASSES_VOL(ICLASS)
+        VB = BUBBLE_CLASSES_VOL(ICLASS+1)
+                
+        IF(VB .LT. G_VMIN .OR. VA .GT. G_VMAX) THEN
+          GAMMA_IJ = 0.0E0
+C CHECK CHECK CHECK!!!
+        ELSEIF(VA .LE. G_VMIN .AND. VB .GE. G_VMAX) THEN
+          GAMMA_IJ = 1.0E0
+        ELSEIF(G_VMIN .LT. VA .AND. G_VMAX .GT. VB) THEN
+          GAMMA_IJ = 
+     *    GK15(XI_BETA, VA, VB, ICLASS, J, 0)
+        ELSEIF(G_VMIN .GT. VA .AND. VB .GT. G_VMIN) THEN
+          GAMMA_IJ = 
+     *    GK15(XI_BETA, G_VMIN, VB, ICLASS, J, 0)
+        ELSEIF(VB .GT. G_VMAX .AND. G_VMAX .GT. VA) THEN
+          GAMMA_IJ = 
+     *    GK15(XI_BETA, VA, G_VMAX, ICLASS, J, 0)
+        ELSE
+          WRITE(*,*) ('No solution - BETA')
+          WRITE(*,*) (J)
+          CALL ABORT()
+        ENDIF
+            
+        RETURN
+      ENDIF
+      
+      IF(ICLASS .EQ. J) THEN
+        VA = BUBBLE_CLASSES_VOL(ICLASS-1)
+        VB = BUBBLE_CLASSES_VOL(ICLASS)
+        
+        IF(VB .LT. G_VMIN .OR. VA .GT. G_VMAX) THEN
+          GAMMA_IJ = 0.0E0
+C CHECK CHECK CHECK!!!
+        ELSEIF(VA .LE. G_VMIN .AND. VB .GE. G_VMAX) THEN
+          GAMMA_IJ = 1.0E0
+        ELSEIF(G_VMIN .LT. VA .AND. G_VMAX .GT. VB) THEN
+          GAMMA_IJ = 
+     *    GK15(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 0)
+        ELSEIF(G_VMIN .GT. VA .AND. VB .GT. G_VMIN) THEN
+          GAMMA_IJ = 
+     *    GK15(XI_MINUS_ONE_BETA, G_VMIN, VB, ICLASS, J, 0)
+        ELSEIF(VB .GT. G_VMAX .AND. G_VMAX .GT. VA) THEN
+          GAMMA_IJ = 
+     *    GK15(XI_MINUS_ONE_BETA, VA, G_VMAX, ICLASS, J, 0)
+        ELSE
+          WRITE(*,*) ('No solution - BETA')
+          WRITE(*,*) (J)
+          CALL ABORT()
+        ENDIF
+            
+        RETURN
+      ENDIF
+      
+      VA = BUBBLE_CLASSES_VOL(ICLASS)
+      VB = BUBBLE_CLASSES_VOL(ICLASS+1)
+                
+      IF(VB .LT. G_VMIN .OR. VA .GT. G_VMAX) THEN
+        GAMMA_IJ = 0.0E0
+C CHECK CHECK CHECK!!!
+      ELSEIF(VA .LE. G_VMIN .AND. VB .GE. G_VMAX) THEN
+        GAMMA_IJ = 1.0E0
+      ELSEIF(G_VMIN .LT. VA .AND. G_VMAX .GT. VB) THEN
+        GAMMA_IJ = 
+     *  GK15(XI_BETA, VA, VB, ICLASS, J, 0)
+      ELSEIF(G_VMIN .GT. VA .AND. VB .GT. G_VMIN) THEN
+        GAMMA_IJ = 
+     *  GK15(XI_BETA, G_VMIN, VB, ICLASS, J, 0)
+      ELSEIF(VB .GT. G_VMAX .AND. G_VMAX .GT. VA) THEN
+        GAMMA_IJ = 
+     *  GK15(XI_BETA, VA, G_VMAX, ICLASS, J, 0)
+      ELSE
+        WRITE(*,*) ('No solution - BETA')
+        WRITE(*,*) (J)
+        CALL ABORT()
+      ENDIF
+      
+      VA = BUBBLE_CLASSES_VOL(ICLASS-1)
+      VB = BUBBLE_CLASSES_VOL(ICLASS)
+        
+      IF(VB .LT. G_VMIN .OR. VA .GT. G_VMAX) THEN
+c        GAMMA_IJ = GAMMA_IJ + 0.0E0
+        RETURN
+C CHECK CHECK CHECK!!!
+      ELSEIF(VA .LE. G_VMIN .AND. VB .GE. G_VMAX) THEN
+        GAMMA_IJ = GAMMA_IJ + 1.0E0
+      ELSEIF(G_VMIN .LT. VA .AND. G_VMAX .GT. VB) THEN
+        GAMMA_IJ = GAMMA_IJ +
+     *  GK15(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 0)
+      ELSEIF(G_VMIN .GT. VA .AND. VB .GT. G_VMIN) THEN
+        GAMMA_IJ = GAMMA_IJ +
+     *  GK15(XI_MINUS_ONE_BETA, G_VMIN, VB, ICLASS, J, 0)
+      ELSEIF(VB .GT. G_VMAX .AND. G_VMAX .GT. VA) THEN
+        GAMMA_IJ = GAMMA_IJ +
+     *  GK15(XI_MINUS_ONE_BETA, VA, G_VMAX, ICLASS, J, 0)
+      ELSE
+        WRITE(*,*) ('No solution - BETA')
+        WRITE(*,*) (J)
+        CALL ABORT()
+      ENDIF
+    
 #else
 #error "Unknown model specified"
 #endif 
@@ -708,6 +866,56 @@ C-----Code
 #endif 
       END 
 C=======================================================================
+#ifdef MODEL_MARTINEZ_BAZAN
+      REAL FUNCTION BETA_DENOMINATOR(I, V, J, BRANCH)
+      IMPLICIT NONE
+C-----Symbolic constants
+      INTEGER NUMBER_OF_CLASSES
+      PARAMETER (NUMBER_OF_CLASSES = 12)
+      REAL PI
+      PARAMETER (PI = PI_CONST)
+C-----Common blocks
+      REAL G_LAMBDA
+      REAL G_VMIN
+      REAL G_VMAX
+      COMMON /C_MB_PARS/ G_LAMBDA, G_VMIN, G_VMAX
+      REAL BUBBLE_CLASSES_DIA(1:NUMBER_OF_CLASSES)
+      COMMON /C_BUBBLE_CLASSES_DIA/ BUBBLE_CLASSES_DIA
+C-----Arguments
+      INTEGER J
+      INTEGER I
+      INTEGER BRANCH
+      REAL V
+C-----Locale variables
+      REAL D0
+C-----Code 
+#ifdef DEBUG
+      IF(I .NE. 0 .OR.
+     *J .GT. NUMBER_OF_CLASSES .OR. J .LT. 1
+     *) THEN
+        WRITE(*,*) ('Wrong I .OR. J')
+        WRITE(*,*) 'I=',I,'J=',J
+        CALL ABORT()
+      ENDIF
+      
+      IF(BRANCH .NE. 0) THEN
+        WRITE(*,*) ('Wrong BRANCH')
+        WRITE(*,*) (BRANCH)
+        CALL ABORT()
+      ENDIF
+#endif
+
+      D0 = BUBBLE_CLASSES_DIA(J)
+           
+      BETA_DENOMINATOR = (((6.E0*V/PI)**(1.E0/3.E0)
+     *     / D0)**(2.E0/3.E0) - G_LAMBDA**(5.E0/3.E0))
+     *     * ((1 - ((6.E0*V/PI)**(1.E0/3.E0)
+     *     / D0)**3.E0)**(2.E0/9.E0)
+     *     - G_LAMBDA**(5.E0/3.E0))
+      
+      END
+#endif      
+C=======================================================================
       REAL FUNCTION XI_BETA(I, V, J, BRANCH)
       IMPLICIT NONE
 C-----Called functions
@@ -799,12 +1007,14 @@ C-----Arguments
       INTEGER J
       REAL V
       INTEGER BRANCH
+C-----Locale variables
       REAL ERF_ARG
 c      REAL T_ERF
       REAL ERF
       REAL V0
       REAL D0
-                  
+
+#ifdef DEBUG                  
       IF(J .GT. NUMBER_OF_CLASSES .OR. J .LT. 1) THEN
         WRITE(*,*) ('Wrong XI - J')
         WRITE(*,*) (J)
@@ -816,7 +1026,8 @@ c      REAL T_ERF
         WRITE(*,*) (BRANCH)
         CALL ABORT()
       ENDIF
-      
+#endif
+
       V0 = BUBBLE_CLASSES_VOL(J) 
       D0 = BUBBLE_CLASSES_DIA(J)
       
@@ -851,6 +1062,65 @@ c     *    + 1.061405429E0*T_ERF**5.E0) * EXP(-ERF_ARG**2.E0)
 #endif
        
       END
+C=======================================================================
+#elif defined MODEL_MARTINEZ_BAZAN
+      REAL FUNCTION BETA(J, V, BRANCH)
+      IMPLICIT NONE
+C-----Symbolic constants
+      INTEGER NUMBER_OF_CLASSES
+      PARAMETER (NUMBER_OF_CLASSES = 12)
+      REAL PI
+      PARAMETER (PI = PI_CONST)
+C-----Common blocks
+      REAL G_LAMBDA
+      REAL G_VMIN
+      REAL G_VMAX
+      COMMON /C_MB_PARS/ G_LAMBDA, G_VMIN, G_VMAX
+      REAL BUBBLE_CLASSES_DIA(1:NUMBER_OF_CLASSES)
+      COMMON /C_BUBBLE_CLASSES_DIA/ BUBBLE_CLASSES_DIA
+C-----Arguments
+      INTEGER J
+      REAL V
+      INTEGER BRANCH
+C-----Called functions
+      REAL BETA_DENOMINATOR
+      EXTERNAL BETA_DENOMINATOR
+      REAL GK15
+C-----Locale variables
+      REAL D0
+      REAL NOMINATOR
+      REAL DENOMINATOR
+C-----Code
+#ifdef DEBUG                  
+      IF(J .GT. NUMBER_OF_CLASSES .OR. J .LT. 1) THEN
+        WRITE(*,*) ('Wrong XI - J')
+        WRITE(*,*) (J)
+        CALL ABORT()
+      ENDIF
+      
+      IF(BRANCH .NE. 0) THEN
+        WRITE(*,*) ('Wrong BRANCH')
+        WRITE(*,*) (BRANCH)
+        CALL ABORT()
+      ENDIF
+#endif
+
+      D0 = BUBBLE_CLASSES_DIA(J)
+      
+      NOMINATOR = (((6.E0*V/PI)**(1.E0/3.E0)
+     *     / D0)**(2.E0/3.E0) - G_LAMBDA**(5.E0/3.E0))
+     *     * ((1 - ((6.E0*V/PI)**(1.E0/3.E0)
+     *     / D0)**3.E0)**(2.E0/9.E0)
+     *     - G_LAMBDA**(5.E0/3.E0))
+     
+      DENOMINATOR = GK15(BETA_DENOMINATOR, G_VMIN, G_VMAX, 0, J, 0)
+          
+      BETA = NOMINATOR / DENOMINATOR
+      
+#ifdef DEBUG    
+      CALL CHECK_FINITE(BETA, __LINE__)
+#endif
+      END      
 #else
 #error "Unknown model specified"
 #endif 
@@ -987,7 +1257,7 @@ C-----Arguments
       REAL ERF_ARG
       REAL T_ERF
       REAL ERF
-
+C-----Code 
       IF(I .EQ. 1) THEN
         G_I = 0.E0
       ELSE
@@ -1004,6 +1274,7 @@ C-----Arguments
       ENDIF
       
 #elif defined MODEL_LEHR
+C-----Code 
       IF(I .EQ. 1) THEN
         G_I = 0.0E0
       ELSE
@@ -1013,6 +1284,28 @@ C-----Arguments
      *      /(BUBBLE_CLASSES_DIA(I)**3.E0 * RHO_L**(9.E0/5.E0)
      *      * EPS**(6.E0/5.E0)))
       ENDIF
+      
+#elif defined MODEL_MARTINEZ_BAZAN
+
+C-----Symbolic constants
+      REAL K_G
+      PARAMETER (K_G = 0.25E0)
+      REAL BETA_PAR
+      PARAMETER (BETA_PAR = 8.2E0)
+C-----Locale variables  
+      REAL DISRUPT
+      REAL CONFINE
+C-----Code 
+      DISRUPT = BETA_PAR * (EPS * BUBBLE_CLASSES_DIA(I))**(2.E0/3.E0)
+      CONFINE = 12.E0 * SIGMA / (RHO_L * BUBBLE_CLASSES_DIA(I))
+      
+      IF(I .EQ. 1 .OR. CONFINE .GT. DISRUPT) THEN
+        G_I = 0.0E0
+      ELSE
+        G_I = BREAKUP_FACTOR * K_G * SQRT(DISRUPT - CONFINE)
+     *    / BUBBLE_CLASSES_DIA(I)
+      ENDIF
+      
 #else
 #error "Unknown model specified"
 #endif      
@@ -1122,11 +1415,17 @@ C-----Symbolic constants
 C-----Locale variables
       REAL BUBBLE_CLASSES_VOL(1:NUMBER_OF_CLASSES)
       REAL BUBBLE_CLASSES_DIA(1:NUMBER_OF_CLASSES)
-      REAL G_EPS
       REAL G_DBRI
       REAL G_DAGI
       REAL G_BBRI
       REAL G_BAGI
+#ifdef MODEL_LEHR
+      REAL G_EPS
+#elif defined MODEL_MARTINEZ_BAZAN
+      REAL G_LAMBDA
+      REAL G_VMIN
+      REAL G_VMAX
+#endif
       
       DATA G_DBRI /0.0E0/
       DATA G_DAGI /0.0E0/
@@ -1154,11 +1453,15 @@ C     diameter of bubble classes
 C-----Common blocks
       COMMON /C_BUBBLE_CLASSES_DIA/ BUBBLE_CLASSES_DIA
       COMMON /C_BUBBLE_CLASSES_VOL/ BUBBLE_CLASSES_VOL
+#ifdef MODEL_LEHR
       COMMON /C_EPS/ G_EPS
+#elif defined MODEL_MARTINEZ_BAZAN
+      COMMON /C_MB_PARS/ G_LAMBDA, G_VMIN, G_VMAX
+#endif
       
       COMMON /C_DBRI/ G_DBRI
       COMMON /C_DAGI/ G_DAGI
       COMMON /C_BBRI/ G_BBRI
       COMMON /C_BAGI/ G_BAGI
-      
+            
       END
