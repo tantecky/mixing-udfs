@@ -9,11 +9,11 @@
 class ModEq
 {
 private:
-    static const double R = 8.314472;
-    static const double T0 =  17 + 273.15;
+    static const double UNI_GAS_CONST = 8.314462;
+    static const double TEMP_INIT =  17 + 273.15;
 
 public:
-    static double Eq(double t, double y, double A, double E, double NS, double yinf);
+    static double Equation(double time, double massFrac, double preFac, double actEner, double reacOrd, double massFracInf);
 };
 
 

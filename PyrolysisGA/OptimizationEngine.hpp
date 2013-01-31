@@ -37,19 +37,19 @@ private:
     static const double P_MUT;	                // mutation probability
 
     //initial guesses
-    static const double A_initial;
-    static const double E_initial;
-    static const double NS_initial;
-    static const double yinf_initial;
+    static const double PRE_FAC_INITIAL;
+    static const double ACT_ENER_INITIAL;
+    static const double REAC_ORD_INITIAL;
+    static const double MASS_FRAC_INF_INITIAL;
 
-    const static double Amin[3][3];
-    const static double Amax[3][3];
-    const static double Emin[3][3];
-    const static double Emax[3][3];
-    const static double NSmin[3][3];
-    const static double NSmax[3][3];
-    const static double yinfmin[3][3];
-    const static double yinfmax[3][3];
+    const static double PRE_FAC_MIN[3][3];
+    const static double PRE_FAC_MAX[3][3];
+    const static double ACT_ENER_MIN[3][3];
+    const static double ACT_ENER_MAX[3][3];
+    const static double REAC_ORD_MIN[3][3];
+    const static double REAC_ORD_MAX[3][3];
+    const static double MASS_FRAC_INF_MIN[3][3];
+    const static double MASS_FRAC_INF_MAX[3][3];
 
     static std::vector<ExpData>* DataSet;
     static double* ModData;

@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
             std::cerr << "Bad number of arguments" << std::endl;
             std::cerr << " expected: PyrolysisGA <file> <initialMass> <numberOfParameterGroups> <woodType=pine|oak> <beta>" << std::endl;
             std::cerr << " file format: " << std::endl;
-            std::cerr << "             columns: Temperature in Celsius,time,TG,heatFlow" << std::endl;
+            std::cerr << "             columns: Temperature in Celsius, time, TG, heatFlow" << std::endl;
 
             return EXIT_FAILURE;
         }

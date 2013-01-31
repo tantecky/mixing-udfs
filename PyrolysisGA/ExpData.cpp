@@ -37,19 +37,19 @@ const ExpData::Material& ExpData::WoodType()
     return m_WoodType;
 }
 
-void ExpData::LoadExpData(const char* const filename, std::vector<ExpData>& dataSet, double initialMass, Material woodType, double beta)
+void ExpData::LoadExpData(const char* const fileName, std::vector<ExpData>& dataSet, double initialMass, Material woodType, double beta)
 {
     m_WoodType = woodType;
     m_Beta = beta;
 
     std::ifstream dataFile;
 
-    dataFile.open(filename, std::ifstream::in);
+    dataFile.open(fileName, std::ifstream::in);
 
     if(!dataFile.good())
     {
         std::string error("Unable to read file ");
-        error += filename;
+        error += fileName;
 
         throw std::invalid_argument(error);
     }
@@ -109,7 +109,7 @@ void ExpData::LoadExpData(const char* const filename, std::vector<ExpData>& data
 
 std::ostream& operator<<(std::ostream& stream, ExpData obj)
 {
-    return stream << "Time: " << obj.Time() << " Temp: " << obj.Temp() << " TG: " << obj.TG() << " HeatFlow: " << obj.HeatFlow() << " MassFrac: " << obj.MassFrac() <<std::endl;
+    return stream << "Time: " << obj.Time() << " Temp: " << obj.Temp() << " TG: " << obj.TermGrav() << " HeatFlow: " << obj.HeatFlow() << " MassFrac: " << obj.MassFrac() <<std::endl;
 }
 
 

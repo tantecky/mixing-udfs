@@ -10,7 +10,7 @@ class Integrator
 {
 
 public:
-    static void Runge23(std::vector<ExpData>* dataSet, double* modData, double A, double E, double NS, double yinf, int component);
+    static void Runge23(std::vector<ExpData>* dataSet, double* modData, double preFac, double actEner, double reacOrd, double massFracInf, int component);
 
 };
 

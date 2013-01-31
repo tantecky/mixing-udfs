@@ -23,7 +23,7 @@ private:
 
     double m_Time;
     double m_Temp;
-    double m_TG;
+    double m_TermGrav;
     double m_HeatFlow;
     double m_MassFrac;
     static Material m_WoodType;
@@ -53,9 +53,9 @@ public:
         return m_Temp;
     }
 
-    inline const double& TG()
+    inline const double& TermGrav()
     {
-        return m_TG;
+        return m_TermGrav;
     }
 
     inline const double& HeatFlow()
@@ -68,8 +68,8 @@ public:
         return m_MassFrac;
     }
 
-    ExpData(double time, double temp, double tg, double heatFlow, double massFrac)
-        : m_Time(time), m_Temp(temp), m_TG(tg), m_HeatFlow(heatFlow), m_MassFrac(massFrac)
+    ExpData(double time, double temp, double termGrav, double heatFlow, double massFrac)
+        : m_Time(time), m_Temp(temp), m_TermGrav(termGrav), m_HeatFlow(heatFlow), m_MassFrac(massFrac)
     {
 
     }
