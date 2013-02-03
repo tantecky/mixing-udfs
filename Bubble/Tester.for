@@ -10,8 +10,8 @@ C-------- constants
 #define RHO_LIQUID (997.0D0)
 #define MU_LIQUID (0.0008899D0)
 #define PI_CONST (3.1415926535897931D0)
-#define BREAKUP_F (0.008D0)
-c#define BREAKUP_F (1.0D0)
+c#define BREAKUP_F (0.008D0)
+#define BREAKUP_F (1.0D0)
 C-------- constants
       
       PROGRAM TESTER
@@ -57,7 +57,7 @@ C-------- constants
         ARGS(1:NLOC,12) = 0.05D0
         ARGS(1:NLOC,13) = 0.05D0
         ARGS(1:NLOC,14) = 0.05D0
-        ARGS(1:NLOC,15) = 1.0D0
+        ARGS(1:NLOC,15) = 0.3D0
         
         CALL BUBBLE_SOURCE(NLOC, NRET, NARG, RET, ARGS)
         TOTSUM = TOTSUM + RET(NLOC,NRET)
@@ -619,7 +619,7 @@ C-----Common blocks
       DOUBLE PRECISION BUBBLE_CLASSES_DIA(1:NUMBER_OF_CLASSES)
       COMMON /C_BUBBLE_CLASSES_DIA/ BUBBLE_CLASSES_DIA
 C-----Called functions
-      DOUBLE PRECISION GK15
+      DOUBLE PRECISION GK61
 C-----Locale variables
       DOUBLE PRECISION D0
       DOUBLE PRECISION DC
@@ -627,6 +627,7 @@ C-----Locale variables
       DOUBLE PRECISION DMAX
       DOUBLE PRECISION VA
       DOUBLE PRECISION VB
+      DOUBLE PRECISION HELPVARIABLE
 C-----Code
       IF(ICLASS .EQ. 1 .AND. ICLASS .EQ. J) THEN
         GAMMA_IJ = 0.0D0
@@ -638,7 +639,6 @@ C-----Code
       DC = 
      *(12.0D0*SIGMA/(BETA_PAR*RHO_L))**(3.D0/5.D0) / EPS**(2.D0/5.D0)
       
-C CHECK CHECK CHECK!!!
       IF(DC .GT. D0) THEN
         GAMMA_IJ = 0.0D0
         RETURN
@@ -652,24 +652,39 @@ C CHECK CHECK CHECK!!!
       G_VMAX = PI * DMAX**3.D0 / 6.D0
       G_LAMBDA = DC / D0
       
+C-----A treacherous feature of the M-B model is that for some combinations of low values of EPS (cca 0.2 - 0.5, in our case) and bubble diameter, VMIN > VMAX may occur.
+C-----Simultaneously, the integration BETA curve is located below x-axis. As a result, the conditions contained in if-tree are confused resulting mostly in GAMMA_IJ = 0.
+C-----To remedy this behavior, VMIN and VMAX must be swapped when VMIN > VMAX. The result of the integration is then negative because of the BETA curve below x-axis. This
+C-----is corrected via ABS(int(expression)) of all integrals.         
+            
+      IF(G_VMIN .GT. 0.D0 .AND. G_VMAX .GT. 0.D0 .AND.
+     *  G_VMIN .GT. G_VMAX) THEN
+        HELPVARIABLE = G_VMIN
+        G_VMIN = G_VMAX
+        G_VMAX = HELPVARIABLE
+      ELSE
+        G_VMIN = G_VMIN
+        G_VMAX = G_VMAX
+      ENDIF
+            
       IF(ICLASS .EQ. 1) THEN
         VA = BUBBLE_CLASSES_VOL(ICLASS)
         VB = BUBBLE_CLASSES_VOL(ICLASS+1)
                 
         IF(VB .LT. G_VMIN .OR. VA .GT. G_VMAX) THEN
           GAMMA_IJ = 0.0D0
-C CHECK CHECK CHECK!!!
         ELSEIF(VA .LE. G_VMIN .AND. VB .GE. G_VMAX) THEN
-          GAMMA_IJ = 1.0D0
-        ELSEIF(G_VMIN .LT. VA .AND. G_VMAX .GT. VB) THEN
+          GAMMA_IJ =
+     *    ABS(GK61(XI_BETA, G_VMIN, G_VMAX, ICLASS, J, 0))
+        ELSEIF(VA .LT. G_VMIN .AND. VB .LT. G_VMAX) THEN
           GAMMA_IJ = 
-     *    GK15(XI_BETA, VA, VB, ICLASS, J, 0)
-        ELSEIF(G_VMIN .GT. VA .AND. VB .GT. G_VMIN) THEN
+     *    ABS(GK61(XI_BETA, G_VMIN, VB, ICLASS, J, 0))
+        ELSEIF(VA .GT. G_VMIN .AND. VB .GT. G_VMAX) THEN
           GAMMA_IJ = 
-     *    GK15(XI_BETA, G_VMIN, VB, ICLASS, J, 0)
-        ELSEIF(VB .GT. G_VMAX .AND. G_VMAX .GT. VA) THEN
+     *    ABS(GK61(XI_BETA, VA, G_VMAX, ICLASS, J, 0))
+        ELSEIF(VA .GT. G_VMIN .AND. VB .LT. G_VMAX) THEN
           GAMMA_IJ = 
-     *    GK15(XI_BETA, VA, G_VMAX, ICLASS, J, 0)
+     *    ABS(GK61(XI_BETA, VA, VB, ICLASS, J, 0))
         ELSE
           WRITE(*,*) ('No solution - BETA')
           WRITE(*,*) (J)
@@ -685,18 +700,18 @@ C CHECK CHECK CHECK!!!
         
         IF(VB .LT. G_VMIN .OR. VA .GT. G_VMAX) THEN
           GAMMA_IJ = 0.0D0
-C CHECK CHECK CHECK!!!
         ELSEIF(VA .LE. G_VMIN .AND. VB .GE. G_VMAX) THEN
-          GAMMA_IJ = 1.0D0
-        ELSEIF(G_VMIN .LT. VA .AND. G_VMAX .GT. VB) THEN
+          GAMMA_IJ =
+     *    ABS(GK61(XI_MINUS_ONE_BETA, G_VMIN, G_VMAX, ICLASS, J, 0))
+        ELSEIF(VA .LT. G_VMIN .AND. VB .LT. G_VMAX) THEN
           GAMMA_IJ = 
-     *    GK15(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 0)
-        ELSEIF(G_VMIN .GT. VA .AND. VB .GT. G_VMIN) THEN
+     *    ABS(GK61(XI_MINUS_ONE_BETA, G_VMIN, VB, ICLASS, J, 0))
+        ELSEIF(VA .GT. G_VMIN .AND. VB .GT. G_VMAX) THEN
           GAMMA_IJ = 
-     *    GK15(XI_MINUS_ONE_BETA, G_VMIN, VB, ICLASS, J, 0)
-        ELSEIF(VB .GT. G_VMAX .AND. G_VMAX .GT. VA) THEN
+     *    ABS(GK61(XI_MINUS_ONE_BETA, VA, G_VMAX, ICLASS, J, 0))
+        ELSEIF(VA .GT. G_VMIN .AND. VB .LT. G_VMAX) THEN
           GAMMA_IJ = 
-     *    GK15(XI_MINUS_ONE_BETA, VA, G_VMAX, ICLASS, J, 0)
+     *    ABS(GK61(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 0))
         ELSE
           WRITE(*,*) ('No solution - BETA')
           WRITE(*,*) (J)
@@ -708,22 +723,22 @@ C CHECK CHECK CHECK!!!
       
       VA = BUBBLE_CLASSES_VOL(ICLASS)
       VB = BUBBLE_CLASSES_VOL(ICLASS+1)
-                
+      
       IF(VB .LT. G_VMIN .OR. VA .GT. G_VMAX) THEN
         GAMMA_IJ = 0.0D0
-C CHECK CHECK CHECK!!!
       ELSEIF(VA .LE. G_VMIN .AND. VB .GE. G_VMAX) THEN
-        GAMMA_IJ = 1.0D0
-      ELSEIF(G_VMIN .LT. VA .AND. G_VMAX .GT. VB) THEN
+        GAMMA_IJ =
+     *  ABS(GK61(XI_BETA, G_VMIN, G_VMAX, ICLASS, J, 0))
+      ELSEIF(VA .LT. G_VMIN .AND. VB .LT. G_VMAX) THEN
         GAMMA_IJ = 
-     *  GK15(XI_BETA, VA, VB, ICLASS, J, 0)
-      ELSEIF(G_VMIN .GT. VA .AND. VB .GT. G_VMIN) THEN
+     *  ABS(GK61(XI_BETA, G_VMIN, VB, ICLASS, J, 0))
+      ELSEIF(VA .GT. G_VMIN .AND. VB .GT. G_VMAX) THEN
         GAMMA_IJ = 
-     *  GK15(XI_BETA, G_VMIN, VB, ICLASS, J, 0)
-      ELSEIF(VB .GT. G_VMAX .AND. G_VMAX .GT. VA) THEN
+     *  ABS(GK61(XI_BETA, VA, G_VMAX, ICLASS, J, 0))
+      ELSEIF(VA .GT. G_VMIN .AND. VB .LT. G_VMAX) THEN
         GAMMA_IJ = 
-     *  GK15(XI_BETA, VA, G_VMAX, ICLASS, J, 0)
-      ELSE
+     *  ABS(GK61(XI_BETA, VA, VB, ICLASS, J, 0))
+      ELSE          
         WRITE(*,*) ('No solution - BETA')
         WRITE(*,*) (J)
         CALL ABORT()
@@ -735,18 +750,18 @@ C CHECK CHECK CHECK!!!
       IF(VB .LT. G_VMIN .OR. VA .GT. G_VMAX) THEN
 c        GAMMA_IJ = GAMMA_IJ + 0.0D0
         RETURN
-C CHECK CHECK CHECK!!!
       ELSEIF(VA .LE. G_VMIN .AND. VB .GE. G_VMAX) THEN
-        GAMMA_IJ = GAMMA_IJ + 1.0D0
-      ELSEIF(G_VMIN .LT. VA .AND. G_VMAX .GT. VB) THEN
         GAMMA_IJ = GAMMA_IJ +
-     *  GK15(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 0)
-      ELSEIF(G_VMIN .GT. VA .AND. VB .GT. G_VMIN) THEN
+     *  ABS(GK61(XI_MINUS_ONE_BETA, G_VMIN, G_VMAX, ICLASS, J, 0))
+      ELSEIF(VA .LT. G_VMIN .AND. VB .LT. G_VMAX) THEN
         GAMMA_IJ = GAMMA_IJ +
-     *  GK15(XI_MINUS_ONE_BETA, G_VMIN, VB, ICLASS, J, 0)
-      ELSEIF(VB .GT. G_VMAX .AND. G_VMAX .GT. VA) THEN
+     *  ABS(GK61(XI_MINUS_ONE_BETA, G_VMIN, VB, ICLASS, J, 0))
+      ELSEIF(VA .GT. G_VMIN .AND. VB .GT. G_VMAX) THEN
         GAMMA_IJ = GAMMA_IJ +
-     *  GK15(XI_MINUS_ONE_BETA, VA, G_VMAX, ICLASS, J, 0)
+     *  ABS(GK61(XI_MINUS_ONE_BETA, VA, G_VMAX, ICLASS, J, 0))
+      ELSEIF(VA .GT. G_VMIN .AND. VB .LT. G_VMAX) THEN
+        GAMMA_IJ = GAMMA_IJ +
+     *  ABS(GK61(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 0))
       ELSE
         WRITE(*,*) ('No solution - BETA')
         WRITE(*,*) (J)
@@ -1083,7 +1098,7 @@ C-----Arguments
 C-----Called functions
       DOUBLE PRECISION BETA_DENOMINATOR
       EXTERNAL BETA_DENOMINATOR
-      DOUBLE PRECISION GK15
+      DOUBLE PRECISION GK61
 C-----Locale variables
       DOUBLE PRECISION D0
       DOUBLE PRECISION NOMINATOR
@@ -1111,9 +1126,9 @@ C-----Code
      *     / D0)**3.D0)**(2.D0/9.D0)
      *     - G_LAMBDA**(5.D0/3.D0))
      
-      DENOMINATOR = GK15(BETA_DENOMINATOR, G_VMIN, G_VMAX, 0, J, 0)
+      DENOMINATOR = GK61(BETA_DENOMINATOR, G_VMIN, G_VMAX, 0, J, 0)
           
-      BETA = NOMINATOR / DENOMINATOR
+      BETA = 2.D0 * NOMINATOR / DENOMINATOR
       
 #ifdef DEBUG    
       CALL CHECK_FINITE(BETA, __LINE__)
@@ -1268,7 +1283,7 @@ C-----Code
      *      + 1.421413741D0*T_ERF**3.D0 - 1.453152027*T_ERF**4.D0
      *      + 1.061405429D0*T_ERF**5.D0) * DEXP(-ERF_ARG**2.D0)
         
-        G_I = BREAKUP_FACTOR * EPS**(1.D0/3.D0) * (1.0D0-ERF)
+        G_I = BREAKUP_FACTOR * 2.52 * EPS**(1.D0/3.D0) * (1.0D0-ERF)
       ENDIF
       
 #elif defined MODEL_LEHR
@@ -1435,7 +1450,7 @@ C     diameter of bubble classes
      * , 5.0D-3, 6.0D-3, 7.0D-3, 8.0D-3, 10.0D-3, 12.0D-3, 16.0D-3/
      
       DATA BUBBLE_CLASSES_VOL 
-     */ 6.54498469497874D-11
+     */ 6.54498469497872D-11
      *, 5.23598775598299D-10
      *, 4.18879020478639D-09
      *, 1.41371669411541D-08
