@@ -23,7 +23,7 @@ C-----Symbolic constants
       INTEGER NUMBER_OF_CLASSES
       PARAMETER (NUMBER_OF_CLASSES = 12)
 C-----Called functions
-      REAL COMPUTE_SOURCE
+      DOUBLE PRECISION COMPUTE_SOURCE
 C-----Arguments
       INTEGER NLOC,NARG,NRET
       CHARACTER CRESLT*(*)
@@ -588,16 +588,16 @@ C-----is corrected via ABS(int(expression)) of all integrals.
           GAMMA_IJ = 0.0D0
         ELSEIF(VA .LE. G_VMIN .AND. VB .GE. G_VMAX) THEN
           GAMMA_IJ =
-     *    ABS(GK61(XI_BETA, G_VMIN, G_VMAX, ICLASS, J, 0))
+     *    DABS(GK61(XI_BETA, G_VMIN, G_VMAX, ICLASS, J, 0))
         ELSEIF(VA .LT. G_VMIN .AND. VB .LT. G_VMAX) THEN
           GAMMA_IJ = 
-     *    ABS(GK61(XI_BETA, G_VMIN, VB, ICLASS, J, 0))
+     *    DABS(GK61(XI_BETA, G_VMIN, VB, ICLASS, J, 0))
         ELSEIF(VA .GT. G_VMIN .AND. VB .GT. G_VMAX) THEN
           GAMMA_IJ = 
-     *    ABS(GK61(XI_BETA, VA, G_VMAX, ICLASS, J, 0))
+     *    DABS(GK61(XI_BETA, VA, G_VMAX, ICLASS, J, 0))
         ELSEIF(VA .GT. G_VMIN .AND. VB .LT. G_VMAX) THEN
           GAMMA_IJ = 
-     *    ABS(GK61(XI_BETA, VA, VB, ICLASS, J, 0))
+     *    DABS(GK61(XI_BETA, VA, VB, ICLASS, J, 0))
         ELSE
           WRITE(*,*) ('No solution - BETA')
           WRITE(*,*) (J)
@@ -615,16 +615,16 @@ C-----is corrected via ABS(int(expression)) of all integrals.
           GAMMA_IJ = 0.0D0
         ELSEIF(VA .LE. G_VMIN .AND. VB .GE. G_VMAX) THEN
           GAMMA_IJ =
-     *    ABS(GK61(XI_MINUS_ONE_BETA, G_VMIN, G_VMAX, ICLASS, J, 0))
+     *    DABS(GK61(XI_MINUS_ONE_BETA, G_VMIN, G_VMAX, ICLASS, J, 0))
         ELSEIF(VA .LT. G_VMIN .AND. VB .LT. G_VMAX) THEN
           GAMMA_IJ = 
-     *    ABS(GK61(XI_MINUS_ONE_BETA, G_VMIN, VB, ICLASS, J, 0))
+     *    DABS(GK61(XI_MINUS_ONE_BETA, G_VMIN, VB, ICLASS, J, 0))
         ELSEIF(VA .GT. G_VMIN .AND. VB .GT. G_VMAX) THEN
           GAMMA_IJ = 
-     *    ABS(GK61(XI_MINUS_ONE_BETA, VA, G_VMAX, ICLASS, J, 0))
+     *    DABS(GK61(XI_MINUS_ONE_BETA, VA, G_VMAX, ICLASS, J, 0))
         ELSEIF(VA .GT. G_VMIN .AND. VB .LT. G_VMAX) THEN
           GAMMA_IJ = 
-     *    ABS(GK61(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 0))
+     *    DABS(GK61(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 0))
         ELSE
           WRITE(*,*) ('No solution - BETA')
           WRITE(*,*) (J)
@@ -641,16 +641,16 @@ C-----is corrected via ABS(int(expression)) of all integrals.
         GAMMA_IJ = 0.0D0
       ELSEIF(VA .LE. G_VMIN .AND. VB .GE. G_VMAX) THEN
         GAMMA_IJ =
-     *  ABS(GK61(XI_BETA, G_VMIN, G_VMAX, ICLASS, J, 0))
+     *  DABS(GK61(XI_BETA, G_VMIN, G_VMAX, ICLASS, J, 0))
       ELSEIF(VA .LT. G_VMIN .AND. VB .LT. G_VMAX) THEN
         GAMMA_IJ = 
-     *  ABS(GK61(XI_BETA, G_VMIN, VB, ICLASS, J, 0))
+     *  DABS(GK61(XI_BETA, G_VMIN, VB, ICLASS, J, 0))
       ELSEIF(VA .GT. G_VMIN .AND. VB .GT. G_VMAX) THEN
         GAMMA_IJ = 
-     *  ABS(GK61(XI_BETA, VA, G_VMAX, ICLASS, J, 0))
+     *  DABS(GK61(XI_BETA, VA, G_VMAX, ICLASS, J, 0))
       ELSEIF(VA .GT. G_VMIN .AND. VB .LT. G_VMAX) THEN
         GAMMA_IJ = 
-     *  ABS(GK61(XI_BETA, VA, VB, ICLASS, J, 0))
+     *  DABS(GK61(XI_BETA, VA, VB, ICLASS, J, 0))
       ELSE          
         WRITE(*,*) ('No solution - BETA')
         WRITE(*,*) (J)
@@ -665,16 +665,16 @@ c        GAMMA_IJ = GAMMA_IJ + 0.0D0
         RETURN
       ELSEIF(VA .LE. G_VMIN .AND. VB .GE. G_VMAX) THEN
         GAMMA_IJ = GAMMA_IJ +
-     *  ABS(GK61(XI_MINUS_ONE_BETA, G_VMIN, G_VMAX, ICLASS, J, 0))
+     *  DABS(GK61(XI_MINUS_ONE_BETA, G_VMIN, G_VMAX, ICLASS, J, 0))
       ELSEIF(VA .LT. G_VMIN .AND. VB .LT. G_VMAX) THEN
         GAMMA_IJ = GAMMA_IJ +
-     *  ABS(GK61(XI_MINUS_ONE_BETA, G_VMIN, VB, ICLASS, J, 0))
+     *  DABS(GK61(XI_MINUS_ONE_BETA, G_VMIN, VB, ICLASS, J, 0))
       ELSEIF(VA .GT. G_VMIN .AND. VB .GT. G_VMAX) THEN
         GAMMA_IJ = GAMMA_IJ +
-     *  ABS(GK61(XI_MINUS_ONE_BETA, VA, G_VMAX, ICLASS, J, 0))
+     *  DABS(GK61(XI_MINUS_ONE_BETA, VA, G_VMAX, ICLASS, J, 0))
       ELSEIF(VA .GT. G_VMIN .AND. VB .LT. G_VMAX) THEN
         GAMMA_IJ = GAMMA_IJ +
-     *  ABS(GK61(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 0))
+     *  DABS(GK61(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 0))
       ELSE
         WRITE(*,*) ('No solution - BETA')
         WRITE(*,*) (J)
@@ -1324,7 +1324,7 @@ C-----Arguments
       INTEGER LINE
 
 
-      IF(ISNAN(X) .OR. ABS(X) .GE. HUGE(X)) THEN
+      IF(ISNAN(X) .OR. DABS(X) .GE. HUGE(X)) THEN
         WRITE(*,*) 'Variable is NOT a finite number:',X
         WRITE(*,*) 'Throw by line:', LINE
         CALL ABORT()
