@@ -101,20 +101,20 @@ c     F12 = ARGS(1:NLOC,14)
 C-----Locale variables
       INTEGER ICLASS
       INTEGER ILOC
-      DOUBLE PRECISION RF(1:NLOC, 1:NUMBER_OF_CLASSES)
+c      DOUBLE PRECISION RF(1:NLOC, 1:NUMBER_OF_CLASSES)
       
-      RF(:, 1) = ARGS(:,3)
-      RF(:, 2) = ARGS(:,4)
-      RF(:, 3) = ARGS(:,5)
-      RF(:, 4) = ARGS(:,6)
-      RF(:, 5) = ARGS(:,7)
-      RF(:, 6) = ARGS(:,8)
-      RF(:, 7) = ARGS(:,9)
-      RF(:, 8) = ARGS(:,10)
-      RF(:, 9) = ARGS(:,11)
-      RF(:, 10) = ARGS(:,12)
-      RF(:, 11) = ARGS(:,13)
-      RF(:, 12) = ARGS(:,14)
+c      RF(:, 1) = ARGS(:,3)
+c      RF(:, 2) = ARGS(:,4)
+c      RF(:, 3) = ARGS(:,5)
+c      RF(:, 4) = ARGS(:,6)
+c      RF(:, 5) = ARGS(:,7)
+c      RF(:, 6) = ARGS(:,8)
+c      RF(:, 7) = ARGS(:,9)
+c      RF(:, 8) = ARGS(:,10)
+c      RF(:, 9) = ARGS(:,11)
+c      RF(:, 10) = ARGS(:,12)
+c      RF(:, 11) = ARGS(:,13)
+c      RF(:, 12) = ARGS(:,14)
       
 C-----Code
       ICLASS = INT(ARGS(1,1))
@@ -138,7 +138,7 @@ C-----Code
 
       DO ILOC = 1, NLOC
         RET(ILOC,NRET) = COMPUTE_SOURCE(NLOC, ILOC, ICLASS, 
-     *  ARGS(1,2), RF, ARGS(1,15))   
+     *  ARGS(1,2), ARGS(:,3:14), ARGS(1,15))   
       END DO 
      
       END
