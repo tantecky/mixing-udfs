@@ -15,6 +15,14 @@ C-------- constants
 c#define BREAKUP_F (0.008D0)
 #define BREAKUP_F (1.0D0)
 C-------- constants
+
+C--------CFX double precision solver check
+#ifdef cfd_version
+#ifndef DOUBLE_PRECISION
+#error "The code has to be compiled as double precison (-double)"
+#endif
+#endif
+C--------CFX double precision solver check
       
       PROGRAM TESTER
       IMPLICIT NONE

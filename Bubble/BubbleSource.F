@@ -1,9 +1,11 @@
 #include "cfx5ext.h"
+
+/*#define DEBUG*/
+C-------- used model
 c#define MODEL_ALOPEA
 c#define MODEL_LEHR
 #define MODEL_MARTINEZ_BAZAN
-
-#define DEBUG
+C-------- used model
 
 C-------- constants
 #define SIGMA_SURF_TENS (0.0728D0)
@@ -14,6 +16,14 @@ C-------- constants
 c#define BREAKUP_F (0.008D0)
 #define BREAKUP_F (1.0D0)
 C-------- constants
+
+C--------CFX double precision solver check
+#ifdef cfd_version
+#ifndef DOUBLE_PRECISION
+#error "The code has to be compiled as double precison (-double)"
+#endif
+#endif
+C--------CFX double precision solver check
 
 dllexport(bubble_source)
       SUBROUTINE BUBBLE_SOURCE( 
@@ -532,7 +542,7 @@ C-----Common blocks
       DOUBLE PRECISION BUBBLE_CLASSES_DIA(1:NUMBER_OF_CLASSES)
       COMMON /C_BUBBLE_CLASSES_DIA/ BUBBLE_CLASSES_DIA
 C-----Called functions
-      DOUBLE PRECISION GK61
+      DOUBLE PRECISION GK15
 C-----Locale variables
       DOUBLE PRECISION D0
       DOUBLE PRECISION DC
@@ -588,16 +598,16 @@ C-----is corrected via ABS(int(expression)) of all integrals.
           GAMMA_IJ = 0.0D0
         ELSEIF(VA .LE. G_VMIN .AND. VB .GE. G_VMAX) THEN
           GAMMA_IJ =
-     *    DABS(GK61(XI_BETA, G_VMIN, G_VMAX, ICLASS, J, 0))
+     *    DABS(GK15(XI_BETA, G_VMIN, G_VMAX, ICLASS, J, 0))
         ELSEIF(VA .LT. G_VMIN .AND. VB .LT. G_VMAX) THEN
           GAMMA_IJ = 
-     *    DABS(GK61(XI_BETA, G_VMIN, VB, ICLASS, J, 0))
+     *    DABS(GK15(XI_BETA, G_VMIN, VB, ICLASS, J, 0))
         ELSEIF(VA .GT. G_VMIN .AND. VB .GT. G_VMAX) THEN
           GAMMA_IJ = 
-     *    DABS(GK61(XI_BETA, VA, G_VMAX, ICLASS, J, 0))
+     *    DABS(GK15(XI_BETA, VA, G_VMAX, ICLASS, J, 0))
         ELSEIF(VA .GT. G_VMIN .AND. VB .LT. G_VMAX) THEN
           GAMMA_IJ = 
-     *    DABS(GK61(XI_BETA, VA, VB, ICLASS, J, 0))
+     *    DABS(GK15(XI_BETA, VA, VB, ICLASS, J, 0))
         ELSE
           WRITE(*,*) ('No solution - BETA')
           WRITE(*,*) (J)
@@ -615,16 +625,16 @@ C-----is corrected via ABS(int(expression)) of all integrals.
           GAMMA_IJ = 0.0D0
         ELSEIF(VA .LE. G_VMIN .AND. VB .GE. G_VMAX) THEN
           GAMMA_IJ =
-     *    DABS(GK61(XI_MINUS_ONE_BETA, G_VMIN, G_VMAX, ICLASS, J, 0))
+     *    DABS(GK15(XI_MINUS_ONE_BETA, G_VMIN, G_VMAX, ICLASS, J, 0))
         ELSEIF(VA .LT. G_VMIN .AND. VB .LT. G_VMAX) THEN
           GAMMA_IJ = 
-     *    DABS(GK61(XI_MINUS_ONE_BETA, G_VMIN, VB, ICLASS, J, 0))
+     *    DABS(GK15(XI_MINUS_ONE_BETA, G_VMIN, VB, ICLASS, J, 0))
         ELSEIF(VA .GT. G_VMIN .AND. VB .GT. G_VMAX) THEN
           GAMMA_IJ = 
-     *    DABS(GK61(XI_MINUS_ONE_BETA, VA, G_VMAX, ICLASS, J, 0))
+     *    DABS(GK15(XI_MINUS_ONE_BETA, VA, G_VMAX, ICLASS, J, 0))
         ELSEIF(VA .GT. G_VMIN .AND. VB .LT. G_VMAX) THEN
           GAMMA_IJ = 
-     *    DABS(GK61(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 0))
+     *    DABS(GK15(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 0))
         ELSE
           WRITE(*,*) ('No solution - BETA')
           WRITE(*,*) (J)
@@ -641,16 +651,16 @@ C-----is corrected via ABS(int(expression)) of all integrals.
         GAMMA_IJ = 0.0D0
       ELSEIF(VA .LE. G_VMIN .AND. VB .GE. G_VMAX) THEN
         GAMMA_IJ =
-     *  DABS(GK61(XI_BETA, G_VMIN, G_VMAX, ICLASS, J, 0))
+     *  DABS(GK15(XI_BETA, G_VMIN, G_VMAX, ICLASS, J, 0))
       ELSEIF(VA .LT. G_VMIN .AND. VB .LT. G_VMAX) THEN
         GAMMA_IJ = 
-     *  DABS(GK61(XI_BETA, G_VMIN, VB, ICLASS, J, 0))
+     *  DABS(GK15(XI_BETA, G_VMIN, VB, ICLASS, J, 0))
       ELSEIF(VA .GT. G_VMIN .AND. VB .GT. G_VMAX) THEN
         GAMMA_IJ = 
-     *  DABS(GK61(XI_BETA, VA, G_VMAX, ICLASS, J, 0))
+     *  DABS(GK15(XI_BETA, VA, G_VMAX, ICLASS, J, 0))
       ELSEIF(VA .GT. G_VMIN .AND. VB .LT. G_VMAX) THEN
         GAMMA_IJ = 
-     *  DABS(GK61(XI_BETA, VA, VB, ICLASS, J, 0))
+     *  DABS(GK15(XI_BETA, VA, VB, ICLASS, J, 0))
       ELSE          
         WRITE(*,*) ('No solution - BETA')
         WRITE(*,*) (J)
@@ -665,16 +675,16 @@ c        GAMMA_IJ = GAMMA_IJ + 0.0D0
         RETURN
       ELSEIF(VA .LE. G_VMIN .AND. VB .GE. G_VMAX) THEN
         GAMMA_IJ = GAMMA_IJ +
-     *  DABS(GK61(XI_MINUS_ONE_BETA, G_VMIN, G_VMAX, ICLASS, J, 0))
+     *  DABS(GK15(XI_MINUS_ONE_BETA, G_VMIN, G_VMAX, ICLASS, J, 0))
       ELSEIF(VA .LT. G_VMIN .AND. VB .LT. G_VMAX) THEN
         GAMMA_IJ = GAMMA_IJ +
-     *  DABS(GK61(XI_MINUS_ONE_BETA, G_VMIN, VB, ICLASS, J, 0))
+     *  DABS(GK15(XI_MINUS_ONE_BETA, G_VMIN, VB, ICLASS, J, 0))
       ELSEIF(VA .GT. G_VMIN .AND. VB .GT. G_VMAX) THEN
         GAMMA_IJ = GAMMA_IJ +
-     *  DABS(GK61(XI_MINUS_ONE_BETA, VA, G_VMAX, ICLASS, J, 0))
+     *  DABS(GK15(XI_MINUS_ONE_BETA, VA, G_VMAX, ICLASS, J, 0))
       ELSEIF(VA .GT. G_VMIN .AND. VB .LT. G_VMAX) THEN
         GAMMA_IJ = GAMMA_IJ +
-     *  DABS(GK61(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 0))
+     *  DABS(GK15(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 0))
       ELSE
         WRITE(*,*) ('No solution - BETA')
         WRITE(*,*) (J)
@@ -1011,7 +1021,7 @@ C-----Arguments
 C-----Called functions
       DOUBLE PRECISION BETA_DENOMINATOR
       EXTERNAL BETA_DENOMINATOR
-      DOUBLE PRECISION GK61
+      DOUBLE PRECISION GK15
 C-----Locale variables
       DOUBLE PRECISION D0
       DOUBLE PRECISION NOMINATOR
@@ -1039,7 +1049,7 @@ C-----Code
      *     / D0)**3.D0)**(2.D0/9.D0)
      *     - G_LAMBDA**(5.D0/3.D0))
      
-      DENOMINATOR = GK61(BETA_DENOMINATOR, G_VMIN, G_VMAX, 0, J, 0)
+      DENOMINATOR = GK15(BETA_DENOMINATOR, G_VMIN, G_VMAX, 0, J, 0)
           
       BETA = 2.D0 * NOMINATOR / DENOMINATOR
       
@@ -1341,22 +1351,13 @@ C-----Symbolic constants
 C-----Locale variables
       DOUBLE PRECISION BUBBLE_CLASSES_VOL(1:NUMBER_OF_CLASSES)
       DOUBLE PRECISION BUBBLE_CLASSES_DIA(1:NUMBER_OF_CLASSES)
-      DOUBLE PRECISION G_DBRI
-      DOUBLE PRECISION G_DAGI
-      DOUBLE PRECISION G_BBRI
-      DOUBLE PRECISION G_BAGI
 #ifdef MODEL_LEHR
       DOUBLE PRECISION G_EPS
 #elif defined MODEL_MARTINEZ_BAZAN
       DOUBLE PRECISION G_LAMBDA
       DOUBLE PRECISION G_VMIN
       DOUBLE PRECISION G_VMAX
-#endif
-      
-      DATA G_DBRI /0.0D0/
-      DATA G_DAGI /0.0D0/
-      DATA G_BBRI /0.0D0/
-      DATA G_BAGI /0.0D0/
+#endif    
       
 C     diameter of bubble classes
       DATA BUBBLE_CLASSES_DIA /0.5D-3, 1.0D-3, 2.0D-3, 3.0D-3, 4.0D-3
@@ -1384,10 +1385,4 @@ C-----Common blocks
 #elif defined MODEL_MARTINEZ_BAZAN
       COMMON /C_MB_PARS/ G_LAMBDA, G_VMIN, G_VMAX
 #endif
-      
-      COMMON /C_DBRI/ G_DBRI
-      COMMON /C_DAGI/ G_DAGI
-      COMMON /C_BBRI/ G_BBRI
-      COMMON /C_BAGI/ G_BAGI
-            
       END
