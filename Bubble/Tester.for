@@ -1070,12 +1070,14 @@ c     *    + 1.061405429D0*T_ERF**5.D0) * DEXP(-ERF_ARG**2.D0)
       BETA = 
      *   1.D0/(DSQRT(PI)*V) * DEXP(-9.D0/4.D0 * (DLOG(2.0D0**(2.D0/5.D0)
      *   * RHO_L**(3.D0/5.D0) * (6.D0*V/PI)**(1.D0/3.D0)
-     *   * G_EPS**(2.D0/5.D0) / SIGMA**(3.D0/5.D0)))**2.D0) / (1.D0+ERF) 
+     *   * G_EPS**(2.D0/5.D0) 
+     *   / SIGMA**(3.D0/5.D0)))**2.D0) / (1.D0+ERF) 
       ELSEIF(BRANCH .EQ. 2) THEN
         BETA = 1.D0 / (DSQRT(PI) * (V0 - V))
      *   * DEXP(-9.D0/4.D0 * (DLOG(2.0D0**(2.D0/5.D0)*RHO_L**(3.D0/5.D0)
      *   * (6.D0*(V0 - V)/PI)**(1.D0/3.D0)
-     *   * G_EPS**(2.D0/5.D0) / SIGMA**(3.D0/5.D0)))**2.D0) / (1.D0+ERF)   
+     *   * G_EPS**(2.D0/5.D0) 
+     *   / SIGMA**(3.D0/5.D0)))**2.D0) / (1.D0+ERF)   
       ELSE
         WRITE(*,*) ('Wrong BRANCH')
         WRITE(*,*) (BRANCH)
