@@ -2,8 +2,8 @@
 
 C-------- used model
 c#define MODEL_ALOPEA
-c#define MODEL_LEHR
-#define MODEL_MARTINEZ_BAZAN
+#define MODEL_LEHR
+c#define MODEL_MARTINEZ_BAZAN
 C-------- used model
 
 C-------- constants
@@ -509,7 +509,7 @@ C-----Locale variables
       DOUBLE PRECISION VA
       DOUBLE PRECISION VB
 C-----Called functions
-      DOUBLE PRECISION GK61
+      DOUBLE PRECISION GK15
 C-----Code
       IF(ICLASS .EQ. 1 .AND. ICLASS .EQ. J) THEN
         GAMMA_IJ = 0.0D0
@@ -526,16 +526,16 @@ C-----Code
                 
         IF(VA .LT. V0HALF .AND. VB .GT. V0HALF) THEN
           GAMMA_IJ = 
-     *    GK61(XI_BETA, VA, V0HALF, ICLASS, J, 1)
+     *    GK15(XI_BETA, VA, V0HALF, ICLASS, J, 1)
           
           GAMMA_IJ = GAMMA_IJ +
-     *    GK61(XI_BETA, V0HALF, VB, ICLASS, J, 2)
+     *    GK15(XI_BETA, V0HALF, VB, ICLASS, J, 2)
         ELSEIF(VA .GT. V0HALF) THEN
           GAMMA_IJ = 
-     *    GK61(XI_BETA, VA, VB, ICLASS, J, 2) 
+     *    GK15(XI_BETA, VA, VB, ICLASS, J, 2) 
         ELSEIF(VB .LT. V0HALF) THEN
           GAMMA_IJ = 
-     *    GK61(XI_BETA, VA, VB, ICLASS, J, 1) 
+     *    GK15(XI_BETA, VA, VB, ICLASS, J, 1) 
         ELSE
           WRITE(*,*) ('No solution - BETA')
           WRITE(*,*) (J)
@@ -551,16 +551,16 @@ C-----Code
         
         IF(VA .LT. V0HALF .AND. VB .GT. V0HALF) THEN
           GAMMA_IJ = 
-     *    GK61(XI_MINUS_ONE_BETA, VA, V0HALF, ICLASS, J, 1)
+     *    GK15(XI_MINUS_ONE_BETA, VA, V0HALF, ICLASS, J, 1)
           
           GAMMA_IJ = GAMMA_IJ +
-     *    GK61(XI_MINUS_ONE_BETA, V0HALF, VB, ICLASS, J, 2)
+     *    GK15(XI_MINUS_ONE_BETA, V0HALF, VB, ICLASS, J, 2)
         ELSEIF(VA .GT. V0HALF) THEN
           GAMMA_IJ = 
-     *    GK61(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 2) 
+     *    GK15(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 2) 
         ELSEIF(VB .LT. V0HALF) THEN
           GAMMA_IJ = 
-     *    GK61(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 1) 
+     *    GK15(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 1) 
         ELSE
           WRITE(*,*) ('No solution - BETA')
           WRITE(*,*) (J)
@@ -575,16 +575,16 @@ C-----Code
       
       IF(VA .LT. V0HALF .AND. VB .GT. V0HALF) THEN
          GAMMA_IJ = 
-     *   GK61(XI_BETA, VA, V0HALF, ICLASS, J, 1)
+     *   GK15(XI_BETA, VA, V0HALF, ICLASS, J, 1)
           
          GAMMA_IJ = GAMMA_IJ +
-     *   GK61(XI_BETA, V0HALF, VB, ICLASS, J, 2)
+     *   GK15(XI_BETA, V0HALF, VB, ICLASS, J, 2)
       ELSEIF(VA .GT. V0HALF) THEN
          GAMMA_IJ = 
-     *   GK61(XI_BETA, VA, VB, ICLASS, J, 2) 
+     *   GK15(XI_BETA, VA, VB, ICLASS, J, 2) 
       ELSEIF(VB .LT. V0HALF) THEN
         GAMMA_IJ = 
-     *   GK61(XI_BETA, VA, VB, ICLASS, J, 1) 
+     *   GK15(XI_BETA, VA, VB, ICLASS, J, 1) 
       ELSE
         WRITE(*,*) ('No solution - BETA')
         WRITE(*,*) (J)
@@ -596,16 +596,16 @@ C-----Code
         
       IF(VA .LT. V0HALF .AND. VB .GT. V0HALF) THEN
         GAMMA_IJ = GAMMA_IJ +
-     *  GK61(XI_MINUS_ONE_BETA, VA, V0HALF, ICLASS, J, 1)
+     *  GK15(XI_MINUS_ONE_BETA, VA, V0HALF, ICLASS, J, 1)
           
         GAMMA_IJ = GAMMA_IJ +
-     *  GK61(XI_MINUS_ONE_BETA, V0HALF, VB, ICLASS, J, 2)
+     *  GK15(XI_MINUS_ONE_BETA, V0HALF, VB, ICLASS, J, 2)
       ELSEIF(VA .GT. V0HALF) THEN
         GAMMA_IJ = GAMMA_IJ +
-     *  GK61(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 2) 
+     *  GK15(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 2) 
       ELSEIF(VB .LT. V0HALF) THEN
         GAMMA_IJ = GAMMA_IJ +
-     *  GK61(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 1) 
+     *  GK15(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 1) 
       ELSE
         WRITE(*,*) ('No solution - BETA')
         WRITE(*,*) (J)
