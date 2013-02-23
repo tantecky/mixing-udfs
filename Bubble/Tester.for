@@ -68,7 +68,7 @@ C--------CFX double precision solver check
         ARGS(1:NLOC,12) = 0.05D0
         ARGS(1:NLOC,13) = 0.05D0
         ARGS(1:NLOC,14) = 0.05D0
-        ARGS(1:NLOC,15) = 0.3D0
+        ARGS(1:NLOC,15) = 1.0D0
         
         CALL BUBBLE_SOURCE(NLOC, NRET, NARG, RET, ARGS)
         TOTSUM = TOTSUM + RET(NLOC,NRET)
@@ -271,7 +271,91 @@ C-----Code
 
       N = RALFA(ILOC)*RF(ILOC,ICLASS)/BUBBLE_CLASSES_VOL(ICLASS)
       END
-
+C=======================================================================
+#ifdef MODEL_LEHR
+      DOUBLE PRECISION FUNCTION INT_LEHR
+     *                          (FCE, A, B, ICLASS, J, BRANCH, EPS)
+      IMPLICIT NONE 
+C-----Called functions
+      DOUBLE PRECISION FCE
+      EXTERNAL FCE 
+      DOUBLE PRECISION GK15
+      DOUBLE PRECISION GK61
+C-----Arguments
+      DOUBLE PRECISION A
+      DOUBLE PRECISION B
+      INTEGER ICLASS
+      INTEGER J
+      INTEGER BRANCH
+      DOUBLE PRECISION EPS
+C-----Code
+      IF(EPS .LT. 1.0D0) THEN
+        INT_LEHR = GK15(FCE, A, B, ICLASS, J, BRANCH)
+      ELSE
+        INT_LEHR = GK61(FCE, A, B, ICLASS, J, BRANCH)
+      ENDIF
+      
+      END
+#endif 
+C=======================================================================
+      DOUBLE PRECISION FUNCTION G7(FCE, A, B, ICLASS, J, BRANCH)
+      IMPLICIT NONE 
+C-----Called functions
+      DOUBLE PRECISION FCE
+      EXTERNAL FCE 
+C-----Arguments
+      DOUBLE PRECISION A
+      DOUBLE PRECISION B
+      INTEGER ICLASS
+      INTEGER J
+      INTEGER BRANCH
+C-----Locale variables
+      DOUBLE PRECISION TRANS1
+      DOUBLE PRECISION TRANS2
+      DOUBLE PRECISION INTEGRAL
+      INTEGER I
+      DOUBLE PRECISION NODES(0:2)
+      DOUBLE PRECISION WEIGHTS(0:3)
+      
+      DATA NODES
+     */0.949107912342759D0,
+     * 0.741531185599394D0,
+     * 0.405845151377397D0
+     */
+     
+      DATA WEIGHTS
+     */0.129484966168870D0,
+     * 0.279705391489277D0,
+     * 0.381830050505119D0,
+     * 0.417959183673469D0
+     */
+C-----Code
+      INTEGRAL = 0.0D0
+      TRANS1 = (B-A)/2.0D0
+      TRANS2 = (A+B)/2.0D0
+      
+#ifdef DEBUG      
+      IF(A .GE. B) THEN
+        WRITE(*,*) ('G7: A >= B')
+        WRITE(*,*) 'A=',A
+        WRITE(*,*) 'B=',B
+        WRITE(*,*) 'TRANS1=',TRANS1
+        WRITE(*,*) 'TRANS2=',TRANS2
+        CALL ABORT()
+      ENDIF
+#endif
+      
+      DO I = 0, 2
+        INTEGRAL = INTEGRAL +
+     *  WEIGHTS(I)*((FCE(ICLASS, TRANS1*NODES(I) + TRANS2, J, BRANCH)) +
+     *  (FCE(ICLASS, TRANS1*(-NODES(I)) + TRANS2, J, BRANCH)))
+      ENDDO
+  
+  
+      G7 = 
+     * TRANS1*(INTEGRAL +  WEIGHTS(3)*FCE(ICLASS, TRANS2, J, BRANCH))
+      
+      END
 C=======================================================================
       DOUBLE PRECISION FUNCTION GK15(FCE, A, B, ICLASS, J, BRANCH)
       IMPLICIT NONE 
@@ -303,7 +387,7 @@ C-----Locale variables
      */
      
       DATA WEIGHTS
-     */ 0.022935322010529D0,
+     */0.022935322010529D0,
      * 0.063092092629979D0,
      * 0.104790010322250D0,
      * 0.140653259715525D0,
@@ -340,6 +424,89 @@ C-----Code
       
       END
 C=======================================================================
+      DOUBLE PRECISION FUNCTION GK31(FCE, A, B, ICLASS, J, BRANCH)
+      IMPLICIT NONE 
+C-----Called functions
+      DOUBLE PRECISION FCE
+      EXTERNAL FCE 
+C-----Arguments
+      DOUBLE PRECISION A
+      DOUBLE PRECISION B
+      INTEGER ICLASS
+      INTEGER J
+      INTEGER BRANCH
+C-----Locale variables
+      DOUBLE PRECISION TRANS1
+      DOUBLE PRECISION TRANS2
+      DOUBLE PRECISION INTEGRAL
+      INTEGER I
+      DOUBLE PRECISION NODES(0:14)
+      DOUBLE PRECISION WEIGHTS(0:15)
+      
+      DATA NODES
+     */0.998002298693397D0,
+     * 0.987992518020485D0,
+     * 0.967739075679139D0,
+     * 0.937273392400705D0,
+     * 0.897264532344081D0,
+     * 0.848206583410427D0,
+     * 0.790418501442465D0,
+     * 0.724417731360170D0,
+     * 0.650996741297416D0,
+     * 0.570972172608538D0,
+     * 0.485081863640239D0,
+     * 0.394151347077563D0,
+     * 0.299180007153168D0,
+     * 0.201194093997434D0,
+     * 0.101142066918717D0               
+     */
+     
+      DATA WEIGHTS
+     */0.005377479872923D0,
+     * 0.015007947329316D0,
+     * 0.025460847326715D0,
+     * 0.035346360791375D0,
+     * 0.044589751324764D0,
+     * 0.053481524690928D0,
+     * 0.062009567800670D0,
+     * 0.069854121318728D0,
+     * 0.076849680757720D0,
+     * 0.083080502823133D0,
+     * 0.088564443056211D0,
+     * 0.093126598170825D0,
+     * 0.096642726983623D0,
+     * 0.099173598721791D0,
+     * 0.100769845523875D0,
+     * 0.101330007014791D0                                        
+     */
+C-----Code
+      INTEGRAL = 0.0D0
+      TRANS1 = (B-A)/2.0D0
+      TRANS2 = (A+B)/2.0D0
+      
+#ifdef DEBUG      
+      IF(A .GE. B) THEN
+        WRITE(*,*) ('GK31: A >= B')
+        WRITE(*,*) 'A=',A
+        WRITE(*,*) 'B=',B
+        WRITE(*,*) 'TRANS1=',TRANS1
+        WRITE(*,*) 'TRANS2=',TRANS2
+        CALL ABORT()
+      ENDIF
+#endif
+      
+      DO I = 0, 14
+        INTEGRAL = INTEGRAL +
+     *  WEIGHTS(I)*((FCE(ICLASS, TRANS1*NODES(I) + TRANS2, J, BRANCH)) +
+     *  (FCE(ICLASS, TRANS1*(-NODES(I)) + TRANS2, J, BRANCH)))
+      ENDDO
+  
+  
+      GK31 = 
+     * TRANS1*(INTEGRAL +  WEIGHTS(15)*FCE(ICLASS, TRANS2, J, BRANCH))
+      
+      END
+C=======================================================================
       DOUBLE PRECISION FUNCTION GK61(FCE, A, B, ICLASS, J, BRANCH)
       IMPLICIT NONE 
 C-----Called functions
@@ -360,7 +527,7 @@ C-----Locale variables
       DOUBLE PRECISION WEIGHTS(0:30)
       
       DATA NODES
-     * /0.9994844100504906375713259D0,
+     */0.9994844100504906375713259D0,
      * 0.9968934840746495402716301D0,
      * 0.9916309968704045948586284D0,
      * 0.9836681232797472099700326D0,
@@ -392,7 +559,7 @@ C-----Locale variables
      * 0.0514718425553176958330252D0/
      
       DATA WEIGHTS
-     * /0.0013890136986770076245516D0,
+     */0.0013890136986770076245516D0,
      * 0.0038904611270998840512672D0,
      * 0.0066307039159312921733198D0,
      * 0.0092732796595177634284411D0,
@@ -471,7 +638,7 @@ C-----Arguments
       
 #ifdef MODEL_ALOPEA
 C-----Called functions
-      DOUBLE PRECISION GK15
+      DOUBLE PRECISION G7
 C-----Code
       IF(ICLASS .EQ. 1 .AND. ICLASS .EQ. J) THEN
         GAMMA_IJ = 0.0D0
@@ -480,23 +647,23 @@ C-----Code
                
       IF(ICLASS .EQ. 1) THEN
         GAMMA_IJ = 
-     *     GK15(XI_BETA, BUBBLE_CLASSES_VOL(ICLASS), 
+     *     G7(XI_BETA, BUBBLE_CLASSES_VOL(ICLASS), 
      *     BUBBLE_CLASSES_VOL(ICLASS+1), ICLASS, J, 0)     
         RETURN
       ENDIF
       
       IF(ICLASS .EQ. J) THEN
         GAMMA_IJ = 
-     *     GK15(XI_MINUS_ONE_BETA, BUBBLE_CLASSES_VOL(ICLASS-1), 
+     *     G7(XI_MINUS_ONE_BETA, BUBBLE_CLASSES_VOL(ICLASS-1), 
      *     BUBBLE_CLASSES_VOL(ICLASS), ICLASS, J, 0)
         RETURN
       ENDIF
       
       GAMMA_IJ =
-     *GK15(XI_MINUS_ONE_BETA, BUBBLE_CLASSES_VOL(ICLASS-1), 
+     *G7(XI_MINUS_ONE_BETA, BUBBLE_CLASSES_VOL(ICLASS-1), 
      *     BUBBLE_CLASSES_VOL(ICLASS), ICLASS, J, 0)
      *     +
-     *GK15(XI_BETA, BUBBLE_CLASSES_VOL(ICLASS), 
+     *G7(XI_BETA, BUBBLE_CLASSES_VOL(ICLASS), 
      *     BUBBLE_CLASSES_VOL(ICLASS+1), ICLASS, J, 0)              
 
 #elif defined MODEL_LEHR
@@ -509,7 +676,7 @@ C-----Locale variables
       DOUBLE PRECISION VA
       DOUBLE PRECISION VB
 C-----Called functions
-      DOUBLE PRECISION GK15
+      DOUBLE PRECISION INT_LEHR
 C-----Code
       IF(ICLASS .EQ. 1 .AND. ICLASS .EQ. J) THEN
         GAMMA_IJ = 0.0D0
@@ -526,16 +693,16 @@ C-----Code
                 
         IF(VA .LT. V0HALF .AND. VB .GT. V0HALF) THEN
           GAMMA_IJ = 
-     *    GK15(XI_BETA, VA, V0HALF, ICLASS, J, 1)
+     *    INT_LEHR(XI_BETA, VA, V0HALF, ICLASS, J, 1, EPS)
           
           GAMMA_IJ = GAMMA_IJ +
-     *    GK15(XI_BETA, V0HALF, VB, ICLASS, J, 2)
+     *    INT_LEHR(XI_BETA, V0HALF, VB, ICLASS, J, 2, EPS)
         ELSEIF(VA .GT. V0HALF) THEN
           GAMMA_IJ = 
-     *    GK15(XI_BETA, VA, VB, ICLASS, J, 2) 
+     *    INT_LEHR(XI_BETA, VA, VB, ICLASS, J, 2, EPS) 
         ELSEIF(VB .LT. V0HALF) THEN
           GAMMA_IJ = 
-     *    GK15(XI_BETA, VA, VB, ICLASS, J, 1) 
+     *    INT_LEHR(XI_BETA, VA, VB, ICLASS, J, 1, EPS) 
         ELSE
           WRITE(*,*) ('No solution - BETA')
           WRITE(*,*) (J)
@@ -551,16 +718,16 @@ C-----Code
         
         IF(VA .LT. V0HALF .AND. VB .GT. V0HALF) THEN
           GAMMA_IJ = 
-     *    GK15(XI_MINUS_ONE_BETA, VA, V0HALF, ICLASS, J, 1)
+     *    INT_LEHR(XI_MINUS_ONE_BETA, VA, V0HALF, ICLASS, J, 1, EPS)
           
           GAMMA_IJ = GAMMA_IJ +
-     *    GK15(XI_MINUS_ONE_BETA, V0HALF, VB, ICLASS, J, 2)
+     *    INT_LEHR(XI_MINUS_ONE_BETA, V0HALF, VB, ICLASS, J, 2, EPS)
         ELSEIF(VA .GT. V0HALF) THEN
           GAMMA_IJ = 
-     *    GK15(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 2) 
+     *    INT_LEHR(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 2, EPS) 
         ELSEIF(VB .LT. V0HALF) THEN
           GAMMA_IJ = 
-     *    GK15(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 1) 
+     *    INT_LEHR(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 1, EPS) 
         ELSE
           WRITE(*,*) ('No solution - BETA')
           WRITE(*,*) (J)
@@ -575,16 +742,16 @@ C-----Code
       
       IF(VA .LT. V0HALF .AND. VB .GT. V0HALF) THEN
          GAMMA_IJ = 
-     *   GK15(XI_BETA, VA, V0HALF, ICLASS, J, 1)
+     *   INT_LEHR(XI_BETA, VA, V0HALF, ICLASS, J, 1, EPS)
           
          GAMMA_IJ = GAMMA_IJ +
-     *   GK15(XI_BETA, V0HALF, VB, ICLASS, J, 2)
+     *   INT_LEHR(XI_BETA, V0HALF, VB, ICLASS, J, 2, EPS)
       ELSEIF(VA .GT. V0HALF) THEN
          GAMMA_IJ = 
-     *   GK15(XI_BETA, VA, VB, ICLASS, J, 2) 
+     *   INT_LEHR(XI_BETA, VA, VB, ICLASS, J, 2, EPS) 
       ELSEIF(VB .LT. V0HALF) THEN
         GAMMA_IJ = 
-     *   GK15(XI_BETA, VA, VB, ICLASS, J, 1) 
+     *   INT_LEHR(XI_BETA, VA, VB, ICLASS, J, 1, EPS) 
       ELSE
         WRITE(*,*) ('No solution - BETA')
         WRITE(*,*) (J)
@@ -596,16 +763,16 @@ C-----Code
         
       IF(VA .LT. V0HALF .AND. VB .GT. V0HALF) THEN
         GAMMA_IJ = GAMMA_IJ +
-     *  GK15(XI_MINUS_ONE_BETA, VA, V0HALF, ICLASS, J, 1)
+     *  INT_LEHR(XI_MINUS_ONE_BETA, VA, V0HALF, ICLASS, J, 1, EPS)
           
         GAMMA_IJ = GAMMA_IJ +
-     *  GK15(XI_MINUS_ONE_BETA, V0HALF, VB, ICLASS, J, 2)
+     *  INT_LEHR(XI_MINUS_ONE_BETA, V0HALF, VB, ICLASS, J, 2, EPS)
       ELSEIF(VA .GT. V0HALF) THEN
         GAMMA_IJ = GAMMA_IJ +
-     *  GK15(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 2) 
+     *  INT_LEHR(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 2, EPS) 
       ELSEIF(VB .LT. V0HALF) THEN
         GAMMA_IJ = GAMMA_IJ +
-     *  GK15(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 1) 
+     *  INT_LEHR(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 1, EPS) 
       ELSE
         WRITE(*,*) ('No solution - BETA')
         WRITE(*,*) (J)
@@ -631,7 +798,7 @@ C-----Common blocks
       DOUBLE PRECISION BUBBLE_CLASSES_DIA(1:NUMBER_OF_CLASSES)
       COMMON /C_BUBBLE_CLASSES_DIA/ BUBBLE_CLASSES_DIA
 C-----Called functions
-      DOUBLE PRECISION GK15
+      DOUBLE PRECISION G7
 C-----Locale variables
       DOUBLE PRECISION D0
       DOUBLE PRECISION DC
@@ -687,16 +854,16 @@ C-----is corrected via ABS(int(expression)) of all integrals.
           GAMMA_IJ = 0.0D0
         ELSEIF(VA .LE. G_VMIN .AND. VB .GE. G_VMAX) THEN
           GAMMA_IJ =
-     *    DABS(GK15(XI_BETA, G_VMIN, G_VMAX, ICLASS, J, 0))
+     *    DABS(G7(XI_BETA, G_VMIN, G_VMAX, ICLASS, J, 0))
         ELSEIF(VA .LT. G_VMIN .AND. VB .LT. G_VMAX) THEN
           GAMMA_IJ = 
-     *    DABS(GK15(XI_BETA, G_VMIN, VB, ICLASS, J, 0))
+     *    DABS(G7(XI_BETA, G_VMIN, VB, ICLASS, J, 0))
         ELSEIF(VA .GT. G_VMIN .AND. VB .GT. G_VMAX) THEN
           GAMMA_IJ = 
-     *    DABS(GK15(XI_BETA, VA, G_VMAX, ICLASS, J, 0))
+     *    DABS(G7(XI_BETA, VA, G_VMAX, ICLASS, J, 0))
         ELSEIF(VA .GT. G_VMIN .AND. VB .LT. G_VMAX) THEN
           GAMMA_IJ = 
-     *    DABS(GK15(XI_BETA, VA, VB, ICLASS, J, 0))
+     *    DABS(G7(XI_BETA, VA, VB, ICLASS, J, 0))
         ELSE
           WRITE(*,*) ('No solution - BETA')
           WRITE(*,*) (J)
@@ -714,16 +881,16 @@ C-----is corrected via ABS(int(expression)) of all integrals.
           GAMMA_IJ = 0.0D0
         ELSEIF(VA .LE. G_VMIN .AND. VB .GE. G_VMAX) THEN
           GAMMA_IJ =
-     *    DABS(GK15(XI_MINUS_ONE_BETA, G_VMIN, G_VMAX, ICLASS, J, 0))
+     *    DABS(G7(XI_MINUS_ONE_BETA, G_VMIN, G_VMAX, ICLASS, J, 0))
         ELSEIF(VA .LT. G_VMIN .AND. VB .LT. G_VMAX) THEN
           GAMMA_IJ = 
-     *    DABS(GK15(XI_MINUS_ONE_BETA, G_VMIN, VB, ICLASS, J, 0))
+     *    DABS(G7(XI_MINUS_ONE_BETA, G_VMIN, VB, ICLASS, J, 0))
         ELSEIF(VA .GT. G_VMIN .AND. VB .GT. G_VMAX) THEN
           GAMMA_IJ = 
-     *    DABS(GK15(XI_MINUS_ONE_BETA, VA, G_VMAX, ICLASS, J, 0))
+     *    DABS(G7(XI_MINUS_ONE_BETA, VA, G_VMAX, ICLASS, J, 0))
         ELSEIF(VA .GT. G_VMIN .AND. VB .LT. G_VMAX) THEN
           GAMMA_IJ = 
-     *    DABS(GK15(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 0))
+     *    DABS(G7(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 0))
         ELSE
           WRITE(*,*) ('No solution - BETA')
           WRITE(*,*) (J)
@@ -740,16 +907,16 @@ C-----is corrected via ABS(int(expression)) of all integrals.
         GAMMA_IJ = 0.0D0
       ELSEIF(VA .LE. G_VMIN .AND. VB .GE. G_VMAX) THEN
         GAMMA_IJ =
-     *  DABS(GK15(XI_BETA, G_VMIN, G_VMAX, ICLASS, J, 0))
+     *  DABS(G7(XI_BETA, G_VMIN, G_VMAX, ICLASS, J, 0))
       ELSEIF(VA .LT. G_VMIN .AND. VB .LT. G_VMAX) THEN
         GAMMA_IJ = 
-     *  DABS(GK15(XI_BETA, G_VMIN, VB, ICLASS, J, 0))
+     *  DABS(G7(XI_BETA, G_VMIN, VB, ICLASS, J, 0))
       ELSEIF(VA .GT. G_VMIN .AND. VB .GT. G_VMAX) THEN
         GAMMA_IJ = 
-     *  DABS(GK15(XI_BETA, VA, G_VMAX, ICLASS, J, 0))
+     *  DABS(G7(XI_BETA, VA, G_VMAX, ICLASS, J, 0))
       ELSEIF(VA .GT. G_VMIN .AND. VB .LT. G_VMAX) THEN
         GAMMA_IJ = 
-     *  DABS(GK15(XI_BETA, VA, VB, ICLASS, J, 0))
+     *  DABS(G7(XI_BETA, VA, VB, ICLASS, J, 0))
       ELSE          
         WRITE(*,*) ('No solution - BETA')
         WRITE(*,*) (J)
@@ -764,16 +931,16 @@ c        GAMMA_IJ = GAMMA_IJ + 0.0D0
         RETURN
       ELSEIF(VA .LE. G_VMIN .AND. VB .GE. G_VMAX) THEN
         GAMMA_IJ = GAMMA_IJ +
-     *  DABS(GK15(XI_MINUS_ONE_BETA, G_VMIN, G_VMAX, ICLASS, J, 0))
+     *  DABS(G7(XI_MINUS_ONE_BETA, G_VMIN, G_VMAX, ICLASS, J, 0))
       ELSEIF(VA .LT. G_VMIN .AND. VB .LT. G_VMAX) THEN
         GAMMA_IJ = GAMMA_IJ +
-     *  DABS(GK15(XI_MINUS_ONE_BETA, G_VMIN, VB, ICLASS, J, 0))
+     *  DABS(G7(XI_MINUS_ONE_BETA, G_VMIN, VB, ICLASS, J, 0))
       ELSEIF(VA .GT. G_VMIN .AND. VB .GT. G_VMAX) THEN
         GAMMA_IJ = GAMMA_IJ +
-     *  DABS(GK15(XI_MINUS_ONE_BETA, VA, G_VMAX, ICLASS, J, 0))
+     *  DABS(G7(XI_MINUS_ONE_BETA, VA, G_VMAX, ICLASS, J, 0))
       ELSEIF(VA .GT. G_VMIN .AND. VB .LT. G_VMAX) THEN
         GAMMA_IJ = GAMMA_IJ +
-     *  DABS(GK15(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 0))
+     *  DABS(G7(XI_MINUS_ONE_BETA, VA, VB, ICLASS, J, 0))
       ELSE
         WRITE(*,*) ('No solution - BETA')
         WRITE(*,*) (J)
@@ -1110,7 +1277,7 @@ C-----Arguments
 C-----Called functions
       DOUBLE PRECISION BETA_DENOMINATOR
       EXTERNAL BETA_DENOMINATOR
-      DOUBLE PRECISION GK15
+      DOUBLE PRECISION G7
 C-----Locale variables
       DOUBLE PRECISION D0
       DOUBLE PRECISION NOMINATOR
@@ -1138,7 +1305,7 @@ C-----Code
      *     / D0)**3.D0)**(2.D0/9.D0)
      *     - G_LAMBDA**(5.D0/3.D0))
      
-      DENOMINATOR = GK15(BETA_DENOMINATOR, G_VMIN, G_VMAX, 0, J, 0)
+      DENOMINATOR = G7(BETA_DENOMINATOR, G_VMIN, G_VMAX, 0, J, 0)
           
       BETA = 2.D0 * NOMINATOR / DENOMINATOR
       
@@ -1440,10 +1607,12 @@ C-----Symbolic constants
 C-----Locale variables
       DOUBLE PRECISION BUBBLE_CLASSES_VOL(1:NUMBER_OF_CLASSES)
       DOUBLE PRECISION BUBBLE_CLASSES_DIA(1:NUMBER_OF_CLASSES)
+#ifdef DEBUG  
       DOUBLE PRECISION G_DBRI
       DOUBLE PRECISION G_DAGI
       DOUBLE PRECISION G_BBRI
       DOUBLE PRECISION G_BAGI
+#endif
 #ifdef MODEL_LEHR
       DOUBLE PRECISION G_EPS
 #elif defined MODEL_MARTINEZ_BAZAN
