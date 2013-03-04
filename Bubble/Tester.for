@@ -1226,11 +1226,19 @@ C-----Locale variables
       ERF_ARG = 3.D0/2.D0 * DLOG(2.D0**(1.D0/15.D0) * D0
      *        * RHO_L**(3.D0/5.D0) * G_EPS**(2.D0/5.D0)
      *        / SIGMA**(3.D0/5.D0))
-      T_ERF = 1.D0 / (1.D0 + P_ERF*ERF_ARG)
-      ERF = 1.D0 - (0.254829592D0*T_ERF - 0.284496736D0*T_ERF**2.D0
+             
+      IF(ERF_ARG .GT. 0.D0) THEN         
+        T_ERF = 1.D0 / (1.D0 + P_ERF*ERF_ARG)
+        ERF = 1.D0 - (0.254829592D0*T_ERF - 0.284496736D0*T_ERF**2.D0
      *    + 1.421413741D0*T_ERF**3.D0 - 1.453152027*T_ERF**4.D0
      *    + 1.061405429D0*T_ERF**5.D0) * DEXP(-ERF_ARG**2.D0)
-
+      ELSE
+        T_ERF = 1.D0 / (1.D0 + P_ERF*(-ERF_ARG))
+        ERF = -(1.D0 - (0.254829592D0*T_ERF - 0.284496736D0*T_ERF**2.D0
+     *    + 1.421413741D0*T_ERF**3.D0 - 1.453152027*T_ERF**4.D0
+     *    + 1.061405429D0*T_ERF**5.D0) * DEXP(-ERF_ARG**2.D0))
+      ENDIF
+                                                             
       IF(BRANCH .EQ. 1) THEN
       BETA = 
      *   1.D0/(DSQRT(PI)*V) * DEXP(-9.D0/4.D0 * (DLOG(2.0D0**(2.D0/5.D0)

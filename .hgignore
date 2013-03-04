@@ -16,6 +16,8 @@ Bubble/BubbleSource.o
 Bubble/Bubble.o
 Bubble/Tester
 Bubble/Tester.o
+Bubble/Tester_MSG
+Bubble/Tester_MSG.o
 PyrolysisGA/Test.png
 *.cfx
 *.def
