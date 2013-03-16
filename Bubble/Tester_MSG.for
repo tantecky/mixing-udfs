@@ -2,8 +2,8 @@
 
 C-------- used model
 c#define MODEL_ALOPEA
-#define MODEL_LEHR
-c#define MODEL_MARTINEZ_BAZAN
+c#define MODEL_LEHR
+#define MODEL_MARTINEZ_BAZAN
 C-------- used model
 
 C-------- constants
@@ -93,7 +93,7 @@ C-----Arguments
       DOUBLE PRECISION ARGS(NLOC,NARG), RET(NLOC,NRET)
       
 c     ICLASS = ARGS(1,1)
-c     RALFA = ARGS(1:NLOC,2)
+c     ALPHA_G = ARGS(1:NLOC,2)
 
 c     F1 = ARGS(1:NLOC,3)
 c     F2 = ARGS(1:NLOC,4)
@@ -154,7 +154,7 @@ C-----Code
       END
 C=======================================================================
       DOUBLE PRECISION FUNCTION 
-     *COMPUTE_SOURCE(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
+     *COMPUTE_SOURCE(NLOC, ILOC, ICLASS, ALPHA_G, RF, EPS)
       IMPLICIT NONE
 C-----Symbolic constants
       INTEGER NUMBER_OF_CLASSES
@@ -181,7 +181,7 @@ C-----Arguments
       INTEGER NLOC
       INTEGER ILOC
       INTEGER ICLASS
-      DOUBLE PRECISION RALFA(NLOC)
+      DOUBLE PRECISION ALPHA_G(NLOC)
       DOUBLE PRECISION RF(1:NLOC, 1:NUMBER_OF_CLASSES)
       DOUBLE PRECISION EPS(NLOC)
 C-----Code
@@ -195,51 +195,51 @@ C-----Code
 #endif
 
       COMPUTE_SOURCE = 
-     *  RHO_G * RALFA(ILOC)**2.D0 *
+     *  RHO_G * ALPHA_G(ILOC)**2.D0 *
      * (
-     *  BAGI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
-     * -DAGI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
+     *  BAGI(NLOC, ILOC, ICLASS, RF, EPS)
+     * -DAGI(NLOC, ILOC, ICLASS, RF, EPS)
      * )
      * +                    
-     *  RHO_G * RALFA(ILOC)* 
+     *  RHO_G * ALPHA_G(ILOC)* 
      * (
-     *  BBRI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)    
-     * -DBRI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
+     *  BBRI(NLOC, ILOC, ICLASS, RF, EPS)    
+     * -DBRI(NLOC, ILOC, ICLASS, RF, EPS)
      * )
      
 #ifdef DEBUG
-      G_BBRI = G_BBRI + RHO_G * RALFA(ILOC) *
-     *BBRI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)    
+      G_BBRI = G_BBRI + RHO_G * ALPHA_G(ILOC) *
+     *BBRI(NLOC, ILOC, ICLASS, RF, EPS)    
                
-      G_BAGI = G_BAGI + RHO_G * RALFA(ILOC)**2.D0 *
-     *BAGI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
+      G_BAGI = G_BAGI + RHO_G * ALPHA_G(ILOC)**2.D0 *
+     *BAGI(NLOC, ILOC, ICLASS, RF, EPS)
                
-      G_DBRI = G_DBRI + RHO_G * RALFA(ILOC) *
-     *DBRI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
+      G_DBRI = G_DBRI + RHO_G * ALPHA_G(ILOC) *
+     *DBRI(NLOC, ILOC, ICLASS, RF, EPS)
                
-      G_DAGI = G_DAGI + RHO_G * RALFA(ILOC)**2.D0 *
-     *DAGI(NLOC, ILOC, ICLASS, RALFA, RF, EPS) 
+      G_DAGI = G_DAGI + RHO_G * ALPHA_G(ILOC)**2.D0 *
+     *DAGI(NLOC, ILOC, ICLASS, RF, EPS) 
       
       WRITE(*,*) '---------------------------'
       WRITE(*,'(A, I0)') 'CLASS: ', ICLASS
-      WRITE(*,'(A, F5.2)') 'VOLFRAC_G: ', RALFA(ILOC)
+      WRITE(*,'(A, F5.2)') 'VOLFRAC_G: ', ALPHA_G(ILOC)
       WRITE(*,'(A, I0, A, F5.2)') 'F', ICLASS, ':', RF(ILOC,ICLASS)
       WRITE(*,
-     * '(A, E20.10)') 'BBRI: ', BBRI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
+     * '(A, E20.10)') 'BBRI: ', BBRI(NLOC, ILOC, ICLASS, RF, EPS)
       WRITE(*,
-     * '(A, E20.10)') 'BAGI: ', BAGI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
+     * '(A, E20.10)') 'BAGI: ', BAGI(NLOC, ILOC, ICLASS, RF, EPS)
       WRITE(*,
-     * '(A, E20.10)') 'DBRI: ',-DBRI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
+     * '(A, E20.10)') 'DBRI: ',-DBRI(NLOC, ILOC, ICLASS, RF, EPS)
       WRITE(*,
-     * '(A, E20.10)') 'DAGI: ',-DAGI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
+     * '(A, E20.10)') 'DAGI: ',-DAGI(NLOC, ILOC, ICLASS, RF, EPS)
       WRITE(*,
      * '(A, E20.10)') 'BAGI-DAGI: ',
-     * BAGI(NLOC, ILOC, ICLASS, RALFA, RF, EPS) 
-     *-DAGI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
+     * BAGI(NLOC, ILOC, ICLASS, RF, EPS) 
+     *-DAGI(NLOC, ILOC, ICLASS, RF, EPS)
       WRITE(*,
      * '(A, E20.10)') 'BBRI-DBRI: ',
-     * BBRI(NLOC, ILOC, ICLASS, RALFA, RF, EPS) 
-     *-DBRI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
+     * BBRI(NLOC, ILOC, ICLASS, RF, EPS) 
+     *-DBRI(NLOC, ILOC, ICLASS, RF, EPS)
       WRITE(*,'(A, E20.10)') 'SOURCE: ', COMPUTE_SOURCE
 #endif
       END
@@ -258,7 +258,7 @@ C-----Locale variables
       DOUBLE PRECISION TRANS1
       DOUBLE PRECISION TRANS2
       DOUBLE PRECISION INTEGRAL
-      INTEGER I
+      INTEGER L
       DOUBLE PRECISION NODES(0:2)
       DOUBLE PRECISION WEIGHTS(0:3)
       
@@ -290,10 +290,10 @@ C-----Code
       ENDIF
 #endif
       
-      DO I = 0, 2
+      DO L = 0, 2
         INTEGRAL = INTEGRAL +
-     *  WEIGHTS(I)*((FCE(ICLASS, TRANS1*NODES(I) + TRANS2, J)) +
-     *  (FCE(ICLASS, TRANS1*(-NODES(I)) + TRANS2, J)))
+     *  WEIGHTS(L)*((FCE(ICLASS, TRANS1*NODES(L) + TRANS2, J)) +
+     *  (FCE(ICLASS, TRANS1*(-NODES(L)) + TRANS2, J)))
       ENDDO
 
   
@@ -382,7 +382,7 @@ C-----Arguments
       
       END
 C=======================================================================
-      DOUBLE PRECISION FUNCTION BBRI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
+      DOUBLE PRECISION FUNCTION BBRI(NLOC, ILOC, ICLASS, RF, EPS)
       IMPLICIT NONE
 C-----Symbolic constants
       INTEGER NUMBER_OF_CLASSES
@@ -396,7 +396,6 @@ C-----Arguments
       INTEGER NLOC
       INTEGER ILOC
       INTEGER ICLASS
-      DOUBLE PRECISION RALFA(NLOC)
       DOUBLE PRECISION RF(1:NLOC, NUMBER_OF_CLASSES)
       DOUBLE PRECISION EPS(NLOC)
 C-----Locale variables
@@ -415,7 +414,7 @@ C-----Code
       
       END
 C=======================================================================
-      DOUBLE PRECISION FUNCTION BAGI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
+      DOUBLE PRECISION FUNCTION BAGI(NLOC, ILOC, ICLASS, RF, EPS)
       IMPLICIT NONE
 C-----Symbolic constants
       INTEGER NUMBER_OF_CLASSES
@@ -429,7 +428,6 @@ C-----Arguments
       INTEGER NLOC
       INTEGER ILOC
       INTEGER ICLASS
-      DOUBLE PRECISION RALFA(NLOC)
       DOUBLE PRECISION RF(1:NLOC, NUMBER_OF_CLASSES)
       DOUBLE PRECISION EPS(NLOC)
 C-----Locale variables
@@ -451,22 +449,26 @@ C-----Code
       DO J = 1, ICLASS
         DO K = 1, ICLASS
         
-          V = VB(J)+VB(K)
+          V = VB(J) + VB(K)
           BRACKET_PRODUCT = 0.D0
           
           IF(ICLASS .NE. 1) THEN
             IF(VB(ICLASS - 1) .LT. V .AND.
      *        V .LT. VB(ICLASS)) THEN
              BRACKET_PRODUCT = (V - VB(ICLASS-1))
-     *       /(VB(ICLASS)-VB(ICLASS-1))
+     *       /(VB(ICLASS) - VB(ICLASS-1))
             ENDIF
           ENDIF
-          
+
+c-----The following condition ensures that bubbles of the biggest class N do not coalesce. If one or two did, a bubble of size bigger than VB(N) would have to be formed;
+c-----the following statement prevents this event. In order not to form a bubble bigger than VB(N) from smaller bubbles, it is necessary to pay attention to the restriction
+c-----that 2*VB(N-1) < VB(N). This limitation is possible to remove simply by splitting a particle bigger than V(N) into a number of particles of size V(N) - BRACKET_PRODUCT = V/V(N). 
+
           IF(ICLASS .NE. NUMBER_OF_CLASSES) THEN
             IF(VB(ICLASS) .LT. V .AND.
      *        V .LT. VB(ICLASS + 1)) THEN
              BRACKET_PRODUCT = (VB(ICLASS + 1) - V)
-     *       /(VB(ICLASS+1)-VB(ICLASS))
+     *       /(VB(ICLASS+1) - VB(ICLASS))
             ENDIF
           ENDIF
           
@@ -481,44 +483,6 @@ C-----Code
       CALL CHECK_FINITE(BAGI, __LINE__)
 #endif 
       END 
-C=======================================================================
-#ifdef MODEL_MARTINEZ_BAZAN
-      DOUBLE PRECISION FUNCTION BETA_DENOMINATOR(I, V, J)
-      IMPLICIT NONE
-C-----Symbolic constants
-      INTEGER NUMBER_OF_CLASSES
-      PARAMETER (NUMBER_OF_CLASSES = 12)
-      DOUBLE PRECISION PI
-      PARAMETER (PI = PI_CONST)
-C-----Common blocks
-      DOUBLE PRECISION G_LAMBDA
-      DOUBLE PRECISION G_VMIN
-      DOUBLE PRECISION G_VMAX
-      COMMON /C_MB_PARS/ G_LAMBDA, G_VMIN, G_VMAX
-      DOUBLE PRECISION DB(1:NUMBER_OF_CLASSES)
-      COMMON /C_DB/ DB
-C-----Arguments
-      INTEGER I
-      INTEGER J
-      DOUBLE PRECISION V
-C-----Code 
-#ifdef DEBUG
-      IF(I .NE. 0 .OR.
-     *J .GT. NUMBER_OF_CLASSES .OR. J .LT. 1
-     *) THEN
-        WRITE(*,*) ('Wrong I .OR. J')
-        WRITE(*,*) 'I=',I,'J=',J
-        CALL ABORT()
-      ENDIF
-#endif
-
-      BETA_DENOMINATOR = (((6.D0*V/PI)**(1.D0/3.D0)
-     *     / DB(J))**(2.D0/3.D0) - G_LAMBDA**(5.D0/3.D0))
-     *     * ((1.D0 - ((6.D0*V/PI)**(1.D0/3.D0)
-     *     / DB(J))**3.D0)**(2.D0/9.D0) - G_LAMBDA**(5.D0/3.D0))
-      
-      END
-#endif      
 C=======================================================================
 #ifdef MODEL_ALOPEA
       DOUBLE PRECISION FUNCTION BETA(J, I, EPS)
@@ -542,7 +506,7 @@ C-----Arguments
       ENDIF
 #endif
 
-      BETA = 60.D0/VB(J) * (VB(I)/VB(J))**2 * (1.0D0 - VB(I)/VB(J))**2
+      BETA = 60.D0 * (VB(I)/VB(J))**2.D0 * (1.D0 - VB(I)/VB(J))**2.D0
      
 #ifdef DEBUG    
       CALL CHECK_FINITE(BETA, __LINE__)
@@ -602,13 +566,13 @@ C-----Locale variables
       ENDIF
 
       IF(VB(I) .GT. 0.D0 .AND. VB(I) .LT. VB(J)/2.D0) THEN
-      BETA = 1.D0 / (DSQRT(PI)*VB(I))
+      BETA = 1.D0 / (DSQRT(PI) * VB(I)/VB(J))
      *   * DEXP(-9.D0/4.D0 * (DLOG(2.0D0**(2.D0/5.D0)
      *   * RHO_L**(3.D0/5.D0) * DB(I) * EPS**(2.D0/5.D0) 
      *   / SIGMA**(3.D0/5.D0)))**2.D0) / (1.D0 + ERF + 1.D-10) 
       ELSEIF(VB(I) .GT. VB(J)/2.D0 .AND. VB(I) .LT. VB(J)) THEN
-        BETA = 1.D0 / (DSQRT(PI) * (VB(J) - VB(I)))
-     *   * DEXP(-9.D0/4.D0 * (DLOG(2.0D0**(2.D0/5.D0)*RHO_L**(3.D0/5.D0)
+        BETA = 1.D0 / (DSQRT(PI) * (VB(J) - VB(I)) / VB(J))
+     *   * DEXP(-9.D0/4.D0 * (DLOG(2.D0**(2.D0/5.D0) *RHO_L**(3.D0/5.D0)
      *   * (6.D0*(VB(J) - VB(I))/PI)**(1.D0/3.D0) * EPS**(2.D0/5.D0) 
      *   / SIGMA**(3.D0/5.D0)))**2.D0) / (1.D0 + ERF + 1.D-10)   
       ELSE
@@ -629,8 +593,6 @@ C=======================================================================
 C-----Symbolic constants
       INTEGER NUMBER_OF_CLASSES
       PARAMETER (NUMBER_OF_CLASSES = 12)
-      DOUBLE PRECISION PI
-      PARAMETER (PI = PI_CONST)
       DOUBLE PRECISION SIGMA
       PARAMETER (SIGMA = SIGMA_SURF_TENS)
       DOUBLE PRECISION RHO_L
@@ -642,9 +604,9 @@ C-----Common blocks
       DOUBLE PRECISION DMAX
       DOUBLE PRECISION DC
       DOUBLE PRECISION G_LAMBDA
-      DOUBLE PRECISION G_VMIN
-      DOUBLE PRECISION G_VMAX
-      COMMON /C_MB_PARS/ G_LAMBDA, G_VMIN, G_VMAX
+      DOUBLE PRECISION G_DSTARMIN
+      DOUBLE PRECISION G_DSTARMAX
+      COMMON /C_MB_PARS/ G_LAMBDA, G_DSTARMIN, G_DSTARMAX
       DOUBLE PRECISION DB(1:NUMBER_OF_CLASSES)
       COMMON /C_DB/ DB
       DOUBLE PRECISION VB(1:NUMBER_OF_CLASSES)
@@ -672,18 +634,21 @@ C-----Code
       DC = (12.D0*SIGMA/(BETA_PAR*RHO_L))**(3.D0/5.D0) /EPS**(2.D0/5.D0)
       DMIN = (12.D0*SIGMA / (BETA_PAR*RHO_L*DB(J)))**(3.D0/2.D0) / EPS
       DMAX = DB(J) * (1.0D0 - (DMIN / DB(J))**3.D0)**(1.D0/3.D0)
-      G_VMIN = PI * DMIN**3.D0 / 6.D0
-      G_VMAX = PI * DMAX**3.D0 / 6.D0
+      G_DSTARMIN = DMIN / DB(J)
+      G_DSTARMAX = DMAX / DB(J)
       G_LAMBDA = DC / DB(J)
       
-      IF(VB(I) .LT. G_VMIN .OR. VB(I) .GT. G_VMAX) THEN
+      IF(DB(I) .LT. DMIN .OR. DB(I) .GT. DMAX) THEN
       BETA = 0.D0
       ELSE      
       NOMINATOR = ((DB(I) / DB(J))**(2.D0/3.D0) - G_LAMBDA**(5.D0/3.D0))
-     *  * ((1.D0-(DB(I)/DB(J))**3.D0)**(2.D0/9.D0) 
-     *  - G_LAMBDA**(5.D0/3.D0))
+     *  *((1.D0-(DB(I)/DB(J))**3.D0)**(2.D0/9.D0)-G_LAMBDA**(5.D0/3.D0))
      
-      DENOMINATOR = G7(BETA_DENOMINATOR, G_VMIN, G_VMAX, 0, J)
+      DENOMINATOR = G7(BETA_DENOMINATOR, G_DSTARMIN, G_DSTARMAX, 0, J)
+
+C-----A treacherous feature of the M-B model is that for some combinations of low values of EPS (cca 0.2 - 0.5, in our case) and bubble diameter, DMIN > DMAX may occur.
+C-----Simultaneously, the BETA curve is then located below the x-axis and the BETA values are therefore negative. Fortunately, in MUSIG method (in contrast with the CM),
+C-----this behavior does not matter because if DMIN > DMAX and the curve is under the x-axis, the result of the integration is positive. 
           
       BETA = 2.D0 * NOMINATOR / DENOMINATOR
       ENDIF
@@ -695,6 +660,40 @@ C-----Code
 #else
 #error "Unknown model specified"
 #endif 
+C=======================================================================
+#ifdef MODEL_MARTINEZ_BAZAN
+      DOUBLE PRECISION FUNCTION BETA_DENOMINATOR(I, DSTAR, J)
+      IMPLICIT NONE
+C-----Symbolic constants
+      INTEGER NUMBER_OF_CLASSES
+      PARAMETER (NUMBER_OF_CLASSES = 12)
+C-----Common blocks
+      DOUBLE PRECISION G_LAMBDA
+      DOUBLE PRECISION G_DSTARMIN
+      DOUBLE PRECISION G_DSTARMAX
+      COMMON /C_MB_PARS/ G_LAMBDA, G_DSTARMIN, G_DSTARMAX
+      DOUBLE PRECISION DB(1:NUMBER_OF_CLASSES)
+      COMMON /C_DB/ DB
+C-----Arguments
+      INTEGER I
+      INTEGER J
+      DOUBLE PRECISION DSTAR
+C-----Code 
+#ifdef DEBUG
+      IF(I .NE. 0 .OR.
+     *J .GT. NUMBER_OF_CLASSES .OR. J .LT. 1
+     *) THEN
+        WRITE(*,*) ('Wrong I .OR. J')
+        WRITE(*,*) 'I=',I,'J=',J
+        CALL ABORT()
+      ENDIF
+#endif
+
+      BETA_DENOMINATOR = (DSTAR**(2.D0/3.D0) - G_LAMBDA**(5.D0/3.D0))
+     *   *((1.D0 - DSTAR**3.D0)**(2.D0/9.D0) - G_LAMBDA**(5.D0/3.D0))
+      
+      END
+#endif      
 C=======================================================================
       DOUBLE PRECISION FUNCTION A_IJ(I, J, EPS)
       IMPLICIT NONE
@@ -724,12 +723,12 @@ C-----Arguments
       DOUBLE PRECISION EFF
       DOUBLE PRECISION R_IJ
       
-      R_IJ = DB(I)*DB(J) / (DB(I)+DB(J)) 
+      R_IJ = DB(I) * DB(J) / (DB(I) + DB(J)) 
       FREQ = DSQRT(2.D0) / 4.D0 * PI   
      *       * (DB(I) + DB(J))**2.D0 * EPS**(1.D0/3.D0)
      *       * (DB(I)**(2.D0/3.D0) + DB(J)**(2.D0/3.D0))**(1.D0/2.D0)
       EFF = DEXP(-DSQRT(RHO_L) * R_IJ**(5.D0/6.D0) * EPS**(1.D0/3.D0) 
-     *      * DLOG(H0/HF) /(4.D0*DSQRT(SIGMA)))    
+     *      * DLOG(H0/HF) /(4.D0 * DSQRT(SIGMA)))    
       
       A_IJ = COAL_FACTOR * FREQ * EFF
       
@@ -768,7 +767,7 @@ C-----Code
       IF(I .EQ. 1) THEN
         G_I = 0.D0
       ELSE
-        ERF_ARG = DSQRT(0.04D0 * SIGMA/(RHO_L * EPS**(2.D0/3.D0)
+        ERF_ARG = DSQRT(0.04D0 * SIGMA / (RHO_L * EPS**(2.D0/3.D0)
      *   * DB(I)**(5.D0/3.D0)) + 0.01D0 * MU_L
      *   / (DSQRT(RHO_L*RHO_G) * EPS**(1.D0/3.D0) * DB(I)**(4.D0/3.D0)))
         T_ERF = 1.D0 / (1.D0 + P_ERF*ERF_ARG)
@@ -782,11 +781,11 @@ C-----Code
 #elif defined MODEL_LEHR
 C-----Code 
       IF(I .EQ. 1) THEN
-        G_I = 0.0D0
+        G_I = 0.D0
       ELSE
-        G_I = BREAKUP_FACTOR * 0.5D0 *DB(I)**(5.D0/3.D0)
+        G_I = BREAKUP_FACTOR * 0.5D0 * DB(I)**(5.D0/3.D0)
      *      * EPS**(19.D0/15.D0) * RHO_L**(7.D0/5.D0)
-     *      / SIGMA**(7.D0/5.D0) * DEXP(-DSQRT(2.0D0)*SIGMA**(9.D0/5.D0)
+     *      / SIGMA**(7.D0/5.D0) * DEXP(-DSQRT(2.D0) *SIGMA**(9.D0/5.D0)
      *      /(DB(I)**3.D0 * RHO_L**(9.D0/5.D0) * EPS**(6.D0/5.D0)))
       ENDIF
       
@@ -805,7 +804,7 @@ C-----Code
       CONFINE = 12.D0 * SIGMA / (RHO_L * DB(I))
       
       IF(I .EQ. 1 .OR. CONFINE .GT. DISRUPT) THEN
-        G_I = 0.0D0
+        G_I = 0.D0
       ELSE
         G_I = BREAKUP_FACTOR * K_G * DSQRT(DISRUPT - CONFINE)
      *      / DB(I)
@@ -816,7 +815,7 @@ C-----Code
 #endif      
       END      
 C=======================================================================
-      DOUBLE PRECISION FUNCTION DBRI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
+      DOUBLE PRECISION FUNCTION DBRI(NLOC, ILOC, ICLASS, RF, EPS)
       IMPLICIT NONE
 C-----Symbolic constants
       INTEGER NUMBER_OF_CLASSES
@@ -830,7 +829,6 @@ C-----Arguments
       INTEGER NLOC
       INTEGER ILOC
       INTEGER ICLASS
-      DOUBLE PRECISION RALFA(NLOC)
       DOUBLE PRECISION RF(1:NLOC, 1:NUMBER_OF_CLASSES)
       DOUBLE PRECISION EPS(NLOC)
 C-----Locale variables
@@ -849,7 +847,7 @@ C-----Code
       
       END
 C=======================================================================
-      DOUBLE PRECISION FUNCTION DAGI(NLOC, ILOC, ICLASS, RALFA, RF, EPS)
+      DOUBLE PRECISION FUNCTION DAGI(NLOC, ILOC, ICLASS, RF, EPS)
       IMPLICIT NONE
 C-----Symbolic constants
       INTEGER NUMBER_OF_CLASSES
@@ -863,7 +861,6 @@ C-----Arguments
       INTEGER NLOC
       INTEGER ILOC
       INTEGER ICLASS
-      DOUBLE PRECISION RALFA(NLOC)
       DOUBLE PRECISION RF(1:NLOC, 1:NUMBER_OF_CLASSES)
       DOUBLE PRECISION EPS(NLOC)
 C-----Locale variables
@@ -924,8 +921,8 @@ C-----Locale variables
       DOUBLE PRECISION G_BAGI
 #ifdef MODEL_MARTINEZ_BAZAN
       DOUBLE PRECISION G_LAMBDA
-      DOUBLE PRECISION G_VMIN
-      DOUBLE PRECISION G_VMAX
+      DOUBLE PRECISION G_DSTARMIN
+      DOUBLE PRECISION G_DSTARMAX
 #endif
 #ifdef DEBUG  
       DATA G_DBRI /0.0D0/
@@ -956,7 +953,7 @@ C-----Common blocks
       COMMON /C_DB/ DB
       COMMON /C_VB/ VB
 #ifdef MODEL_MARTINEZ_BAZAN
-      COMMON /C_MB_PARS/ G_LAMBDA, G_VMIN, G_VMAX
+      COMMON /C_MB_PARS/ G_LAMBDA, G_DSTARMIN, G_DSTARMAX
 #endif
 #ifdef DEBUG  
       COMMON /C_DBRI/ G_DBRI
