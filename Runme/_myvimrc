@@ -1,0 +1,27 @@
+set tags=tags;/
+let g:project_dir = getcwd()
+
+function! Build()
+  execute "!cd " . g:project_dir . " && make"
+endfunction
+
+function! Run()
+  execute "!cd " . g:project_dir . " && ./runme"
+endfunction
+
+function! RunRad()
+  execute "!cd " . g:project_dir . " && ./rr.sh"
+endfunction
+
+function! Clean()
+  execute "!cd " . g:project_dir . " && make clean"
+endfunction
+
+nnoremap <F5> :wa<CR>:call Build()<CR>
+inoremap <F5> <esc>:wa<CR>:call Build()<CR>
+
+nnoremap <F6> :wa<CR>:call Run()<CR>
+inoremap <F6> <esc>:wa<CR>:call Run()<CR>
+
+nnoremap <F7> :wa<CR>:call RunRad()<CR>
+inoremap <F7> <esc>:wa<CR>:call RunRad()<CR>
