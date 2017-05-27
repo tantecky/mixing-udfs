@@ -7,6 +7,8 @@ msg_input db '> ',0
 msg_input_len equ $-msg_input
 msg_err db `Wrong!\n`,0
 msg_err_len equ $-msg_err
+msg_ok db `Good job!\n`,0
+msg_ok_len equ $-msg_ok
 
 
 section .mytext progbits alloc exec write align=16
@@ -57,26 +59,27 @@ global _start:
 
 %macro test_char 1
   ; provided input/key
+  inc rcx
   cmp [rcx], byte %1
   jz %%good
   sys_write msg_err, msg_err_len
   sys_exit 1
 %%good:
-  inc rcx
 %endmacro
 
 _start:
-; :> wox 0x58 @0x006000cb!0xc
   sys_write msg_input, msg_input_len
   sub rsp, 16
   sys_read rsp, 16
   ; pointer to input
   mov rcx, rsp
+  dec rcx
   test_char 'c'
   encrypt_below
   test_char 'r'
-  encrypt_below
-  test_char 'y'
-enc_end:
+  ; encrypt_below
+  ; test_char 'y'
+  ; encrypt_below
+  sys_write msg_ok, msg_ok_len
   sys_exit 0
-
+enc_end:
