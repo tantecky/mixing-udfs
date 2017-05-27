@@ -2,7 +2,8 @@
 import r2pipe
 
 r2 = r2pipe.open('./runme', ['-w'])
-end_enc = int(r2.cmd('S.~[0]'), 16)
+end_enc = int(r2.cmd('S=~*[3]'), 16)
+#  print(str(hex(end_enc)))
 #  r2.cmd('e scr.color=0')
 r2.cmd('/c inc rcx')
 res = r2.cmd('f*~hit[3]').splitlines()

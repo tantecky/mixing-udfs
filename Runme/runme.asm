@@ -77,9 +77,9 @@ _start:
   test_char 'c'
   encrypt_below
   test_char 'r'
-  ; encrypt_below
-  ; test_char 'y'
-  ; encrypt_below
+  encrypt_below
+  test_char 'y'
+
   sys_write msg_ok, msg_ok_len
   sys_exit 0
 enc_end:
