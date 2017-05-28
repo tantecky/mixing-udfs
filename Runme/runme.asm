@@ -74,11 +74,23 @@ _start:
   ; pointer to input
   mov rcx, rsp
   dec rcx
-  test_char 'c'
+  test_char 'L'
   encrypt_below
-  test_char 'r'
+  test_char '1'
+  encrypt_below
+  test_char 'n'
+  encrypt_below
+  test_char 'u'
+  encrypt_below
+  test_char 'x'
+  encrypt_below
+  test_char 'D'
+  encrypt_below
+  test_char 'a'
   encrypt_below
   test_char 'y'
+  encrypt_below
+  test_char 'z'
 
   sys_write msg_ok, msg_ok_len
   sys_exit 0
