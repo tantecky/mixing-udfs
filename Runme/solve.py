@@ -2,20 +2,20 @@
 import r2pipe
 
 r2 = r2pipe.open('./runme', ['-d'])
-key = []
 
-i = 0
-
-while True:
+while 'invalid' not in r2.cmd('s'):
     r2.cmd('ds;sr rip')
-    line = r2.cmd('pd 1')
-    if 'cmp byte' in line:
-        print(line)
-        letter = r2.cmd('pd 1~cmp[5]')
-        print(letter)
-        r2.cmd('wx {} @ rcx'.format(letter))
-        print(r2.cmd('p8 1 @ rcx'))
-        i += 1
 
+    json = r2.cmdj('pdj 1')
 
+    if json is None:
+        continue
 
+    opcode = json[0]['opcode']
+
+    if 'cmp byte [rcx]' in opcode:
+        char = opcode.split(',')[1].strip()
+        r2.cmd('wx {} @ rcx'.format(char))
+        print(chr(int(char, 16)), end='', flush=True)
+
+print()

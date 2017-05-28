@@ -74,6 +74,7 @@ _start:
   ; pointer to input
   mov rcx, rsp
   dec rcx
+
   test_char 'L'
   encrypt_below
   test_char '1'
@@ -90,7 +91,7 @@ _start:
   encrypt_below
   test_char 'y'
   encrypt_below
-  test_char 'z'
+  test_char 'Z'
 
   sys_write msg_ok, msg_ok_len
   sys_exit 0
